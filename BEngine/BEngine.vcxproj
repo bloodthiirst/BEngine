@@ -1,0 +1,309 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>16.0</VCProjectVersion>
+    <Keyword>Win32Proj</Keyword>
+    <ProjectGuid>{253169d7-b955-468d-ac81-4c8c57a39bbe}</ProjectGuid>
+    <RootNamespace>BEngine</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <IncludePath>C:\VulkanSDK\1.3.211.0\Include;$(TargetDir);$(IncludePath)</IncludePath>
+    <LibraryPath>C:\VulkanSDK\1.3.211.0\Lib32;$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <IncludePath>C:\VulkanSDK\1.3.211.0\Include;$(TargetDir);$(IncludePath)</IncludePath>
+    <LibraryPath>C:\VulkanSDK\1.3.211.0\Lib32;$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <IncludePath>C:\VulkanSDK\1.3.211.0\Include;$(TargetDir);$(IncludePath)</IncludePath>
+    <LibraryPath>C:\VulkanSDK\1.3.211.0\Lib;$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <IncludePath>C:\VulkanSDK\1.3.211.0\Include;$(TargetDir);$(IncludePath)</IncludePath>
+    <LibraryPath>C:\VulkanSDK\1.3.211.0\Lib;$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <AdditionalIncludeDirectories>;C:\BEngine\BEngine\GameApp</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>vulkan-1.lib;CustomGame.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:\BEngine\BEngine\x64\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+    </Link>
+    <PreBuildEvent>
+      <Command>
+      </Command>
+    </PreBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <AdditionalIncludeDirectories>;C:\BEngine\BEngine\GameApp</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>vulkan-1.lib;CustomGame.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:\BEngine\BEngine\x64\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+    </Link>
+    <PreBuildEvent>
+      <Command>
+      </Command>
+    </PreBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>C:\VulkanSDK\1.3.211.0\Include;%(AdditionalIncludeDirectories);C:\BEngine\BEngine\GameApp</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>vulkan-1.lib;CustomGame.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:\BEngine\BEngine\x64\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+    </Link>
+    <PreBuildEvent>
+      <Command>
+      </Command>
+    </PreBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>C:\VulkanSDK\1.3.211.0\Include;%(AdditionalIncludeDirectories);C:\BEngine\BEngine\GameApp</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>vulkan-1.lib;CustomGame.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:\BEngine\BEngine\x64\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+    </Link>
+    <PreBuildEvent>
+      <Command>
+      </Command>
+    </PreBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="Core\ApplicationState\ApplicationState.cpp" />
+    <ClCompile Include="Core\Application\Application.cpp" />
+    <ClCompile Include="Core\EventSystem\Base\EventBase.cpp" />
+    <ClCompile Include="Core\EventSystem\Types\GameEvents.h" />
+    <ClCompile Include="Core\Logger\Base\ILogger.cpp" />
+    <ClCompile Include="Core\Logger\Logger.cpp" />
+    <ClCompile Include="Core\Logger\Types\ConsoleLogger.cpp" />
+    <ClCompile Include="Core\Platform\Base\Filesystem\Filesystem.cpp" />
+    <ClCompile Include="Core\Platform\Base\Input\Input.cpp" />
+    <ClCompile Include="Core\Platform\Base\Input\InputUtils.cpp" />
+    <ClCompile Include="Core\Platform\Base\Memory\Memory.cpp" />
+    <ClCompile Include="Core\Platform\Types\Win32\Filesystem\Win32Filesystem.cpp" />
+    <ClCompile Include="Core\Renderer\Backend\Vulkan\Context\CommandBuffer.cpp" />
+    <ClCompile Include="Core\Renderer\Backend\Vulkan\Context\PhysicalDeviceInfo.cpp" />
+    <ClCompile Include="Core\Renderer\Backend\Vulkan\Context\Renderpass.cpp" />
+    <ClCompile Include="Core\Renderer\Frontend\Buffer\Buffer.cpp" />
+    <ClCompile Include="Core\Renderer\Frontend\Pipeline\Pipeline.cpp" />
+    <ClCompile Include="Core\Renderer\Frontend\Shader\Shader.cpp" />
+    <ClCompile Include="Core\Renderer\Frontend\Texture\Texture.cpp" />
+    <ClCompile Include="Core\Renderer\Backend\Vulkan\Context\SwapchainInfo.cpp" />
+    <ClCompile Include="Core\Renderer\Frontend\Texture\TextureDescription.cpp" />
+    <ClCompile Include="Core\Renderer\Backend\Vulkan\Context\FrameBuffer.cpp" />
+    <ClCompile Include="Core\Renderer\Backend\Vulkan\Context\Fence.cpp" />
+    <ClInclude Include="Core\EventSystem\Action.h" />
+    <ClInclude Include="Core\Maths\Color.h" />
+    <ClInclude Include="Core\Maths\Maths.h" />
+    <ClInclude Include="Core\Maths\Matrix3x3.h" />
+    <ClInclude Include="Core\Maths\Matrix4x4.h" />
+    <ClInclude Include="Core\Maths\Quaternion.h" />
+    <ClInclude Include="Core\Maths\Rect.h" />
+    <ClInclude Include="Core\Maths\Vector3.h" />
+    <ClInclude Include="Core\Maths\Vector4.h" />
+    <ClInclude Include="Core\Platform\Base\Filesystem\Filesystem.h" />
+    <ClInclude Include="Core\Platform\Base\Input\InputUtils.h" />
+    <ClCompile Include="Core\Platform\Base\Platform\Platform.cpp" />
+    <ClCompile Include="Core\Platform\Base\Window\Window.cpp" />
+    <ClCompile Include="Core\Platform\Types\Win32\Memory\Win32Memory.cpp" />
+    <ClCompile Include="Core\Platform\Types\Win32\Window\Win32Utils.cpp" />
+    <ClCompile Include="Core\Renderer\Backend\BackendRenderer.cpp" />
+    <ClCompile Include="Core\Renderer\Backend\Vulkan\Context\VulkanContext.cpp" />
+    <ClCompile Include="Core\Renderer\Backend\Vulkan\Renderer\VulkanBackendRenderer.cpp" />
+    <ClCompile Include="Core\Renderer\Context\RendererContext.cpp" />
+    <ClCompile Include="Core\Renderer\Frontend\FrontendRenderer.cpp" />
+    <ClCompile Include="Core\Time\Time.cpp" />
+    <ClCompile Include="Core\Utils\FileUtils.cpp" />
+    <ClCompile Include="Core\WinMain.cpp" />
+    <ClCompile Include="Core\Platform\Types\Win32\Platform\Win32Platform.cpp" />
+    <ClCompile Include="Core\Platform\Types\Win32\Window\Win32Window.cpp" />
+    <ClCompile Include="Core\Platform\Types\Win32\Input\Win32Input.cpp" />
+    <ClCompile Include="Core\EventSystem\GameEventSystem.cpp" />
+    <ClInclude Include="Core\Platform\Base\Memory\Memory.h" />
+    <ClInclude Include="Core\Platform\Types\Win32\Filesystem\Win32Filesystem.h" />
+    <ClInclude Include="Core\Renderer\Backend\Vulkan\Context\CommandBuffer.h" />
+    <ClInclude Include="Core\Renderer\Backend\Vulkan\Context\CommandPoolsInfo.h" />
+    <ClInclude Include="Core\Renderer\Backend\Vulkan\Context\LogicalDeviceInfo.h" />
+    <ClInclude Include="Core\Renderer\Backend\Vulkan\Context\PhysicalDeviceInfo.h" />
+    <ClInclude Include="Core\Renderer\Backend\Vulkan\Context\QueuesInfo.h" />
+    <ClInclude Include="Core\Renderer\Backend\Vulkan\Context\Renderpass.h" />
+    <ClInclude Include="Core\Renderer\Backend\Vulkan\Context\SwapchainInfo.h" />
+    <ClInclude Include="Core\Renderer\Backend\Vulkan\Context\SwapchainSupportInfo.h" />
+    <ClInclude Include="Core\Renderer\Frontend\Buffer\Buffer.h" />
+    <ClInclude Include="Core\Renderer\Frontend\Pipeline\Pipeline.h" />
+    <ClInclude Include="Core\Renderer\Frontend\Shader\Shader.h" />
+    <ClInclude Include="Core\Renderer\Frontend\Texture\TextureDescription.h" />
+    <ClInclude Include="Core\Renderer\Backend\Vulkan\Context\FrameBuffer.h" />
+    <ClInclude Include="Core\Renderer\Backend\Vulkan\Context\Fence.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Core\ApplicationState\ApplicationState.h" />
+    <ClInclude Include="Core\Application\Application.h" />
+    <ClInclude Include="Core\Defines\Defines.h" />
+    <ClInclude Include="Core\Logger\Base\ILogger.h" />
+    <ClInclude Include="Core\Logger\Logger.h" />
+    <ClInclude Include="Core\Logger\Types\ConsoleLogger.h" />
+    <ClInclude Include="Core\Maths\Vector2Int.h" />
+    <ClInclude Include="Core\Platform\Base\Input\Input.h" />
+    <ClInclude Include="Core\Platform\Base\Platform\Platform.h" />
+    <ClInclude Include="Core\Platform\Base\Window\Window.h" />
+    <ClInclude Include="Core\Platform\Base\Input\KeyCode.h" />
+    <ClInclude Include="Core\Platform\Types\Win32\Memory\Win32Memory.h" />
+    <ClInclude Include="Core\Platform\Types\Win32\Window\Win32Utils.h" />
+    <ClInclude Include="Core\Renderer\Backend\BackendRenderer.h" />
+    <ClInclude Include="Core\Renderer\Backend\Vulkan\Context\VulkanContext.h" />
+    <ClInclude Include="Core\Renderer\Backend\Vulkan\Renderer\VulkanBackendRenderer.h" />
+    <ClInclude Include="Core\Renderer\Context\RendererContext.h" />
+    <ClInclude Include="Core\Renderer\Frontend\FrontendRenderer.h" />
+    <ClInclude Include="Core\Renderer\Frontend\Texture\Texture.h" />
+    <ClInclude Include="Core\Time\Time.h" />
+    <ClInclude Include="Core\Utils\FileUtils.h" />
+    <ClInclude Include="Core\Utils\Fomatter.h" />
+    <ClInclude Include="Core\Platform\Types\Win32\Platform\Win32Platform.h" />
+    <ClInclude Include="Core\Platform\Types\Win32\Window\Win32Window.h" />
+    <ClInclude Include="Core\EventSystem\Base\EventBase.h" />
+    <ClInclude Include="Core\Platform\Types\Win32\Input\Win32Input.h" />
+    <ClInclude Include="Core\EventSystem\GameEventSystem.h" />
+    <ClInclude Include="Core\Utils\MemoryUtils.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Assets\Builtin.ObjectShader.frag.glsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
+      <FileType>Document</FileType>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </Resource>
+  </ItemGroup>
+  <ItemGroup>
+    <CopyFileToFolders Include="Assets\Builtin.ObjectShader.vert.spv">
+      <FileType>Document</FileType>
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</DeploymentContent>
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</DeploymentContent>
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</DeploymentContent>
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</DeploymentContent>
+    </CopyFileToFolders>
+  </ItemGroup>
+  <ItemGroup>
+    <CopyFileToFolders Include="Assets\Builtin.ObjectShader.frag.spv">
+      <FileType>Document</FileType>
+      <TreatOutputAsContent Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</TreatOutputAsContent>
+      <TreatOutputAsContent Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</TreatOutputAsContent>
+      <TreatOutputAsContent Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</TreatOutputAsContent>
+      <TreatOutputAsContent Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</TreatOutputAsContent>
+    </CopyFileToFolders>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

@@ -1,0 +1,10 @@
+# Debug build folder
+/[Dd]ebug
+
+# Visual Studio cache directory
+.vs/
+*/x64/
+*.idb
+*.tlog
+*.pdb
+*.log
