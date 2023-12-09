@@ -10,75 +10,76 @@ void Logger::Destroy()
     loggers.clear();
 };
 
-BAPI void Logger::Log( const char* message, ... )
+BAPI void Logger::Log(StringView message, ...)
 {
     va_list args;
-    va_start( args, message );
+    va_start(args, message);
 
-    for (auto& [key, logger] : loggers)
+    for (size_t i = 0; i < loggers.size(); ++i)
     {
-        logger.log( &logger, message );
+        ILogger logger = loggers.at(i);
+        logger.log(&logger, message);
     }
 
-    va_end( args );
+    va_end(args);
 }
 
-void Logger::NewLine( size_t repeat )
+void Logger::NewLine(size_t repeat)
 {
     for (auto& [key, logger] : loggers)
     {
-        logger.new_line( &logger, repeat );
+        logger.new_line(&logger, repeat);
     }
 }
 
-void Logger::Info( const char* message, ... )
-{
-    va_list args;
-    va_start( args, message );
-
-    for (auto& [key, logger] : loggers)
-    {
-        logger.info( &logger, message );
-    }
-
-    va_end( args );
-}
-
-void Logger::Warning( const char* message, ... )
+void Logger::Info(StringView message, ...)
 {
     va_list args;
-    va_start( args, message );
+    va_start(args, message);
 
     for (auto& [key, logger] : loggers)
     {
-        logger.warning( &logger, message );
+        logger.info(&logger, message);
     }
 
-    va_end( args );
+    va_end(args);
 }
 
-void Logger::Error( const char* message, ... )
+void Logger::Warning(StringView message, ...)
 {
     va_list args;
-    va_start( args, message );
+    va_start(args, message);
 
     for (auto& [key, logger] : loggers)
     {
-        logger.fatal( &logger, message );
+        logger.warning(&logger, message);
     }
 
-    va_end( args );
+    va_end(args);
 }
 
-void Logger::Fatal( const char* message, ... )
+void Logger::Error(StringView message, ...)
 {
     va_list args;
-    va_start( args, message );
+    va_start(args, message);
 
     for (auto& [key, logger] : loggers)
     {
-        logger.fatal( &logger, message );
+        logger.fatal(&logger, message);
     }
 
-    va_end( args );
+    va_end(args);
+}
+
+void Logger::Fatal(StringView message, ...)
+{
+    va_list args;
+    va_start(args, message);
+
+    for (auto& [key, logger] : loggers)
+    {
+        logger.fatal(&logger, message);
+    }
+
+    va_end(args);
 }

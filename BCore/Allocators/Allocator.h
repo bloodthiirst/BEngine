@@ -137,3 +137,8 @@ private:
 /// Returns stack allocated memory of size (size)
 /// </summary>
 #define STACK_ALLOC(size)  EmplaceAllocator::Create(alloca(size))
+
+/// <summary>
+/// Returns stack allocated memory of size (size) and of type (type)
+/// </summary>
+#define STACK_ALLOC_ARRAY(type , count)  EmplaceAllocator::Create(alloca(sizeof(type) * count))

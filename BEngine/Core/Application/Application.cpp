@@ -1,8 +1,8 @@
+#include <GameApp.h>
 #include "Application.h"
 #include "../Global/Global.h"
 #include "../Renderer/Backend/BackendRenderer.h"
 #include "../Renderer/Backend/Vulkan/Renderer/VulkanBackendRenderer.h"
-#include <GameApp.h>
 
 bool Application::Run()
 {

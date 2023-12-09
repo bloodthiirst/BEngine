@@ -30,9 +30,10 @@ struct Win32Window
 
     static void Startup( Window* window, ApplicationStartup startup )
     {
-        window->user_data = Global::platform.memory.malloc( sizeof( Win32WindowState ) );
-        Win32WindowState* state = (Win32WindowState*)window->user_data;
+        Win32WindowState* state = Global::alloc_toolbox.HeapAlloc<Win32WindowState>();
+        window->user_data = state;
 
+        state->window_handle = nullptr;
         state->process_handle = GetModuleHandle( nullptr );
 
         Win32Utils::keydownFuncLookup[0] = Win32Utils::NoOp;
@@ -46,9 +47,11 @@ struct Win32Window
         StringView name = Defines::engine_name;
 
         Allocator heap_alloc = HeapAllocator::Create();
-        wchar_t* appName = (wchar_t*)heap_alloc.alloc( heap_alloc, sizeof( wchar_t ) * name.length );
 
+        // note : includes the termination char
         size_t string_length = name.length + 1;
+        wchar_t* appName = (wchar_t*)heap_alloc.alloc( heap_alloc, sizeof( wchar_t ) * string_length);
+
         size_t converted_chars;
         size_t size = mbstowcs_s( &converted_chars, appName, string_length, name.buffer, name.length );
 

@@ -44,6 +44,7 @@
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
+    <EnableASAN>true</EnableASAN>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
@@ -79,8 +80,8 @@
     <LibraryPath>C:\VulkanSDK\1.3.211.0\Lib32;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>$(SolutionDir)BMaths;$(SolutionDir)BCore;$(SolutionDir)GameApp;D:\Dev\Vulkan\Include;$(TargetDir);$(IncludePath)</IncludePath>
-    <LibraryPath>$(SolutionDir)BCore;$(SolutionDir)BMaths;$(SolutionDir)x64\Debug;D:\Dev\Vulkan\Lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(SolutionDir)BMaths;$(SolutionDir)BCore;$(SolutionDir)GameApp;C:\Dev\Vulkan\Include;$(TargetDir);$(IncludePath)</IncludePath>
+    <LibraryPath>$(SolutionDir)BCore;$(SolutionDir)BMaths;$(SolutionDir)x64\Debug;C:\Dev\Vulkan\Lib;$(LibraryPath)</LibraryPath>
     <AllProjectIncludesArePublic>true</AllProjectIncludesArePublic>
     <AllProjectBMIsArePublic>true</AllProjectBMIsArePublic>
   </PropertyGroup>

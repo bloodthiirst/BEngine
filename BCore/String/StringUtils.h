@@ -156,7 +156,7 @@ public:
         size_t total_length = 0;
         char curr_char;
 
-        while ((curr_char = path.buffer[total_length++]) != '\0')
+        while ((total_length < path.length) && (curr_char = path.buffer[total_length++]) != '\0')
         {
             if (curr_char == '\\')
             {
@@ -164,7 +164,15 @@ public:
             }
         }
 
-        return StringBuffer::Create( path.buffer, last_anti_slash + 1, total_length, allocator );
+        return StringBuffer::Create( path.buffer, last_anti_slash + 1, total_length - 1, allocator );
+    }
+
+    static StringBuffer ToString(int32_t value , Allocator alloc)
+    {
+        char* mem = (char*) alloc.alloc(alloc, 32);
+        _itoa_s(value, mem, 32 , 10);
+
+        return StringBuffer::Create(mem, alloc);
     }
 
     static StringBuffer GetExtension( StringView path, Allocator alloc )
@@ -175,7 +183,7 @@ public:
         size_t total_length = 0;
         char curr_char;
 
-        while ((curr_char = path.buffer[total_length++]) != '\0')
+        while ((total_length < path.length) && (curr_char = path.buffer[total_length++]) != '\0')
         {
             if (curr_char == '.')
             {
@@ -194,14 +202,14 @@ public:
         size_t total_length = 0;
         char curr_char;
 
-        while ((curr_char = path.buffer[total_length++]) != '\0')
+        while ( (total_length < path.length) && (curr_char = path.buffer[total_length++]) != '\0')
         {
             if (curr_char == '\\')
             {
                 last_anti_slash = total_length;
             }
         }
-        return StringBuffer::Create( path.buffer, alloc );
+        return StringBuffer::Create( path.buffer , 0 , last_anti_slash, alloc );
     }
 
 };

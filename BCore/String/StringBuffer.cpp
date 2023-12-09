@@ -16,12 +16,14 @@ StringBuffer StringBuffer::Create(size_t length, Allocator allocator)
 
 StringBuffer StringBuffer::Create(const char* str, size_t from, size_t to, Allocator allocator)
 {
-    StringBuffer res;
+    StringBuffer res = {};
 
     res.alloc = allocator;
     res.length = to - from + 1;
+
     res.buffer = (char*)allocator.alloc(allocator, res.length * sizeof(char));
-    memcpy(res.buffer + from, str, res.length);
+    
+    memcpy(res.buffer, str + from, res.length);
 
     return res;
 }
@@ -29,7 +31,7 @@ StringBuffer StringBuffer::Create(const char* str, size_t from, size_t to, Alloc
 
 StringBuffer StringBuffer::Create(const char* str, Allocator allocator)
 {
-    StringBuffer res;
+    StringBuffer res = {};
 
     res.alloc = allocator;
     res.length = strlen(str);

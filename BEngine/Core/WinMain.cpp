@@ -59,7 +59,7 @@ int main( int argc, char** argv )
         Global::logger.Initialize();
 
         // console logger
-        ILogger consoleLogger;
+        ILogger consoleLogger = {};
         ConsoleLogger::Create( &consoleLogger );
         Global::logger.Add( consoleLogger );
     }

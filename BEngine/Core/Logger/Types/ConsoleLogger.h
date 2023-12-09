@@ -48,28 +48,29 @@ public:
 
 private:
 
-    static void LogInternal( ILogger* in_logger, const char* message, WORD text_col )
+    static void LogInternal( ILogger* in_logger, StringView message, WORD text_col )
     {
         ConsoleLoggerData* data = (ConsoleLoggerData*)in_logger->user_data;
         FlushConsoleInputBuffer( data->hConsole );
         SetConsoleTextAttribute( data->hConsole, text_col );
 
-        std::cout << message << std::endl;
+        std::cout.write(message, message.length);
+        std::cout << "\n";
 
         SetConsoleTextAttribute( data->hConsole, ConsoleLogger::DEFAULT_COLOR );
     }
 
-    static void Log( ILogger* in_logger, const char* message )
+    static void Log( ILogger* in_logger, StringView message)
     {
         LogInternal( in_logger, message, FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_INTENSITY );
     }
 
-    static void Info( ILogger* in_logger, const char* message )
+    static void Info( ILogger* in_logger, StringView message)
     {
         LogInternal( in_logger, message, FOREGROUND_BLUE | FOREGROUND_INTENSITY );
     }
 
-    static void Warning( ILogger* in_logger, const char* message )
+    static void Warning( ILogger* in_logger, StringView message)
     {
         LogInternal( in_logger, message, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_INTENSITY );
     }
@@ -82,12 +83,12 @@ private:
         }
     }
 
-    static void Error( ILogger* in_logger, const char* message )
+    static void Error( ILogger* in_logger, StringView message )
     {
         LogInternal( in_logger, message, FOREGROUND_RED | FOREGROUND_INTENSITY );
     }
 
-    static void Fatal( ILogger* in_logger, const char* message )
+    static void Fatal( ILogger* in_logger, StringView message )
     {
         LogInternal( in_logger, message, FOREGROUND_RED );
     }

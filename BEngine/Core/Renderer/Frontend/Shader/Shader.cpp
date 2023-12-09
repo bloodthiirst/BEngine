@@ -13,7 +13,7 @@ bool CreateShaderModule( VulkanContext* context, Filesystem* filesystem, const S
 {
     Allocator alloc = HeapAllocator::Create();
 
-    StringBuffer absolutePath = StringUtils::Concat( alloc, "D:\\Dev\\Projects\\C&C++\\BEngine\\BEngine\\x64\\Debug\\", shaderName, ".", shaderType, ".spv" );
+    StringBuffer absolutePath = StringUtils::Concat( alloc, "C:\\Dev\\BEngine\\x64\\Debug\\", shaderName, ".", shaderType, ".spv" );
     char* path_as_cStr = StringView::ToCString( absolutePath.view, alloc );
 
     ShaderStage* shaderStage = &shaderStagesArray[stageIndex];
@@ -69,9 +69,7 @@ bool CreateShaderModule( VulkanContext* context, Filesystem* filesystem, const S
     }
 
     return true;
-
 }
-
 
 bool Shader::Create( VulkanContext* context, Filesystem* filesystem, Shader* outShader )
 {

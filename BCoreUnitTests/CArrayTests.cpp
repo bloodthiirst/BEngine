@@ -15,7 +15,7 @@ namespace BEngineMathsUnitTests
         TEST_METHOD(Create)
         {
             size_t size = 5;
-            CArray<int>* arr;
+            CArray<int> arr = {};
 
             Allocator allocator = HeapAllocator::Create();
             CArray<int>::Create(size, &arr, allocator);
@@ -23,27 +23,27 @@ namespace BEngineMathsUnitTests
             for (size_t i = 0; i < size; ++i)
             {
                 int as_int = (int)i;
-                CArray<int>::Add(arr, as_int);
+                CArray<int>::Add(&arr, as_int);
             }
 
             for (size_t i = 0; i < size; ++i)
             {
-                Assert::IsTrue(arr->data[i] == i);
+                Assert::IsTrue(arr.data[i] == i);
             }
 
-            Assert::IsTrue(arr->capacity == size + 1);
-            Assert::IsTrue(arr->size == size);
-            Assert::IsTrue(arr->data != nullptr);
+            Assert::IsTrue(arr.capacity == size + 1);
+            Assert::IsTrue(arr.size == size);
+            Assert::IsTrue(arr.data != nullptr);
 
-            CArray<int>::Destroy(&arr);
+            //CArray<int>::Destroy(&&arr);
         }
 
         TEST_METHOD(Add)
         {
-            CArray<int>* arr;
+            CArray<int>* arr = {};
 
             Allocator allocator = HeapAllocator::Create();
-            CArray<int>::Create(3, &arr, allocator);
+            CArray<int>::Create(3, arr, allocator);
 
             Assert::IsTrue(arr->size == 0);
             Assert::IsTrue(arr->capacity == 4);
@@ -73,10 +73,10 @@ namespace BEngineMathsUnitTests
 
         TEST_METHOD(RemoveAll)
         {
-            CArray<int>* arr;
+            CArray<int>* arr = {};
 
             Allocator allocator = HeapAllocator::Create();
-            CArray<int>::Create(5, &arr, allocator);
+            CArray<int>::Create(5, arr, allocator);
 
             CArray<int>::Add(arr, 0);
             CArray<int>::Add(arr, 0);
@@ -98,10 +98,10 @@ namespace BEngineMathsUnitTests
 
         TEST_METHOD(TryIndexOf)
         {
-            CArray<int>* arr;
+            CArray<int>* arr = {};
 
             Allocator allocator = HeapAllocator::Create();
-            CArray<int>::Create(5, &arr, allocator);
+            CArray<int>::Create(5, arr, allocator);
 
             CArray<int>::Add(arr, 0);
             CArray<int>::Add(arr, 0);

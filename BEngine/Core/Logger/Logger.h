@@ -4,6 +4,7 @@
 #include <typeinfo>
 #include <unordered_map>
 #include <cstdarg>
+#include <String/StringView.h>
 
 class Logger
 {
@@ -30,11 +31,11 @@ public:
     }
 
 public:
-    BAPI void Log( const char* message, ... );
+    BAPI void Log( StringView message, ... );
     BAPI void NewLine( size_t repeat = 1 );
-    BAPI void Info( const char* message, ... );
-    BAPI void Warning( const char* message, ... );
-    BAPI void Error( const char* message, ... );
-    BAPI void Fatal( const char* message, ... );
+    BAPI void Info(StringView message, ... );
+    BAPI void Warning(StringView message, ... );
+    BAPI void Error(StringView message, ... );
+    BAPI void Fatal(StringView message, ... );
 };
 

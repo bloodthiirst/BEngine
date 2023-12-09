@@ -20,7 +20,7 @@ struct Win32Platform
             char* curr_arg = argv[i];
             StringBuffer arg = StringBuffer::Create( curr_arg, heap_alloc );
 
-            args.data[i] = arg;
+            DArray<StringBuffer>::Add( &args, arg);
         }
 
         StringView path = args.data[0].view;

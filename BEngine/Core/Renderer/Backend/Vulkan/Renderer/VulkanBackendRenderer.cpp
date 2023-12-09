@@ -33,7 +33,7 @@ struct LogicalDeviceRequirements
     bool samplerAnisotropy;
 };
 
-const char* INSATNCE_EXTENSION[3] =
+const char* INSATNCE_EXTENSION[] =
 {
     VK_KHR_SURFACE_EXTENSION_NAME,
 #if defined(_WIN32)
@@ -43,38 +43,43 @@ const char* INSATNCE_EXTENSION[3] =
     VK_EXT_DEBUG_UTILS_EXTENSION_NAME
 #endif
 };
-const char* VK_LAYERS[1] = { "VK_LAYER_KHRONOS_validation" };
+const char* VK_LAYERS[] = { "VK_LAYER_KHRONOS_validation" };
 
-const char* DEVICE_EXTENSIONS[1] = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
+const char* DEVICE_EXTENSIONS[] = 
+{ 
+    VK_KHR_SWAPCHAIN_EXTENSION_NAME , 
+    VK_KHR_MAINTENANCE1_EXTENSION_NAME 
+};
+
 VKAPI_ATTR VkBool32 DebugCallback(
     VkDebugUtilsMessageSeverityFlagBitsEXT severity,
     VkDebugUtilsMessageTypeFlagsEXT messageType,
     const VkDebugUtilsMessengerCallbackDataEXT* callbackData,
-    void* userData )
+    void* userData)
 {
     switch (severity)
     {
     case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT:
     {
-        Global::logger.Error( callbackData->pMessage );
+        Global::logger.Error(callbackData->pMessage);
         break;
     }
 
     case VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT:
     {
-        Global::logger.Log( callbackData->pMessage );
+        Global::logger.Log(callbackData->pMessage);
         break;
     }
 
     case VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT:
     {
-        Global::logger.Info( callbackData->pMessage );
+        Global::logger.Info(callbackData->pMessage);
         break;
     }
 
     case VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT:
     {
-        Global::logger.Warning( callbackData->pMessage );
+        Global::logger.Warning(callbackData->pMessage);
         break;
     }
     }
@@ -83,7 +88,7 @@ VKAPI_ATTR VkBool32 DebugCallback(
 }
 
 
-bool HasExtensions( VkExtensionProperties* extensionsArr, uint32_t extensionCount, const char** requiredExt, uint32_t requiredCount )
+bool HasExtensions(VkExtensionProperties* extensionsArr, uint32_t extensionCount, const char** requiredExt, uint32_t requiredCount)
 {
     for (uint32_t i = 0; i < requiredCount; i++)
     {
@@ -94,7 +99,7 @@ bool HasExtensions( VkExtensionProperties* extensionsArr, uint32_t extensionCoun
         for (uint32_t j = 0; j < extensionCount; j++)
         {
             auto ext = extensionsArr[j];
-            if (strcmp( ext.extensionName, req ) == 0)
+            if (strcmp(ext.extensionName, req) == 0)
             {
                 foundExt = true;
                 break;
@@ -108,7 +113,7 @@ bool HasExtensions( VkExtensionProperties* extensionsArr, uint32_t extensionCoun
     return true;
 }
 
-bool CreateSurface( VulkanContext* context, VkSurfaceKHR* surface )
+bool CreateSurface(VulkanContext* context, VkSurfaceKHR* surface)
 {
 #ifdef _WIN32
 
@@ -119,7 +124,7 @@ bool CreateSurface( VulkanContext* context, VkSurfaceKHR* surface )
     createInfo.hinstance = win32plat->process_handle;
     createInfo.hwnd = win32plat->window_handle;
 
-    VkResult result = vkCreateWin32SurfaceKHR( context->vulkanInstance, &createInfo, nullptr, surface );
+    VkResult result = vkCreateWin32SurfaceKHR(context->vulkanInstance, &createInfo, nullptr, surface);
 
     return result == VK_SUCCESS;
 
@@ -130,13 +135,13 @@ bool CreateSurface( VulkanContext* context, VkSurfaceKHR* surface )
 
 
 
-bool CreateLogicalDevice( VkInstance vkInstance, VkSurfaceKHR surface, PhysicalDeviceInfo* physicalDeviceinfo, LogicalDeviceRequirements* requirements, const VkAllocationCallbacks* allocator, VkDevice* handle )
+bool CreateLogicalDevice(VkInstance vkInstance, VkSurfaceKHR surface, PhysicalDeviceInfo* physicalDeviceinfo, LogicalDeviceRequirements* requirements, const VkAllocationCallbacks* allocator, VkDevice* handle)
 {
     uint32_t queueFamilyCount = 0;
-    vkGetPhysicalDeviceQueueFamilyProperties( physicalDeviceinfo->handle, &queueFamilyCount, nullptr );
+    vkGetPhysicalDeviceQueueFamilyProperties(physicalDeviceinfo->handle, &queueFamilyCount, nullptr);
 
-    Allocator alloc = STACK_ALLOC( queueFamilyCount * sizeof( int ) );
-    int* queuesNeededPerFamily = (int*)alloc.alloc( alloc, queueFamilyCount * sizeof( int ) );
+    Allocator alloc = STACK_ALLOC_ARRAY(int, queueFamilyCount);
+    int* queuesNeededPerFamily = (int*)alloc.alloc(alloc, queueFamilyCount * sizeof(int));
 
     // for now , if multiple requirement share a queue index , only one queue will used for them
     queuesNeededPerFamily[physicalDeviceinfo->queuesInfo.computeQueueFamilyIndex]++;
@@ -144,9 +149,9 @@ bool CreateLogicalDevice( VkInstance vkInstance, VkSurfaceKHR surface, PhysicalD
     queuesNeededPerFamily[physicalDeviceinfo->queuesInfo.presentQueueFamilyIndex]++;
     queuesNeededPerFamily[physicalDeviceinfo->queuesInfo.transferQueueIndex]++;
 
-    Allocator alloc_create = STACK_ALLOC( queueFamilyCount * sizeof( VkDeviceQueueCreateInfo ) );
+    Allocator alloc_create = STACK_ALLOC_ARRAY(VkDeviceQueueCreateInfo, queueFamilyCount);
     DArray<VkDeviceQueueCreateInfo> queueCreationInfos;
-    DArray<VkDeviceQueueCreateInfo>::Create( queueFamilyCount, &queueCreationInfos, alloc_create );
+    DArray<VkDeviceQueueCreateInfo>::Create(queueFamilyCount, &queueCreationInfos, alloc_create);
 
     for (uint32_t i = 0; i < queueFamilyCount; ++i)
     {
@@ -169,7 +174,7 @@ bool CreateLogicalDevice( VkInstance vkInstance, VkSurfaceKHR surface, PhysicalD
         float* queuePrio = new float[createQueueInfo.queueCount]();
 
         createQueueInfo.pQueuePriorities = queuePrio;
-        DArray< VkDeviceQueueCreateInfo>::Add( &queueCreationInfos, createQueueInfo );
+        DArray< VkDeviceQueueCreateInfo>::Add(&queueCreationInfos, createQueueInfo);
     }
 
     // todo : we can fill this struct to request more device features
@@ -180,16 +185,16 @@ bool CreateLogicalDevice( VkInstance vkInstance, VkSurfaceKHR surface, PhysicalD
     createDeviceInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
     createDeviceInfo.queueCreateInfoCount = (uint32_t)queueCreationInfos.size;
     createDeviceInfo.pQueueCreateInfos = queueCreationInfos.data;
+
     createDeviceInfo.pEnabledFeatures = &deviceFeatures;
-    createDeviceInfo.enabledExtensionCount = 1;
-    const char* extension_names = VK_KHR_SWAPCHAIN_EXTENSION_NAME;
-    createDeviceInfo.ppEnabledExtensionNames = &extension_names;
+    createDeviceInfo.enabledExtensionCount = sizeof(DEVICE_EXTENSIONS) / sizeof(char*);
+    createDeviceInfo.ppEnabledExtensionNames = DEVICE_EXTENSIONS;
 
     // these 2 features are deprecated/ignored
     createDeviceInfo.enabledLayerCount = 0;
     createDeviceInfo.ppEnabledLayerNames = nullptr;
 
-    VkResult result = vkCreateDevice( physicalDeviceinfo->handle, &createDeviceInfo, allocator, handle );
+    VkResult result = vkCreateDevice(physicalDeviceinfo->handle, &createDeviceInfo, allocator, handle);
 
     // free the prio queues
     for (uint32_t i = 0; i < queueCreationInfos.size; ++i)
@@ -202,36 +207,36 @@ bool CreateLogicalDevice( VkInstance vkInstance, VkSurfaceKHR surface, PhysicalD
         return false;
     }
 
-    vkGetDeviceQueue( *handle, physicalDeviceinfo->queuesInfo.graphicsQueueIndex, 0, &physicalDeviceinfo->queuesInfo.graphicsQueue );
-    vkGetDeviceQueue( *handle, physicalDeviceinfo->queuesInfo.computeQueueFamilyIndex, 0, &physicalDeviceinfo->queuesInfo.computeQueue );
-    vkGetDeviceQueue( *handle, physicalDeviceinfo->queuesInfo.presentQueueFamilyIndex, 0, &physicalDeviceinfo->queuesInfo.presentQueue );
-    vkGetDeviceQueue( *handle, physicalDeviceinfo->queuesInfo.transferQueueIndex, 0, &physicalDeviceinfo->queuesInfo.transferQueue );
+    vkGetDeviceQueue(*handle, physicalDeviceinfo->queuesInfo.graphicsQueueIndex, 0, &physicalDeviceinfo->queuesInfo.graphicsQueue);
+    vkGetDeviceQueue(*handle, physicalDeviceinfo->queuesInfo.computeQueueFamilyIndex, 0, &physicalDeviceinfo->queuesInfo.computeQueue);
+    vkGetDeviceQueue(*handle, physicalDeviceinfo->queuesInfo.presentQueueFamilyIndex, 0, &physicalDeviceinfo->queuesInfo.presentQueue);
+    vkGetDeviceQueue(*handle, physicalDeviceinfo->queuesInfo.transferQueueIndex, 0, &physicalDeviceinfo->queuesInfo.transferQueue);
 
     return true;
 }
 
-bool PhysicalDeviceHasSwapchainSupport( VkPhysicalDevice handle, VkSurfaceKHR surface, SwapchainSupportInfo* outSwapchainInfo )
+bool PhysicalDeviceHasSwapchainSupport(VkPhysicalDevice handle, VkSurfaceKHR surface, SwapchainSupportInfo* outSwapchainInfo)
 {
     Allocator heap_alloc = HeapAllocator::Create();
 
     // capabilities
     VkSurfaceCapabilitiesKHR capabilities = {};
-    vkGetPhysicalDeviceSurfaceCapabilitiesKHR( handle, surface, &capabilities );
+    vkGetPhysicalDeviceSurfaceCapabilitiesKHR(handle, surface, &capabilities);
 
     // surface formats
     uint32_t formatsCount = 0;
-    vkGetPhysicalDeviceSurfaceFormatsKHR( handle, surface, &formatsCount, nullptr );
+    vkGetPhysicalDeviceSurfaceFormatsKHR(handle, surface, &formatsCount, nullptr);
     DArray<VkSurfaceFormatKHR> formats;
-    DArray<VkSurfaceFormatKHR>::Create( formatsCount, &formats, heap_alloc );
-    vkGetPhysicalDeviceSurfaceFormatsKHR( handle, surface, &formatsCount, formats.data );
+    DArray<VkSurfaceFormatKHR>::Create(formatsCount, &formats, heap_alloc);
+    vkGetPhysicalDeviceSurfaceFormatsKHR(handle, surface, &formatsCount, formats.data);
 
     // present modes
     uint32_t presentModeCount = 0;
-    vkGetPhysicalDeviceSurfacePresentModesKHR( handle, surface, &presentModeCount, nullptr );
+    vkGetPhysicalDeviceSurfacePresentModesKHR(handle, surface, &presentModeCount, nullptr);
     DArray<VkPresentModeKHR> presentModes;
-    DArray<VkPresentModeKHR>::Create( presentModeCount, &presentModes, heap_alloc );
+    DArray<VkPresentModeKHR>::Create(presentModeCount, &presentModes, heap_alloc);
 
-    vkGetPhysicalDeviceSurfacePresentModesKHR( handle, surface, &presentModeCount, presentModes.data );
+    vkGetPhysicalDeviceSurfacePresentModesKHR(handle, surface, &presentModeCount, presentModes.data);
 
     // todo : here we add a check for device extensions
 
@@ -242,22 +247,20 @@ bool PhysicalDeviceHasSwapchainSupport( VkPhysicalDevice handle, VkSurfaceKHR su
     return true;
 }
 
-bool CreatePhysicalDevice( Platform* platform, VkInstance vkInstance, VkSurfaceKHR* surface, PhysicalDeviceInfo* outDeviceInfo )
+bool CreatePhysicalDevice(Platform* platform, VkInstance vkInstance, VkSurfaceKHR* surface, PhysicalDeviceInfo* outDeviceInfo)
 {
-
     uint32_t physicalDeviceCount = 0;
-    vkEnumeratePhysicalDevices( vkInstance, &physicalDeviceCount, nullptr );
+    vkEnumeratePhysicalDevices(vkInstance, &physicalDeviceCount, nullptr);
 
-    Allocator alloc_info = STACK_ALLOC( physicalDeviceCount * sizeof( PhysicalDeviceRequirements ) );
-    PhysicalDeviceRequirements* infos = (PhysicalDeviceRequirements*)alloc_info.alloc( alloc_info, physicalDeviceCount * sizeof( PhysicalDeviceRequirements ) );
+    Allocator alloc_info = STACK_ALLOC_ARRAY(PhysicalDeviceRequirements, physicalDeviceCount);
+    PhysicalDeviceRequirements* infos = (PhysicalDeviceRequirements*)alloc_info.alloc(alloc_info, physicalDeviceCount * sizeof(PhysicalDeviceRequirements));
 
-    Allocator alloc_devices = STACK_ALLOC( physicalDeviceCount * sizeof( VkPhysicalDevice ) );
-    VkPhysicalDevice* physicalDevices = (VkPhysicalDevice*)alloc_devices.alloc( alloc_devices, physicalDeviceCount * sizeof( VkPhysicalDevice ) );
+    Allocator alloc_devices = STACK_ALLOC_ARRAY(VkPhysicalDevice, physicalDeviceCount);
+    VkPhysicalDevice* physicalDevices = (VkPhysicalDevice*)alloc_devices.alloc(alloc_devices, physicalDeviceCount * sizeof(VkPhysicalDevice));
 
-    vkEnumeratePhysicalDevices( vkInstance, &physicalDeviceCount, physicalDevices );
+    vkEnumeratePhysicalDevices(vkInstance, &physicalDeviceCount, physicalDevices);
 
-
-    PhysicalDeviceRequirements requirements;
+    PhysicalDeviceRequirements requirements = {};
     requirements.graphics = true;
     requirements.present = true;
     requirements.compute = true;
@@ -267,59 +270,59 @@ bool CreatePhysicalDevice( Platform* platform, VkInstance vkInstance, VkSurfaceK
 
     int maxScore = 0;
 
-    Global::logger.Log( "Selecting physical device ...." );
+    Global::logger.Log("Selecting physical device ....");
+
     for (uint32_t i = 0; i < physicalDeviceCount; ++i)
     {
-
         VkPhysicalDevice currPhysicalDevice = physicalDevices[i];
         VkPhysicalDeviceProperties props;
         VkPhysicalDeviceFeatures features;
         VkPhysicalDeviceMemoryProperties memory;
 
-        vkGetPhysicalDeviceProperties( currPhysicalDevice, &props );
-        vkGetPhysicalDeviceFeatures( currPhysicalDevice, &features );
-        vkGetPhysicalDeviceMemoryProperties( currPhysicalDevice, &memory );
+        vkGetPhysicalDeviceProperties(currPhysicalDevice, &props);
+        vkGetPhysicalDeviceFeatures(currPhysicalDevice, &features);
+        vkGetPhysicalDeviceMemoryProperties(currPhysicalDevice, &memory);
 
-        Global::logger.Log( "> Evaluating device : {}", props.deviceName );
+        Global::logger.Log("> Evaluating device : {}", props.deviceName);
 
         // discrete
         if ((requirements.discreteGPU) && (props.deviceType != VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU))
         {
-            Global::logger.Error( "This device is not a discrete GPU , skippping ..." );
+            Global::logger.Error("This device is not a discrete GPU , skippping ...");
             continue;
         }
 
         if ((requirements.samplerAnisotropy) && (features.samplerAnisotropy == VK_FALSE))
         {
-            Global::logger.Error( "This device does not support sampler anisotropy , skippping ..." );
+            Global::logger.Error("This device does not support sampler anisotropy , skippping ...");
             continue;
         }
 
         // queues
         uint32_t queueFamilyCount = 0;
-        vkGetPhysicalDeviceQueueFamilyProperties( currPhysicalDevice, &queueFamilyCount, nullptr );
+        vkGetPhysicalDeviceQueueFamilyProperties(currPhysicalDevice, &queueFamilyCount, nullptr);
 
-        Allocator alloc_queue = STACK_ALLOC( queueFamilyCount * sizeof( VkQueueFamilyProperties ) );
-        VkQueueFamilyProperties* queueProps = (VkQueueFamilyProperties*)alloc_queue.alloc( alloc_queue, queueFamilyCount * sizeof( VkQueueFamilyProperties ) );
+        Allocator alloc_queue = STACK_ALLOC_ARRAY(VkQueueFamilyProperties , queueFamilyCount);
+        VkQueueFamilyProperties* queueProps = (VkQueueFamilyProperties*)alloc_queue.alloc(alloc_queue, queueFamilyCount * sizeof(VkQueueFamilyProperties));
 
-        vkGetPhysicalDeviceQueueFamilyProperties( currPhysicalDevice, &queueFamilyCount, queueProps );
+        vkGetPhysicalDeviceQueueFamilyProperties(currPhysicalDevice, &queueFamilyCount, queueProps);
 
-        size_t mem_size = queueFamilyCount * sizeof( float );
+        size_t mem_size = queueFamilyCount * sizeof(float);
 
-        Allocator alloc_score = STACK_ALLOC( mem_size );
-        Allocator alloc_graph = STACK_ALLOC( mem_size );
-        Allocator alloc_transfer = STACK_ALLOC( mem_size );
-        Allocator alloc_compute = STACK_ALLOC( mem_size );
+        Allocator alloc_score = EmplaceAllocator::Create(_alloca(mem_size));
+        Allocator alloc_graph = STACK_ALLOC(mem_size);
+        Allocator alloc_transfer = STACK_ALLOC(mem_size);
+        Allocator alloc_compute = STACK_ALLOC(mem_size);
 
-        float* presentScore = (float*)alloc_score.alloc( alloc_score, mem_size );
-        float* graphicsScore = (float*)alloc_graph.alloc( alloc_graph, mem_size );
-        float* transferScore = (float*)alloc_transfer.alloc( alloc_transfer, mem_size );
-        float* computeScore = (float*)alloc_compute.alloc( alloc_compute, mem_size );
+        float* presentScore = (float*)alloc_score.alloc(alloc_score, mem_size);
+        float* graphicsScore = (float*)alloc_graph.alloc(alloc_graph, mem_size);
+        float* transferScore = (float*)alloc_transfer.alloc(alloc_transfer, mem_size);
+        float* computeScore = (float*)alloc_compute.alloc(alloc_compute, mem_size);
 
-        Global::platform.memory.mem_init( presentScore, mem_size );
-        Global::platform.memory.mem_init( graphicsScore, mem_size );
-        Global::platform.memory.mem_init( transferScore, mem_size );
-        Global::platform.memory.mem_init( computeScore, mem_size );
+        Global::platform.memory.mem_init(presentScore, mem_size);
+        Global::platform.memory.mem_init(graphicsScore, mem_size);
+        Global::platform.memory.mem_init(transferScore, mem_size);
+        Global::platform.memory.mem_init(computeScore, mem_size);
 
         // the idea here is to use the "least" diverse queues first
         // so we assign the queue families a score based on their : count , flags
@@ -357,7 +360,7 @@ bool CreatePhysicalDevice( Platform* platform, VkInstance vkInstance, VkSurfaceK
 
             // present
             VkBool32 presentSupported = VK_FALSE;
-            vkGetPhysicalDeviceSurfaceSupportKHR( currPhysicalDevice, i, *surface, &presentSupported );
+            vkGetPhysicalDeviceSurfaceSupportKHR(currPhysicalDevice, i, *surface, &presentSupported);
 
             currScore = 0;
             if (presentSupported == VK_TRUE)
@@ -368,30 +371,30 @@ bool CreatePhysicalDevice( Platform* platform, VkInstance vkInstance, VkSurfaceK
             presentScore[i] = currScore;
         }
 
-        Allocator alloc_empty = STACK_ALLOC( mem_size );
-        float* emptyScore = (float*)alloc_empty.alloc( alloc_empty, mem_size );
-        Global::platform.memory.mem_init( emptyScore, mem_size );
+        Allocator alloc_empty = STACK_ALLOC(mem_size);
+        float* emptyScore = (float*)alloc_empty.alloc(alloc_empty, mem_size);
+        Global::platform.memory.mem_init(emptyScore, mem_size);
 
 
-        if ((requirements.present) && Global::platform.memory.mem_compare( presentScore, emptyScore, mem_size ))
+        if ((requirements.present) && Global::platform.memory.mem_compare(presentScore, emptyScore, mem_size))
         {
-            Global::logger.Error( "This device does't support present , skipping ..." );
+            Global::logger.Error("This device does't support present , skipping ...");
             continue;
         }
 
-        if ((requirements.graphics) && Global::platform.memory.mem_compare( graphicsScore, emptyScore, mem_size ))
+        if ((requirements.graphics) && Global::platform.memory.mem_compare(graphicsScore, emptyScore, mem_size))
         {
-            Global::logger.Error( "This device does't support graphics , skipping ..." );
+            Global::logger.Error("This device does't support graphics , skipping ...");
             continue;
         }
-        if ((requirements.transfer) && Global::platform.memory.mem_compare( transferScore, emptyScore, mem_size ))
+        if ((requirements.transfer) && Global::platform.memory.mem_compare(transferScore, emptyScore, mem_size))
         {
-            Global::logger.Error( "This device does't support transfer , skipping ..." );
+            Global::logger.Error("This device does't support transfer , skipping ...");
             continue;
         }
-        if ((requirements.compute) && Global::platform.memory.mem_compare( computeScore, emptyScore, mem_size ))
+        if ((requirements.compute) && Global::platform.memory.mem_compare(computeScore, emptyScore, mem_size))
         {
-            Global::logger.Error( "This device does't support compute , skipping ..." );
+            Global::logger.Error("This device does't support compute , skipping ...");
             continue;
         }
 
@@ -431,9 +434,9 @@ bool CreatePhysicalDevice( Platform* platform, VkInstance vkInstance, VkSurfaceK
         SwapchainSupportInfo swapchainSupportInfo = {};
 
         // now we check for swapchain support
-        if (!PhysicalDeviceHasSwapchainSupport( currPhysicalDevice, *surface, &swapchainSupportInfo ))
+        if (!PhysicalDeviceHasSwapchainSupport(currPhysicalDevice, *surface, &swapchainSupportInfo))
         {
-            Global::logger.Error( "This device doesn't support swapchain , skipping ..." );
+            Global::logger.Error("This device doesn't support swapchain , skipping ...");
             continue;
         }
 
@@ -456,7 +459,7 @@ bool CreatePhysicalDevice( Platform* platform, VkInstance vkInstance, VkSurfaceK
     return false;
 }
 
-bool CreateGraphicsCommandPools( VulkanContext* context )
+bool CreateGraphicsCommandPools(VulkanContext* context)
 {
     VkCommandPoolCreateInfo graphicsPoolCreate = {};
     graphicsPoolCreate.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
@@ -464,11 +467,11 @@ bool CreateGraphicsCommandPools( VulkanContext* context )
     graphicsPoolCreate.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
 
 
-    vkCreateCommandPool( context->logicalDeviceInfo.handle, &graphicsPoolCreate, context->allocator, &context->physicalDeviceInfo.commandPoolsInfo.graphicsCommandPool );
+    vkCreateCommandPool(context->logicalDeviceInfo.handle, &graphicsPoolCreate, context->allocator, &context->physicalDeviceInfo.commandPoolsInfo.graphicsCommandPool);
     return true;
 }
 
-bool UploadDataRange( VulkanContext* context, VkCommandPool pool, Fence fence, VkQueue queue, Buffer* inBuffer, uint32_t offset, uint32_t size, void* inDataPtr )
+bool UploadDataRange(VulkanContext* context, VkCommandPool pool, Fence fence, VkQueue queue, Buffer* inBuffer, uint32_t offset, uint32_t size, void* inDataPtr)
 {
     // first , we create a host-visible staging buffer to upload the data to in
     // then we mark it as the source of the transfer
@@ -480,24 +483,24 @@ bool UploadDataRange( VulkanContext* context, VkCommandPool pool, Fence fence, V
     bufferDesc.memoryPropertyFlags = usage;
     bufferDesc.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
 
-    Buffer::Create( context, bufferDesc, true, &stagingBuffer );
+    Buffer::Create(context, bufferDesc, true, &stagingBuffer);
 
-    Buffer::Load( context, 0, size, inDataPtr, 0, &stagingBuffer );
+    Buffer::Load(context, 0, size, inDataPtr, 0, &stagingBuffer);
 
-    Buffer::Copy( context, pool, fence, queue, &stagingBuffer, 0, inBuffer, offset, size );
+    Buffer::Copy(context, pool, fence, queue, &stagingBuffer, 0, inBuffer, offset, size);
 
-    Buffer::Destroy( context, &stagingBuffer );
+    Buffer::Destroy(context, &stagingBuffer);
 
     return true;
 }
 
 
-void HandleWindowResize( WindowResizeEvent  evt )
+void HandleWindowResize(WindowResizeEvent  evt)
 {
-    Global::backend_renderer.resize( &Global::backend_renderer, evt.dimensions.x, evt.dimensions.y );
+    Global::backend_renderer.resize(&Global::backend_renderer, evt.dimensions.x, evt.dimensions.y);
 }
 
-bool Startup( BackendRenderer* in_renderer, ApplicationStartup startup )
+bool Startup(BackendRenderer* in_renderer, ApplicationStartup startup)
 {
     VulkanContext* ctx = Global::alloc_toolbox.HeapAlloc<VulkanContext>();
     in_renderer->user_data = ctx;
@@ -506,32 +509,27 @@ bool Startup( BackendRenderer* in_renderer, ApplicationStartup startup )
     ctx->frameBufferSize.x = Global::platform.window.width;
     ctx->frameBufferSize.y = Global::platform.window.height;
 
-    Global::event_system.Listen<WindowResizeEvent>( HandleWindowResize );
+    Global::event_system.Listen<WindowResizeEvent>(HandleWindowResize);
 
     // check for extensions
     uint32_t instance_extCount = 0;
-    vkEnumerateInstanceExtensionProperties( nullptr, &instance_extCount, nullptr );
-    VkExtensionProperties* instance_exts = new VkExtensionProperties[instance_extCount];
+    vkEnumerateInstanceExtensionProperties(nullptr, &instance_extCount, nullptr);
 
-    vkEnumerateInstanceExtensionProperties( nullptr, &instance_extCount, instance_exts );
+    VkExtensionProperties* instance_exts = (VkExtensionProperties*) _alloca( sizeof(VkExtensionProperties) * instance_extCount);
+    vkEnumerateInstanceExtensionProperties(nullptr, &instance_extCount, instance_exts);
 
     Allocator heap_allocator = HeapAllocator::Create();
-    char* stack_alloc = (char*)alloca( 16 );
 
-    StringView part2 = StringView::Create( itoa( instance_extCount, stack_alloc, 10 ) );
+    StringView count = StringUtils::ToString(instance_extCount , STACK_ALLOC(32)).view;
 
-    StringBuffer logResult = StringUtils::Concat( heap_allocator, "Instance extensions available : ", part2 );
+    StringBuffer logResult = StringUtils::Concat(heap_allocator, "Instance extensions available : ", count);
 
-    char* cStr = StringView::ToCString( logResult.view, heap_allocator );
-    Global::logger.Log( cStr );
-    heap_allocator.free( heap_allocator, cStr );
+    Global::logger.Log(logResult.view);
 
     for (uint32_t i = 0; i < instance_extCount; ++i)
     {
-        Global::logger.Log( instance_exts[i].extensionName );
+        Global::logger.Log(instance_exts[i].extensionName);
     }
-
-    delete[] instance_exts;
 
     // info about our app
     VkApplicationInfo appInfo{};
@@ -539,8 +537,8 @@ bool Startup( BackendRenderer* in_renderer, ApplicationStartup startup )
     appInfo.pApplicationName = Defines::engine_name;
     appInfo.pEngineName = Defines::engine_name;
 
-    appInfo.applicationVersion = VK_MAKE_VERSION( 1, 0, 0 );
-    appInfo.engineVersion = VK_MAKE_VERSION( 1, 0, 0 );
+    appInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
+    appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
     appInfo.apiVersion = VK_API_VERSION_1_0;
 
 
@@ -556,10 +554,10 @@ bool Startup( BackendRenderer* in_renderer, ApplicationStartup startup )
     createInfo.ppEnabledLayerNames = VK_LAYERS;
 
     // extensions
-    createInfo.enabledExtensionCount = 3;
+    createInfo.enabledExtensionCount = sizeof(INSATNCE_EXTENSION) / sizeof(char*);
     createInfo.ppEnabledExtensionNames = INSATNCE_EXTENSION;
 
-    VkResult result = vkCreateInstance( &createInfo, nullptr, &ctx->vulkanInstance );
+    VkResult result = vkCreateInstance(&createInfo, nullptr, &ctx->vulkanInstance);
 
     if (result != VK_SUCCESS)
     {
@@ -585,38 +583,38 @@ bool Startup( BackendRenderer* in_renderer, ApplicationStartup startup )
     debugInfoCreate.pNext = nullptr;
     debugInfoCreate.pfnUserCallback = DebugCallback;
 
-    PFN_vkCreateDebugUtilsMessengerEXT func = (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr( ctx->vulkanInstance, "vkCreateDebugUtilsMessengerEXT" );
-    func( ctx->vulkanInstance, &debugInfoCreate, ctx->allocator, &ctx->debugMessenger );
+    PFN_vkCreateDebugUtilsMessengerEXT func = (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr(ctx->vulkanInstance, "vkCreateDebugUtilsMessengerEXT");
+    func(ctx->vulkanInstance, &debugInfoCreate, ctx->allocator, &ctx->debugMessenger);
 
-    Global::logger.NewLine( 2 );
+    Global::logger.NewLine(2);
 
-    Global::logger.Log( "Vulkan Debugger created" );
+    Global::logger.Log("Vulkan Debugger created");
 
 #endif
-    Global::logger.NewLine( 2 );
+    Global::logger.NewLine(2);
 
 
-    Global::logger.Log( "Logical extensions needed :" );
+    Global::logger.Log("Logical extensions needed :");
     for (const auto& ext : DEVICE_EXTENSIONS)
     {
-        Global::logger.Log( ext );
+        Global::logger.Log(ext);
     }
 
     // surface
-    if (!CreateSurface( ctx, &ctx->surface ))
+    if (!CreateSurface(ctx, &ctx->surface))
     {
-        Global::logger.Error( "Couldn't create Vulkan Surface ..." );
+        Global::logger.Error("Couldn't create Vulkan Surface ...");
         return false;
     }
 
-    Global::logger.Log( "Vulkan surface created" );
+    Global::logger.Log("Vulkan surface created");
     Global::logger.NewLine();
 
     PhysicalDeviceInfo physicalDeviceInfo = {};
 
-    if (!CreatePhysicalDevice( &Global::platform, ctx->vulkanInstance, &ctx->surface, &physicalDeviceInfo ))
+    if (!CreatePhysicalDevice(&Global::platform, ctx->vulkanInstance, &ctx->surface, &physicalDeviceInfo))
     {
-        Global::logger.Error( "Couldn't create Physical device ..." );
+        Global::logger.Error("Couldn't create Physical device ...");
         return false;
     }
 
@@ -624,9 +622,9 @@ bool Startup( BackendRenderer* in_renderer, ApplicationStartup startup )
 
     Global::logger.NewLine();
 
-    Global::logger.Info( "> Selected physical device" );
-    Global::logger.Info( "Name : ", physicalDeviceInfo.physicalDeviceProperties.deviceName );
-    Global::logger.Info( "Max uniform Buffer range : {} ", physicalDeviceInfo.physicalDeviceProperties.limits.maxUniformBufferRange );
+    Global::logger.Info("> Selected physical device");
+    Global::logger.Info("Name : ", physicalDeviceInfo.physicalDeviceProperties.deviceName);
+    Global::logger.Info("Max uniform Buffer range : {} ", physicalDeviceInfo.physicalDeviceProperties.limits.maxUniformBufferRange);
 
     const char* deviceType = {};
     switch (physicalDeviceInfo.physicalDeviceProperties.deviceType)
@@ -658,19 +656,19 @@ bool Startup( BackendRenderer* in_renderer, ApplicationStartup startup )
     }
     }
 
-    Global::logger.Info( "GPU Type : {} ", deviceType );
+    Global::logger.Info("GPU Type : {} ", deviceType);
 
-    Global::logger.Info( "GPU Driver version :",
-        VK_API_VERSION_MAJOR( physicalDeviceInfo.physicalDeviceProperties.driverVersion ), ".",
-        VK_API_VERSION_MINOR( physicalDeviceInfo.physicalDeviceProperties.driverVersion ), ".",
-        VK_API_VERSION_PATCH( physicalDeviceInfo.physicalDeviceProperties.driverVersion )
+    Global::logger.Info("GPU Driver version :",
+        VK_API_VERSION_MAJOR(physicalDeviceInfo.physicalDeviceProperties.driverVersion), ".",
+        VK_API_VERSION_MINOR(physicalDeviceInfo.physicalDeviceProperties.driverVersion), ".",
+        VK_API_VERSION_PATCH(physicalDeviceInfo.physicalDeviceProperties.driverVersion)
     );
 
 
-    Global::logger.Info( "Vulkan API version : {}.{}.{} ",
-        VK_API_VERSION_MAJOR( physicalDeviceInfo.physicalDeviceProperties.apiVersion ), ".",
-        VK_API_VERSION_MINOR( physicalDeviceInfo.physicalDeviceProperties.apiVersion ), ".",
-        VK_API_VERSION_PATCH( physicalDeviceInfo.physicalDeviceProperties.apiVersion )
+    Global::logger.Info("Vulkan API version : {}.{}.{} ",
+        VK_API_VERSION_MAJOR(physicalDeviceInfo.physicalDeviceProperties.apiVersion), ".",
+        VK_API_VERSION_MINOR(physicalDeviceInfo.physicalDeviceProperties.apiVersion), ".",
+        VK_API_VERSION_PATCH(physicalDeviceInfo.physicalDeviceProperties.apiVersion)
     );
 
     Global::logger.NewLine();
@@ -679,24 +677,24 @@ bool Startup( BackendRenderer* in_renderer, ApplicationStartup startup )
     logicalRequirements.samplerAnisotropy = true;
 
     VkDevice handle = {};
-    if (!CreateLogicalDevice( ctx->vulkanInstance, ctx->surface, &ctx->physicalDeviceInfo, &logicalRequirements, ctx->allocator, &handle ))
+    if (!CreateLogicalDevice(ctx->vulkanInstance, ctx->surface, &ctx->physicalDeviceInfo, &logicalRequirements, ctx->allocator, &handle))
     {
-        Global::logger.Error( "Couldn't create logical device ...." );
+        Global::logger.Error("Couldn't create logical device ....");
         return false;
     }
 
     ctx->logicalDeviceInfo.handle = handle;
 
-    Global::logger.Info( "Logical device and queue created" );
+    Global::logger.Info("Logical device and queue created");
 
     // create graphics command pool
-    if (!CreateGraphicsCommandPools( ctx ))
+    if (!CreateGraphicsCommandPools(ctx))
     {
-        Global::logger.Error( "Couldn't create command pools ...." );
+        Global::logger.Error("Couldn't create command pools ....");
         return false;
     }
 
-    Global::logger.Info( "Command pools created" );
+    Global::logger.Info("Command pools created");
 
     // create swapshain
     SwapchainCreateDescription swapchainDesc = {};
@@ -704,13 +702,13 @@ bool Startup( BackendRenderer* in_renderer, ApplicationStartup startup )
     swapchainDesc.height = Global::platform.window.height;
     swapchainDesc.imagesCount = 3;
 
-    if (!SwapchainInfo::Create( ctx, swapchainDesc, &ctx->swapchain_info ))
+    if (!SwapchainInfo::Create(ctx, swapchainDesc, &ctx->swapchain_info))
     {
-        Global::logger.Error( "Couldn't create swapchain ...." );
+        Global::logger.Error("Couldn't create swapchain ....");
         return false;
     }
 
-    Global::logger.Info( "Swapchain created" );
+    Global::logger.Info("Swapchain created");
 
     // create renderpass
     Rect rect = {};
@@ -725,29 +723,29 @@ bool Startup( BackendRenderer* in_renderer, ApplicationStartup startup )
     clearColor.b = 0.2f;
     clearColor.a = 1;
 
-    if (!Renderpass::Create( ctx, rect, clearColor, 1, 0, &ctx->renderPass ))
+    if (!Renderpass::Create(ctx, rect, clearColor, 1, 0, &ctx->renderPass))
     {
-        Global::logger.Error( "Couldn't create renderpass ...." );
+        Global::logger.Error("Couldn't create renderpass ....");
         return false;
     }
 
-    Global::logger.Info( "Renderpass created" );
+    Global::logger.Info("Renderpass created");
 
-    if (!ctx->swapchain_info.CreateFrameBuffers( ctx ))
+    if (!ctx->swapchain_info.CreateFrameBuffers(ctx))
     {
-        Global::logger.Error( "Couldn't create frame buffers ...." );
+        Global::logger.Error("Couldn't create frame buffers ....");
         return false;
     }
 
-    Global::logger.Info( "Frame buffers created" );
+    Global::logger.Info("Frame buffers created");
 
 
-    if (!Shader::Create( ctx, &Global::platform.filesystem, &ctx->default_shader ))
+    if (!Shader::Create(ctx, &Global::platform.filesystem, &ctx->default_shader))
     {
         return false;
     }
 
-    Global::logger.Info( "Default shader created" );
+    Global::logger.Info("Default shader created");
 
     // vertex buffer
     {
@@ -761,17 +759,17 @@ bool Startup( BackendRenderer* in_renderer, ApplicationStartup startup )
                 );
 
         bufferDesc.memoryPropertyFlags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
-        bufferDesc.size = sizeof( Vector3 ) * 1024 * 1024;
+        bufferDesc.size = sizeof(Vector3) * 1024 * 1024;
         bufferDesc.usage = usage;
 
-        if (!Buffer::Create( ctx, bufferDesc, true, &ctx->vertexBuffer ))
+        if (!Buffer::Create(ctx, bufferDesc, true, &ctx->vertexBuffer))
         {
-            Global::logger.Error( "Couldn't create vertex buffer ...." );
+            Global::logger.Error("Couldn't create vertex buffer ....");
             return false;
         }
 
         ctx->geometryVertexOffset = 0;
-        Global::logger.Info( "Vertex buffer created" );
+        Global::logger.Info("Vertex buffer created");
     }
 
     // index buffer
@@ -786,17 +784,17 @@ bool Startup( BackendRenderer* in_renderer, ApplicationStartup startup )
                 );
 
         bufferDesc.memoryPropertyFlags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
-        bufferDesc.size = sizeof( uint32_t ) * 1024 * 1024;
+        bufferDesc.size = sizeof(uint32_t) * 1024 * 1024;
         bufferDesc.usage = usage;
 
-        if (!Buffer::Create( ctx, bufferDesc, true, &ctx->indexBuffer ))
+        if (!Buffer::Create(ctx, bufferDesc, true, &ctx->indexBuffer))
         {
-            Global::logger.Error( "Couldn't create index buffer ...." );
+            Global::logger.Error("Couldn't create index buffer ....");
             return false;
         }
 
         ctx->indexBufferSize = bufferDesc.size;
-        Global::logger.Info( "Index buffer created" );
+        Global::logger.Info("Index buffer created");
     }
 
     // test mesh
@@ -804,9 +802,9 @@ bool Startup( BackendRenderer* in_renderer, ApplicationStartup startup )
         const uint32_t vertCount = 3;
 
         Vector3 vertPositions[3] = {
-            Vector3( -0.5f , 0.5f , 0.0 ),
-            Vector3( 0.5f , 0.5f , 0.0 ),
-            Vector3( 0.0f , -0.5f , 0.0 ),
+            Vector3(-0.5f , 0.5f , 0.0),
+            Vector3(0.5f , 0.5f , 0.0),
+            Vector3(0.0f , -0.5f , 0.0),
 
         };
 
@@ -817,18 +815,18 @@ bool Startup( BackendRenderer* in_renderer, ApplicationStartup startup )
 
         };
 
-        uint32_t vertexSize = sizeof( Vector3 ) * vertCount;
-        uint32_t indiciesSize = sizeof( uint32_t ) * vertCount;
+        uint32_t vertexSize = sizeof(Vector3) * vertCount;
+        uint32_t indiciesSize = sizeof(uint32_t) * vertCount;
 
-        UploadDataRange( ctx, ctx->physicalDeviceInfo.commandPoolsInfo.graphicsCommandPool, {}, ctx->physicalDeviceInfo.queuesInfo.graphicsQueue, &ctx->vertexBuffer, 0, vertexSize, vertPositions );
-        UploadDataRange( ctx, ctx->physicalDeviceInfo.commandPoolsInfo.graphicsCommandPool, {}, ctx->physicalDeviceInfo.queuesInfo.graphicsQueue, &ctx->indexBuffer, 0, indiciesSize, vertIndicies );
+        UploadDataRange(ctx, ctx->physicalDeviceInfo.commandPoolsInfo.graphicsCommandPool, {}, ctx->physicalDeviceInfo.queuesInfo.graphicsQueue, &ctx->vertexBuffer, 0, vertexSize, vertPositions);
+        UploadDataRange(ctx, ctx->physicalDeviceInfo.commandPoolsInfo.graphicsCommandPool, {}, ctx->physicalDeviceInfo.queuesInfo.graphicsQueue, &ctx->indexBuffer, 0, indiciesSize, vertIndicies);
     }
 
     return true;
 }
 
 
-void Resize( BackendRenderer* in_backend, uint32_t width, uint32_t height )
+void Resize(BackendRenderer* in_backend, uint32_t width, uint32_t height)
 {
     VulkanContext* ctx = (VulkanContext*)in_backend->user_data;
     ctx->frameBufferSize.x = width;
@@ -840,18 +838,18 @@ void Resize( BackendRenderer* in_backend, uint32_t width, uint32_t height )
 // Waits for the last frame's submittion if needed
 // Acquires and updates the new image index from the swapchain
 // current frame is still the same , it gets updated after "Present"
-bool StartFrame( BackendRenderer* in_backend, RendererContext rendererContext )
+bool StartFrame(BackendRenderer* in_backend, RendererContext rendererContext)
 {
     VulkanContext* ctx = (VulkanContext*)in_backend->user_data;
     LogicalDeviceInfo device = ctx->logicalDeviceInfo;
 
     if (ctx->recreateSwapchain)
     {
-        VkResult result = vkDeviceWaitIdle( device.handle );
+        VkResult result = vkDeviceWaitIdle(device.handle);
 
         if (result != VkResult::VK_SUCCESS)
         {
-            Global::logger.Error( "Couldn't wait device idle" );
+            Global::logger.Error("Couldn't wait device idle");
         }
 
         return false;
@@ -860,11 +858,11 @@ bool StartFrame( BackendRenderer* in_backend, RendererContext rendererContext )
     // check if we need to recreate the swapchain
     if (ctx->frameBufferSizeCurrentGeneration != ctx->frameBufferSizeLastGeneration)
     {
-        VkResult result = vkDeviceWaitIdle( device.handle );
+        VkResult result = vkDeviceWaitIdle(device.handle);
 
         if (result != VkResult::VK_SUCCESS)
         {
-            Global::logger.Error( "Couldn't wait device idle" );
+            Global::logger.Error("Couldn't wait device idle");
             return false;
         }
 
@@ -872,16 +870,16 @@ bool StartFrame( BackendRenderer* in_backend, RendererContext rendererContext )
         desc.width = ctx->frameBufferSize.x;
         desc.height = ctx->frameBufferSize.y;
         desc.imagesCount = 3;
-        SwapchainInfo::Recreate( ctx, desc, &ctx->swapchain_info );
+        SwapchainInfo::Recreate(ctx, desc, &ctx->swapchain_info);
 
         return false;
     }
 
     // first we get the index of the last frame index
     uint32_t last_frame = ctx->current_frame;
-
+    
     // we wait until the previous frame is done with it's command buffers (or presentation)
-    if (!ctx->swapchain_info.cmd_buffer_done_execution_per_frame.data[last_frame].Wait( ctx, UINT64_MAX ))
+    if (!ctx->swapchain_info.cmd_buffer_done_execution_per_frame.data[last_frame].Wait(ctx, UINT64_MAX))
     {
         return false;
     }
@@ -889,9 +887,9 @@ bool StartFrame( BackendRenderer* in_backend, RendererContext rendererContext )
     // we ask the swapchain to get us the index of an image that we can render to  
     // plug last frame's presentaion semaphore as a "dependency" (in other words , make sure last presentation is donee)
     uint32_t current_image = {};
-    if (!ctx->swapchain_info.AcquireNextImageIndex( ctx, UINT32_MAX, ctx->swapchain_info.image_presentation_complete_semaphores.data[last_frame], nullptr, &current_image ))
+    if (!ctx->swapchain_info.AcquireNextImageIndex(ctx, UINT32_MAX, ctx->swapchain_info.image_presentation_complete_semaphores.data[last_frame], nullptr, &current_image))
     {
-        Global::logger.Error( "Couldn't get next image to render to from the swapchain" );
+        Global::logger.Error("Couldn't get next image to render to from the swapchain");
         return false;
     }
 
@@ -900,7 +898,7 @@ bool StartFrame( BackendRenderer* in_backend, RendererContext rendererContext )
     CommandBuffer cmdBuffer = ctx->swapchain_info.graphics_cmd_buffers_per_image.data[current_image];
 
     cmdBuffer.Reset();
-    cmdBuffer.Begin( false, false, false );
+    cmdBuffer.Begin(false, false, false);
 
     // vulkan considers (0,0) to be the upper-left corner
     // to get "standanrdized" zero point , we set the the center to be (bottom-left)
@@ -909,7 +907,7 @@ bool StartFrame( BackendRenderer* in_backend, RendererContext rendererContext )
     viewport.x = 0;
     viewport.y = (float)ctx->frameBufferSize.y;
     viewport.width = (float)ctx->frameBufferSize.x;
-    viewport.height = (float)-ctx->frameBufferSize.y;
+    viewport.height = -(float)ctx->frameBufferSize.y;
     viewport.maxDepth = 1;
     viewport.minDepth = 0;
 
@@ -919,18 +917,18 @@ bool StartFrame( BackendRenderer* in_backend, RendererContext rendererContext )
     scissor.extent.width = ctx->frameBufferSize.x;
     scissor.extent.height = ctx->frameBufferSize.y;
 
-    vkCmdSetViewport( cmdBuffer.handle, 0, 1, &viewport );
-    vkCmdSetScissor( cmdBuffer.handle, 0, 1, &scissor );
+    vkCmdSetViewport(cmdBuffer.handle, 0, 1, &viewport);
+    vkCmdSetScissor(cmdBuffer.handle, 0, 1, &scissor);
 
     ctx->renderPass.area.width = (float)ctx->frameBufferSize.x;
     ctx->renderPass.area.height = (float)ctx->frameBufferSize.y;
 
-    ctx->renderPass.Begin( ctx, &cmdBuffer, &ctx->swapchain_info.frameBuffers.data[current_image] );
+    ctx->renderPass.Begin(ctx, &cmdBuffer, &ctx->swapchain_info.frameBuffers.data[current_image]);
 
     return true;
 }
 
-bool UpdateGlobalState( BackendRenderer* in_backend, Matrix4x4 projection, Matrix4x4 view, Vector3 viewPos, float ambiant, uint32_t mode )
+bool UpdateGlobalState(BackendRenderer* in_backend, Matrix4x4 projection, Matrix4x4 view, Vector3 viewPos, float ambiant, uint32_t mode)
 {
     VulkanContext* ctx = (VulkanContext*)in_backend->user_data;
     CommandBuffer current_cmd = ctx->swapchain_info.graphics_cmd_buffers_per_image.data[ctx->current_image_index];
@@ -939,35 +937,35 @@ bool UpdateGlobalState( BackendRenderer* in_backend, Matrix4x4 projection, Matri
     ctx->default_shader.global_UBO.projection = projection;
     ctx->default_shader.global_UBO.view = view;
 
-    Shader::UpdateGlobalBuffer( ctx, &Global::platform.memory, ctx->default_shader.global_UBO, &ctx->default_shader );
+    Shader::UpdateGlobalBuffer(ctx, &Global::platform.memory, ctx->default_shader.global_UBO, &ctx->default_shader);
 
     return false;
 }
 
 /// Once we reach this function , the image_index represents the current image that's we're working on to send to presentation
-bool EndFrame( BackendRenderer* in_backend, RendererContext rendererContext )
+bool EndFrame(BackendRenderer* in_backend, RendererContext rendererContext)
 {
     VulkanContext* ctx = (VulkanContext*)in_backend->user_data;
     CommandBuffer cmdBuffer = ctx->swapchain_info.graphics_cmd_buffers_per_image.data[ctx->current_image_index];
 
     // test code
     {
-        Shader::Bind( ctx, &ctx->default_shader );
+        Shader::Bind(ctx, &ctx->default_shader);
 
         float aspect = Global::platform.window.width / (float)Global::platform.window.height;
-        Matrix4x4 proj = Matrix4x4::Perspective( 60, 0.1f, 1000, aspect );
-        Matrix4x4 view = Matrix4x4::Translate( Vector3( 0, 0, -1 ) );
-        Vector3 pos = Vector3( 0, 0, 0 );
+        Matrix4x4 proj = Matrix4x4::Perspective(60, 0.1f, 1000, aspect);
+        Matrix4x4 view = Matrix4x4::Translate(Vector3(0, 0, -1));
+        Vector3 pos = Vector3(0, 0, 0);
 
-        UpdateGlobalState( in_backend, proj, view, pos, 1, 0 );
+        UpdateGlobalState(in_backend, proj, view, pos, 1, 0);
 
         VkDeviceSize offsets[1] = { 0 };
-        vkCmdBindVertexBuffers( cmdBuffer.handle, 0, 1, &ctx->vertexBuffer.handle, (VkDeviceSize*)offsets );
-        vkCmdBindIndexBuffer( cmdBuffer.handle, ctx->indexBuffer.handle, 0, VK_INDEX_TYPE_UINT32 );
-        vkCmdDrawIndexed( cmdBuffer.handle, 3, 1, 0, 0, 0 );
+        vkCmdBindVertexBuffers(cmdBuffer.handle, 0, 1, &ctx->vertexBuffer.handle, (VkDeviceSize*)offsets);
+        vkCmdBindIndexBuffer(cmdBuffer.handle, ctx->indexBuffer.handle, 0, VK_INDEX_TYPE_UINT32);
+        vkCmdDrawIndexed(cmdBuffer.handle, 3, 1, 0, 0, 0);
     }
 
-    ctx->renderPass.End( ctx, &cmdBuffer );
+    ctx->renderPass.End(ctx, &cmdBuffer);
     cmdBuffer.End();
 
     // NOTE : a very important detail to understand here is that we're reusing the Fence used to signal "CommandBuffer finished" to also signal "Frame Present"
@@ -981,9 +979,9 @@ bool EndFrame( BackendRenderer* in_backend, RendererContext rendererContext )
 
     if (inFlightFence != VK_NULL_HANDLE)
     {
-        if (!inFlightFence->Wait( ctx, UINT64_MAX ))
+        if (!inFlightFence->Wait(ctx, UINT64_MAX))
         {
-            Global::logger.Error( "Couldn't wait previous frame's fence" );
+            Global::logger.Error("Couldn't wait previous frame's fence");
         }
     }
 
@@ -995,9 +993,9 @@ bool EndFrame( BackendRenderer* in_backend, RendererContext rendererContext )
 
     // so , here  we take the the address of the Fence that we just waited for
     Fence* submit_fence = &ctx->swapchain_info.cmd_buffer_done_execution_per_frame.data[ctx->current_frame];
-    
+
     // reset it
-    submit_fence->Reset( ctx );
+    submit_fence->Reset(ctx);
 
     // then reuse it as "in flight" fence
     ctx->swapchain_info.in_flight_fence_per_image.data[ctx->current_image_index] = submit_fence;
@@ -1023,7 +1021,7 @@ bool EndFrame( BackendRenderer* in_backend, RendererContext rendererContext )
     // this is an async (non-blocking call) that returns immidiately
     // to know if the sumbission is done on the GPU side , we will need to check the Fence passed
     // from the docs : fence is an optional handle to a fence to be signaled once all submitted command buffers have completed execution
-    vkQueueSubmit( ctx->physicalDeviceInfo.queuesInfo.graphicsQueue, 1, &info, submit_fence->handle );
+    vkQueueSubmit(ctx->physicalDeviceInfo.queuesInfo.graphicsQueue, 1, &info, submit_fence->handle);
 
     cmdBuffer.UpdateSubmitted();
 
@@ -1047,34 +1045,34 @@ bool EndFrame( BackendRenderer* in_backend, RendererContext rendererContext )
 
 
 
-bool Destroy( BackendRenderer* in_backend )
+bool Destroy(BackendRenderer* in_backend)
 {
     VulkanContext* ctx = (VulkanContext*)in_backend->user_data;
-    Global::event_system.Unlisten<WindowResizeEvent>( HandleWindowResize );
+    Global::event_system.Unlisten<WindowResizeEvent>(HandleWindowResize);
 
-    vkDeviceWaitIdle( ctx->logicalDeviceInfo.handle );
+    vkDeviceWaitIdle(ctx->logicalDeviceInfo.handle);
 
-    Buffer::Destroy( ctx, &ctx->vertexBuffer );
-    Buffer::Destroy( ctx, &ctx->indexBuffer );
+    Buffer::Destroy(ctx, &ctx->vertexBuffer);
+    Buffer::Destroy(ctx, &ctx->indexBuffer);
 
-    Shader::Destroy( ctx, &ctx->default_shader );
+    Shader::Destroy(ctx, &ctx->default_shader);
 
-    SwapchainInfo::Clear( ctx, &ctx->swapchain_info );
+    SwapchainInfo::Clear(ctx, &ctx->swapchain_info);
 
-    vkDestroyCommandPool( ctx->logicalDeviceInfo.handle, ctx->physicalDeviceInfo.commandPoolsInfo.graphicsCommandPool, ctx->allocator );
+    vkDestroyCommandPool(ctx->logicalDeviceInfo.handle, ctx->physicalDeviceInfo.commandPoolsInfo.graphicsCommandPool, ctx->allocator);
 
-    Renderpass::Destroy( ctx, &ctx->renderPass );
+    Renderpass::Destroy(ctx, &ctx->renderPass);
 
-    SwapchainInfo::Destroy( ctx, &ctx->swapchain_info );
+    SwapchainInfo::Destroy(ctx, &ctx->swapchain_info);
 
-    vkDestroySurfaceKHR( ctx->vulkanInstance, ctx->surface, ctx->allocator );
+    vkDestroySurfaceKHR(ctx->vulkanInstance, ctx->surface, ctx->allocator);
 
-    vkDestroyDevice( ctx->logicalDeviceInfo.handle, ctx->allocator );
+    vkDestroyDevice(ctx->logicalDeviceInfo.handle, ctx->allocator);
 
     return true;
 }
 
-void VulkanBackendRenderer::Create( BackendRenderer* out_renderer )
+void VulkanBackendRenderer::Create(BackendRenderer* out_renderer)
 {
     out_renderer->startup = Startup;
     out_renderer->resize = Resize;
