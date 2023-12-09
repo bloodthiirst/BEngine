@@ -1,3 +1,4 @@
+#include "../../../../Global/Global.h"
 #include "Fence.h"
 #include <vulkan/vulkan.h>
 #include "VulkanContext.h"
@@ -44,27 +45,27 @@ bool Fence::Wait ( VulkanContext* context, uint64_t timeoutMs )
         }
         case VK_TIMEOUT:
         {
-            Logger::Warning ( "Fence - timeout" );
+            Global::logger.Warning ( "Fence - timeout" );
             break;
         }
         case VK_ERROR_DEVICE_LOST:
         {
-            Logger::Error ( "Fence - Device lost" );
+            Global::logger.Error ( "Fence - Device lost" );
             break;
         }
         case VK_ERROR_OUT_OF_HOST_MEMORY:
         {
-            Logger::Error ( "Fence - Out of host memory" );
+            Global::logger.Error ( "Fence - Out of host memory" );
             break;
         }
         case VK_ERROR_OUT_OF_DEVICE_MEMORY:
         {
-            Logger::Error ( "Fence - Out of device memory" );
+            Global::logger.Error ( "Fence - Out of device memory" );
             break;
         }
         default:
         {
-            Logger::Error ( "Fence - Error occured" );
+            Global::logger.Error ( "Fence - Error occured" );
             break;
         }
     }

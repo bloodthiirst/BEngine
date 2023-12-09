@@ -1,11 +1,12 @@
 #pragma once
-#include <vector>
-#include <string>
+#include <String/StringView.h>
+#include <String/StringBuffer.h>
+#include <Allocators/Allocator.h>
+
 class FileUtils
 {
 
 public:
-	static std::vector<char> ReadFile ( const std::string& filePath );
-
+	static StringBuffer ReadFile ( const StringView filePath , Allocator alloc );
 };
 

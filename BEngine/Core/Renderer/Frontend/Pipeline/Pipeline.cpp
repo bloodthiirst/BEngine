@@ -1,6 +1,6 @@
+#include <Maths/Vector3.h>
 #include "Pipeline.h"
 #include "../../Backend/Vulkan/Context/VulkanContext.h"
-#include "../../../Maths/Vector3.h"
 
 bool Pipeline::Create ( VulkanContext* context, Renderpass* renderpass, PipelineDescriptor descriptor, Pipeline* outPipeline )
 {
@@ -91,8 +91,8 @@ bool Pipeline::Create ( VulkanContext* context, Renderpass* renderpass, Pipeline
     vertexStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
     vertexStateCreateInfo.vertexBindingDescriptionCount = 1;
     vertexStateCreateInfo.pVertexBindingDescriptions = &bindingDescription;
-    vertexStateCreateInfo.vertexAttributeDescriptionCount = descriptor.attributes.size ();
-    vertexStateCreateInfo.pVertexAttributeDescriptions = descriptor.attributes.data ();
+    vertexStateCreateInfo.vertexAttributeDescriptionCount = (uint32_t) descriptor.attributes.size;
+    vertexStateCreateInfo.pVertexAttributeDescriptions = descriptor.attributes.data;
 
     // input assembly
     VkPipelineInputAssemblyStateCreateInfo inputAssemblyCreateInfo = {};
@@ -103,26 +103,25 @@ bool Pipeline::Create ( VulkanContext* context, Renderpass* renderpass, Pipeline
     // pipeline descriptor set layouts
     VkPipelineLayoutCreateInfo pipelineLayoutCreateInfo = {};
     pipelineLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-    pipelineLayoutCreateInfo.setLayoutCount = descriptor.descriptorSetLayouts.size ();
-    pipelineLayoutCreateInfo.pSetLayouts = descriptor.descriptorSetLayouts.data ();
+    pipelineLayoutCreateInfo.setLayoutCount = (uint32_t) descriptor.descriptorSetLayouts.size;
+    pipelineLayoutCreateInfo.pSetLayouts = descriptor.descriptorSetLayouts.data;
 
     VkPipelineLayout pipelineLayout = {};
     vkCreatePipelineLayout ( context->logicalDeviceInfo.handle, &pipelineLayoutCreateInfo, context->allocator, &pipelineLayout );
 
     VkGraphicsPipelineCreateInfo graphicsPipelineCreateInfo = {};
     graphicsPipelineCreateInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
-    graphicsPipelineCreateInfo.stageCount = descriptor.stages.size ();
-    graphicsPipelineCreateInfo.pStages = descriptor.stages.data ();
+    graphicsPipelineCreateInfo.stageCount = (uint32_t) descriptor.stages.size;
+    graphicsPipelineCreateInfo.pStages = descriptor.stages.data;
     graphicsPipelineCreateInfo.pVertexInputState = &vertexStateCreateInfo;
+    graphicsPipelineCreateInfo.pTessellationState = nullptr;
     graphicsPipelineCreateInfo.pInputAssemblyState = &inputAssemblyCreateInfo;
-
     graphicsPipelineCreateInfo.pViewportState = &createPipelineViewport;
     graphicsPipelineCreateInfo.pRasterizationState = &createRasterizationInfo;
     graphicsPipelineCreateInfo.pMultisampleState = &multiSamplingCreateInfo;
     graphicsPipelineCreateInfo.pDepthStencilState = &depthAndStencilCreateInfo;
     graphicsPipelineCreateInfo.pColorBlendState = &colorBlendCreateInfo;
     graphicsPipelineCreateInfo.pDynamicState = &dynamicStateCreateInfo;
-    graphicsPipelineCreateInfo.pTessellationState = nullptr;
 
     graphicsPipelineCreateInfo.layout = pipelineLayout;
 

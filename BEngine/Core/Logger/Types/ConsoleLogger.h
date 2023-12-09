@@ -1,27 +1,95 @@
 #pragma once
+#include <cstdio>
+#include <iostream>
 #include "../Base/ILogger.h"
-#include <windows.h>
-class ConsoleLogger :
-	public ILogger
+
+class ConsoleLogger
 {
-private :
-	HANDLE hConsole;
-public :
+    static const WORD DEFAULT_COLOR = FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED;
 
-	ConsoleLogger ();
+    struct ConsoleLoggerData
+    {
+        HANDLE hConsole;
+    };
 
-	void Log ( const char* message, va_list args );
+public:
+    static bool Create( ILogger* out_logger )
+    {
+        AllocConsole();
 
-	void Info ( const char* message, va_list args );
+        FILE* fpstdin = stdin;
+        FILE* fpstdout = stdout;
+        FILE* fpstderr = stderr;
 
-	void Warning ( const char* message, va_list args );
+        freopen_s( &fpstdin, "CONIN$", "r", stdin );
+        freopen_s( &fpstdout, "CONOUT$", "w", stdout );
+        freopen_s( &fpstderr, "CONOUT$", "w", stderr );
 
-	void NewLine ();
+        ConsoleLoggerData* data = Global::alloc_toolbox.HeapAlloc<ConsoleLoggerData>();
+        data->hConsole = GetStdHandle( STD_OUTPUT_HANDLE );
 
-	void Error ( const char* message, va_list args );
+        out_logger->user_data = data;
+        out_logger->log = Log;
+        out_logger->info = Info;
+        out_logger->error = Error;
+        out_logger->new_line = NewLine;
+        out_logger->warning = Warning;
+        out_logger->fatal = Fatal;
 
-	void Fatal ( const char* message, va_list args );
-	
-	~ConsoleLogger ();
+        return true;
+    }
+
+    static bool Destroy( ILogger* in_logger )
+    {
+        FreeConsole();
+
+        return true;
+    }
+
+private:
+
+    static void LogInternal( ILogger* in_logger, const char* message, WORD text_col )
+    {
+        ConsoleLoggerData* data = (ConsoleLoggerData*)in_logger->user_data;
+        FlushConsoleInputBuffer( data->hConsole );
+        SetConsoleTextAttribute( data->hConsole, text_col );
+
+        std::cout << message << std::endl;
+
+        SetConsoleTextAttribute( data->hConsole, ConsoleLogger::DEFAULT_COLOR );
+    }
+
+    static void Log( ILogger* in_logger, const char* message )
+    {
+        LogInternal( in_logger, message, FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_INTENSITY );
+    }
+
+    static void Info( ILogger* in_logger, const char* message )
+    {
+        LogInternal( in_logger, message, FOREGROUND_BLUE | FOREGROUND_INTENSITY );
+    }
+
+    static void Warning( ILogger* in_logger, const char* message )
+    {
+        LogInternal( in_logger, message, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_INTENSITY );
+    }
+
+    static void NewLine( ILogger* in_logger, size_t repeat )
+    {
+        for (size_t i = 0; i < repeat; ++i) 
+        {
+            LogInternal( in_logger, "\n", FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_INTENSITY );
+        }
+    }
+
+    static void Error( ILogger* in_logger, const char* message )
+    {
+        LogInternal( in_logger, message, FOREGROUND_RED | FOREGROUND_INTENSITY );
+    }
+
+    static void Fatal( ILogger* in_logger, const char* message )
+    {
+        LogInternal( in_logger, message, FOREGROUND_RED );
+    }
 };
 

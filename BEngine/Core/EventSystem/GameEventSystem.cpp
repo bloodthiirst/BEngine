@@ -1,4 +1,6 @@
 #include "GameEventSystem.h"
+#include "Types/GameEvents.h"
+#include <Allocators/Allocator.h>
 
 void GameEventSystem::Startup ()
 {
@@ -17,16 +19,21 @@ void GameEventSystem::Startup ()
 
 	EngineCloseEvent::GetID();
 
+    WindowFocusEvent::GetID ();
+    WindowUnfocusEvent::GetID ();
     WindowResizeEvent::GetID ();
 
 	this->eventListenersCount = IDProvider<Event>::CurrentCounter ();
 
-	this->eventListenersCallbacks = new std::vector<ActionBase*>*[eventListenersCount];
+    Allocator heap_alloc = HeapAllocator::Create();
+
+    DArray<DArray<void*>>::Create(this->eventListenersCount, &this->eventListenersCallbacks, heap_alloc);
 
 	for ( int i = 0; i < this->eventListenersCount; ++i )
 	{
-		auto callbackList = new std::vector<ActionBase*> ();
-		eventListenersCallbacks[i] = callbackList;
+        DArray<void*> callback_list;
+        DArray<void*>::Create(0, &callback_list, heap_alloc);
+		eventListenersCallbacks.data[i] = callback_list;
 	}
 }
 

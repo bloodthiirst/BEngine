@@ -1,17 +1,16 @@
 #include "Renderpass.h"
 #include "VulkanContext.h"
 #include "FrameBuffer.h"
-#include <vector>
 
 void Renderpass::Begin ( VulkanContext* context , CommandBuffer* cmdBuffer , FrameBuffer* frameBuffer )
 {
         VkRenderPassBeginInfo begin_info = { VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO };
         begin_info.renderPass = handle;
         begin_info.framebuffer = frameBuffer->handle;
-        begin_info.renderArea.offset.x = area.x;
-        begin_info.renderArea.offset.y = area.y;
-        begin_info.renderArea.extent.width = area.width;
-        begin_info.renderArea.extent.height = area.height;
+        begin_info.renderArea.offset.x = (int32_t) area.x;
+        begin_info.renderArea.offset.y = (int32_t) area.y;
+        begin_info.renderArea.extent.width = (int32_t) area.width;
+        begin_info.renderArea.extent.height = (int32_t) area.height;
 
         VkClearValue clear_values[2];
 
@@ -42,28 +41,29 @@ bool Renderpass::Create ( VulkanContext* context, Rect rect, Color color, float 
     VkSubpassDescription subpassDesc = {};
     subpassDesc.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
 
-    std::vector<VkAttachmentDescription> attachementDescs = std::vector<VkAttachmentDescription> ( 2 );
+    Allocator heap_alloc = HeapAllocator::Create();
+    DArray<VkAttachmentDescription> attachementDescs;
+    DArray<VkAttachmentDescription>::Create( 2, &attachementDescs, heap_alloc);
 
     VkAttachmentDescription colorAttachmentDesc = {};
     VkAttachmentReference colorReference = {};
 
     // color attachement
     {
-        colorAttachmentDesc.format = context->swapchainInfo.surfaceFormat.format;
+        colorAttachmentDesc.format = context->swapchain_info.surfaceFormat.format;
         colorAttachmentDesc.samples = VK_SAMPLE_COUNT_1_BIT;
-
-        // loadOp define what to do to the texture when we load it
+        // loadOp defines what to do to the texture when we load it
         // we can clear OnLoad , keep the previous content , or don't care
         // color
         colorAttachmentDesc.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
 
-        // storeOp definew what to do to the textre when we store it
-        // we can "store i" , which seems redundant but means keep the content of this texture to be used by things to come after
+        // storeOp defines what to do to the texture when we store it
+        // we can "store it" , (which seems redundant in terms of naming) but means keep the content of this texture to be used by things to come after
         // or don't care , which means that the content wont be used after we're done using it
         colorAttachmentDesc.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
 
         // we're not usin stencil for now , so don't care
-        // stencil1
+        // stencil
         colorAttachmentDesc.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
         colorAttachmentDesc.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
 
@@ -71,16 +71,16 @@ bool Renderpass::Create ( VulkanContext* context, Rect rect, Color color, float 
         colorAttachmentDesc.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR; // what we're gonna transition to after the renderpass , it's a layout format in memory
         colorAttachmentDesc.flags = 0;
 
-        // specifies the 
-
+        // specifies the
         colorReference.attachment = 0; // attachement index
-        colorReference.layout = VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL;
+        colorReference.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL; // layout
 
-        attachementDescs[0] = colorAttachmentDesc;
+        DArray< VkAttachmentDescription>::Add( &attachementDescs , colorAttachmentDesc);
     }
 
     VkAttachmentDescription depthAttachmentDesc = {};
     VkAttachmentReference depthReference = {};
+
     // depth attachement
     {
         depthAttachmentDesc.format = context->physicalDeviceInfo.depthFormat;
@@ -97,7 +97,7 @@ bool Renderpass::Create ( VulkanContext* context, Rect rect, Color color, float 
         depthAttachmentDesc.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
 
         // we're not usin stencil for now , so don't care
-        // stencil1
+        // stencil
         depthAttachmentDesc.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
         depthAttachmentDesc.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
 
@@ -106,11 +106,10 @@ bool Renderpass::Create ( VulkanContext* context, Rect rect, Color color, float 
         depthAttachmentDesc.flags = 0;
 
         // specifies the 
-
         depthReference.attachment = 1; // attachement index
-        depthReference.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+        depthReference.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL; // layout
 
-        attachementDescs[1] = depthAttachmentDesc;
+        DArray< VkAttachmentDescription>::Add( &attachementDescs, depthAttachmentDesc );
     }
 
     // todo : we could have other attacheent (input , resolve , preserve)
@@ -136,12 +135,11 @@ bool Renderpass::Create ( VulkanContext* context, Rect rect, Color color, float 
     dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
     dependency.dstStageMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
 
-
     // render pass
     VkRenderPassCreateInfo createInfo = {};
     createInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-    createInfo.attachmentCount = attachementDescs.size ();
-    createInfo.pAttachments = attachementDescs.data ();
+    createInfo.attachmentCount = (uint32_t) attachementDescs.size;
+    createInfo.pAttachments = attachementDescs.data;
     createInfo.subpassCount = 1;
     createInfo.pSubpasses = &subpassDesc;
     createInfo.dependencyCount = 1;

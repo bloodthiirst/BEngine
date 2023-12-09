@@ -156,9 +156,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Matrix3x3Tests.cpp" />
-    <ClCompile Include="Matrix4x4Tests.cpp" />
-    <ClCompile Include="Vector4Tests.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
@@ -168,7 +165,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
-    <ClCompile Include="QuaternionTests.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\BEngine\BEngine.vcxproj">

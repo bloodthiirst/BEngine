@@ -1,69 +1,45 @@
 #include "Application.h"
-
-#ifdef _WIN32
-#include "../Platform/Types/Win32/Platform/Win32Platform.h"
-#endif
-
+#include "../Global/Global.h"
 #include "../Renderer/Backend/BackendRenderer.h"
 #include "../Renderer/Backend/Vulkan/Renderer/VulkanBackendRenderer.h"
-#include <format>
+#include <GameApp.h>
 
-Application::Application ( GameApp* gameApp )
+bool Application::Run()
 {
-	this->gameApp = gameApp;
+    application_state.isRunning = true;
 
-#ifdef _WIN32
-	this->platform = new Win32Platform ( this );
-#endif 
+    while (application_state.isRunning = Global::platform.window.handle_messages())
+    {
+        // input
+        Global::platform.input.OnUpdate( 0 );
 
-	this->applicationState = ApplicationState ();
-	this->gameEventSystem = GameEventSystem ();
-	this->time = new Time ( this );
+        // update game
+        game_app.on_update( &game_app, 0 );
+        game_app.on_render( &game_app, 0 );
 
-	BackendRenderer* backend = new VulkanBackendRenderer ( this, this->platform );
-	this->renderer = FrontendRenderer ( this, this->platform, backend );
+        RendererContext renderer_ctx = RendererContext();
+
+        // draw frame
+        {
+            if (!Global::backend_renderer.start_frame( &Global::backend_renderer, renderer_ctx ))
+            {
+                Global::logger.Error( "Couldn't start frame" );
+                goto post_frame;
+            }
+
+            if (!Global::backend_renderer.end_frame( &Global::backend_renderer, renderer_ctx ))
+            {
+                Global::logger.Error( "Couldn't end frame" );
+                goto post_frame;
+            }
+
+            Global::backend_renderer.frame_count++;
+            goto post_frame;
+        }
+
+    post_frame:
+        Global::platform.input.OnPostUpdate( 0 );
+    }
+
+    return true;
 }
-
-void Application::Startup ()
-{
-	this->gameEventSystem.Startup ();
-	this->platform->Startup ();
-	this->renderer.Startup ();
-}
-
-bool Application::Run ()
-{
-	applicationState.isRunning = true;
-
-	while ( applicationState.isRunning = platform->window->HandleMessages () )
-	{
-		platform->input->OnUpdate ( 0 );
-
-		gameApp->OnUpdate (0);
-
-		//gameApp->OnRender ();
-		RendererContext rendererCtx = RendererContext ();
-		renderer.DrawFrame ( rendererCtx );
-
-		platform->input->OnPostUpdate ( 0 );
-	}
-
-	return true;
-}
-
-void Application::Destroy ()
-{
-	this->renderer.Destroy ();
-	this->platform->Destroy ();
-	this->time->Destroy ();
-	this->gameEventSystem.Destroy ();
-}
-
-
-
-Application::~Application ()
-{
-	delete time;
-	delete platform;
-}
-

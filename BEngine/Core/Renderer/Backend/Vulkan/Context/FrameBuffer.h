@@ -1,18 +1,18 @@
 #pragma once
+#include <Containers/DArray.h>
+#include <Maths/Vector2Int.h>
 #include <vulkan/vulkan.h>
-#include <vector>
 #include "Renderpass.h"
-#include "../../../../Maths/Vector2Int.h"
 
-class FrameBuffer
+struct FrameBuffer
 {
 public:
     VkFramebuffer handle;
-    std::vector<VkImageView> attatchments;
+    DArray<VkImageView> attatchments;
     Renderpass* renderpass;
 
 public:
-    static void Create ( VulkanContext* context, Renderpass* renderpass, Vector2Int dimensions, std::vector<VkImageView>* attatchments, FrameBuffer* outFramebuffer );
+    static void Create ( VulkanContext* context, Renderpass* renderpass, Vector2Int dimensions, DArray<VkImageView> attatchments, FrameBuffer* outFramebuffer );
     static void Destroy ( VulkanContext* context, FrameBuffer* outFramebuffer );
 };
 

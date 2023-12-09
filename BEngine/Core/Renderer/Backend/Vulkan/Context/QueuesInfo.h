@@ -1,6 +1,5 @@
 #pragma once
 #include <vulkan/vulkan.h>
-#include <cstdint>
 
 struct QueuesInfo
 {
@@ -8,7 +7,6 @@ struct QueuesInfo
     uint32_t graphicsQueueIndex;
     uint32_t computeQueueFamilyIndex;
     uint32_t transferQueueIndex;
-
 
     VkQueue presentQueue;
     VkQueue graphicsQueue;

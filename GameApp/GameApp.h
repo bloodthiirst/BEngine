@@ -1,31 +1,31 @@
 #pragma once
-#include <string>
-
+#include <String/StringBuffer.h>
+#include <Typedefs/Typedefs.h>
 struct __declspec(dllexport) GameStartup
 {
 public:
-	int width;
-	int height;
-	int x;
-	int y;
+    int width;
+    int height;
+    int x;
+    int y;
 };
 
 
 struct __declspec(dllexport) GameState
 {
 public:
-	bool isRunning;
+    bool isRunning;
 
 };
 
-class __declspec(dllexport) GameApp
+struct GameApp
 {
-public:
-	virtual void Initialize () const = 0;
-	virtual void OnUpdate ( float deltaTime ) = 0;
-	virtual void OnRender () = 0;
+    Func<StringView, GameApp*> get_name;
+    ActionParams<GameApp*> initialize;
+    ActionParams<GameApp*, float> on_update;
+    ActionParams<GameApp*, float> on_render;
+    ActionParams<GameApp*> destroy;
 
-	virtual std::string GetName () const = 0;
-	GameStartup gameStartup = { 0 };
-	GameState gameState = { 0 };
+    GameStartup game_startup = { 0 };
+    GameState game_state = { 0 };
 };

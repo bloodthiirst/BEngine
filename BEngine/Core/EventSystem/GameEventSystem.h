@@ -1,75 +1,79 @@
 #pragma once
-#include "Types/GameEvents.h"
-#include "../Logger/Logger.h"
 #include <typeinfo>
-#include <functional>
-#include  <list>
-#include "Action.h"
-
-template<typename TEvent>
-using CallbackFunctionPtr = void (*)(TEvent);
-
+#include <Typedefs/Typedefs.h>
+#include <String/StringBuffer.h>
+#include <String/StringView.h>
+#include <String/StringUtils.h>
+#include <Allocators/Allocator.h>
+#include <Containers/DArray.h>
+#include "../Logger/Logger.h"
+#include "Base/EventBase.h"
 
 class GameEventSystem
 {
 private:
-	std::vector<ActionBase*>** eventListenersCallbacks;
-	size_t eventListenersCount;
+    DArray<DArray<void*>> eventListenersCallbacks;
+    size_t eventListenersCount;
 public:
-	void Startup ();
-	void Destroy ();
+    void Startup();
+    void Destroy();
 
-	template<typename TEvent>
-	void Trigger ( TEvent eventData )
-	{
-		size_t index = IDCache<TEvent>::id;
+    template<typename TEvent>
+    void Trigger(TEvent eventData)
+    {
+        size_t index = IDCache<TEvent>::id;
 
-		std::vector<ActionBase*>* vector = eventListenersCallbacks[index];
+        DArray<void*> precast = eventListenersCallbacks.data[index];
+        DArray<ActionParams<TEvent>> callbacksArr =  *(DArray<ActionParams<TEvent>>*)((void*) & precast);
 
-		std::string logText = std::string ( "Event::" );
-		logText += typeid(TEvent).name ();
+        Allocator heap_alloc = HeapAllocator::Create();
 
-		const char* cStr = logText.c_str ();
+        StringView prefix = StringView::Create("Event::");
+        StringView type_name = StringView::Create(typeid(TEvent).name());
+        StringBuffer logText = StringUtils::Concat( heap_alloc , prefix, type_name);
 
-		Logger::Log ( cStr );
+        char* c_str = StringView::ToCString(logText.view, heap_alloc);
+        //Global::logger.Log(c_str);
 
-		for ( auto& it : *vector )
-		{
-			Action<TEvent>* functionPtr = (Action<TEvent>*) (it);
+        for (size_t i = 0; i < callbacksArr.size; ++i)
+        {
+            ActionParams<TEvent> functionPtr = callbacksArr.data[i];
 
-			functionPtr->Invoke ( eventData );
-		}
-	}
+            functionPtr(eventData);
+        }
 
+        heap_alloc.free(heap_alloc, logText.buffer);
+        heap_alloc.free(heap_alloc, c_str);
+    }
 
-	template<typename TEvent>
-	void Listen ( Action<TEvent>  callback )
-	{
-		size_t index = IDCache<TEvent>::id;
-		eventListenersCallbacks[index]->push_back ( new Action<TEvent> ( callback ) );
-	}
+    template<typename TEvent>
+    void Listen(ActionParams<TEvent>  callback)
+    {
+        size_t index = IDCache<TEvent>::id;
 
+        DArray<ActionParams<TEvent>>* callbacksArr = (DArray<ActionParams<TEvent>>*) & eventListenersCallbacks.data[index];
+        DArray<ActionParams<TEvent>>::Add(callbacksArr, callback);
+    }
 
-	template<typename TEvent>
-	void Unlisten ( Action<TEvent> callback )
-	{
-		size_t index = IDCache<TEvent>::id;
+    template<typename TEvent>
+    void Unlisten(ActionParams<TEvent> callback)
+    {
+        size_t index = IDCache<TEvent>::id;
 
-		std::vector<ActionBase*> vector = (*eventListenersCallbacks[index]);
+        Allocator stack_alloc = HeapAllocator::Create();
 
-		for ( int i = 0; i < vector.size (); ++i )
-		{
-			ActionBase* curr = vector[i];
+        DArray<void*> precast = eventListenersCallbacks.data[index];
+        DArray<ActionParams<TEvent>> callbacksArr = *(DArray<ActionParams<TEvent>>*)((void*)&precast);
 
-			if ( curr->funcPtr == callback.funcPtr && curr->instance == callback.instance )
-			{
-				vector.erase ( vector.begin () + i );
-				return;
-			}
-		}
-	}
+        for (int i = 0; i < callbacksArr.size; ++i)
+        {
+            ActionParams<TEvent> curr = callbacksArr.data[i];
 
+            if (curr == callback)
+            {
+                DArray<ActionParams<TEvent>>::RemoveAll(&callbacksArr, curr, stack_alloc);
+                return;
+            }
+        }
+    }
 };
-
-
-

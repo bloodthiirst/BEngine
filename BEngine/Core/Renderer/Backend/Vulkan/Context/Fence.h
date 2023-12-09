@@ -6,7 +6,7 @@ struct VulkanContext;
 /// <summary>
 /// Fences are used to synchronize between GPU and CPU events , unlike Semaphores that are used to define order between GPU to GPU tasks
 /// </summary>
-class Fence
+struct Fence
 {
 public:
     VkFence handle;
@@ -19,6 +19,5 @@ public:
     bool Wait ( VulkanContext* context, uint64_t timeoutMs );
 
     void Reset ( VulkanContext* context );
-
 };
 

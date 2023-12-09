@@ -1,18 +1,21 @@
+#include <assert.h>
+#include <stdio.h>
 #include "FileUtils.h"
-#include <fstream>
 
-std::vector<char> FileUtils::ReadFile ( const std::string& filePath )
+StringBuffer FileUtils::ReadFile(const StringView file_path, Allocator alloc)
 {
-	std::ifstream file ( filePath, std::ios::binary );
+    FILE* file_handle;
+    fopen_s(&file_handle , file_path.buffer, "r");
 
-	if ( !file.is_open () )
-		throw std::runtime_error ( "Error opnening the file" );
+    assert(file_handle);
+    
+    size_t file_size = fseek(file_handle, 0L, SEEK_END) + 1;
 
-	size_t fileSize = static_cast<size_t>(file.tellg ());
-	std::vector<char> fileData = std::vector<char> ( fileSize );
+    fseek(file_handle, 0L, SEEK_SET);
+    StringBuffer file_data = StringBuffer::Create(file_size, alloc);
 
-	file.seekg ( 0 );
-	file.read ( fileData.data (), fileSize );
+    fgets(file_data.buffer, (int) file_size, file_handle);
+    fclose(file_handle);
 
-	return fileData;
+    return file_data;
 }

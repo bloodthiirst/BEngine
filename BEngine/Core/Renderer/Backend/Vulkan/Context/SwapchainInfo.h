@@ -1,5 +1,5 @@
 #pragma once
-#include <vector>
+#include <Containers/DArray.h>
 #include <vulkan/vulkan.h>
 #include "FrameBuffer.h"
 #include "../../../Frontend/Texture/Texture.h"
@@ -23,16 +23,31 @@ public:
     VkPresentModeKHR presentMode;
     uint32_t maxFramesInFlight;
     uint32_t imagesCount;
-    std::vector<VkImage> images;
-    std::vector<VkImageView> imageViews;
-    std::vector<FrameBuffer> frameBuffers;
-    std::vector<CommandBuffer> graphicssCommandBuffers;
+    DArray<VkImage> images;
+    DArray<VkImageView> imageViews;
+    DArray<FrameBuffer> frameBuffers;
+
+    /// <summary>
+    /// <para>Array of command buffers associated with each swapchain image used for</para>
+    /// <para>Use context.current_image_index as index to get the current command buffer</para>
+    /// </summary>
+    DArray<CommandBuffer> graphics_cmd_buffers_per_image;
 
     // sync objects
-    std::vector<VkSemaphore> imageAvailableSemaphore;
-    std::vector<VkSemaphore> finishedRenderingSemaphore;
-    std::vector<Fence> cmdBufferSumitFencePerFrameIndex;
-    std::vector<Fence*> fencePtrAssociatedPerImageIndex;
+    DArray<VkSemaphore> image_presentation_complete_semaphores;
+    DArray<VkSemaphore> finishedRenderingSemaphore;
+
+    /// <summary>
+    /// <para>An array of fences used to signal to the CPU once the command buffer OR the presentation passed to the queue have completed execution</para>
+    /// <para>Use context.current_frame as index to get the current Fence</para>
+    /// </summary>
+    DArray<Fence> cmd_buffer_done_execution_per_frame;
+
+    /// <summary>
+    /// <para>An array of pointers to fences used to go from image_index to the corresponding </para>
+    /// <para>The fence in this array point to the same fences in cmd_buffer_done_execution_per_frame , they are just recycled after to be used for waiting on presentation </para>
+    /// </summary>
+    DArray<Fence*> in_flight_fence_per_image;
 
     Texture depthAttachement;
 public:

@@ -21,37 +21,13 @@
     <ClCompile Include="Core\Application\Application.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Core\Logger\Base\ILogger.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Core\Logger\Types\ConsoleLogger.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Core\Logger\Logger.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Core\Platform\Base\Input\Input.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Core\Platform\Base\Window\Window.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Core\Platform\Base\Platform\Platform.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Core\Renderer\Backend\Vulkan\Context\VulkanContext.cpp">
+    <ClCompile Include="Core\Platform\Base\Input.h">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Core\Renderer\Backend\Vulkan\Renderer\VulkanBackendRenderer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Core\Renderer\Backend\BackendRenderer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Core\Renderer\Context\RendererContext.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Core\Renderer\Frontend\FrontendRenderer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Core\Time\Time.cpp">
@@ -60,37 +36,19 @@
     <ClCompile Include="Core\Utils\FileUtils.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Core\Platform\Types\Win32\Platform\Win32Platform.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Core\ApplicationState\ApplicationState.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Core\Platform\Types\Win32\Window\Win32Window.cpp">
+    <ClCompile Include="Core\Platform\Types\Win32\Win32Window.h">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Core\EventSystem\Types\GameEvents.h">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Core\EventSystem\Base\EventBase.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Core\Platform\Types\Win32\Input\Win32Input.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Core\EventSystem\GameEventSystem.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Core\Platform\Base\Input\InputUtils.cpp">
+    <ClCompile Include="Core\Platform\Base\InputUtils.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Core\Platform\Types\Win32\Window\Win32Utils.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Core\Platform\Base\Memory\Memory.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Core\Platform\Types\Win32\Memory\Win32Memory.cpp">
+    <ClCompile Include="Core\Platform\Types\Win32\Win32Utils.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Core\Renderer\Frontend\Texture\Texture.cpp">
@@ -103,9 +61,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Core\Renderer\Backend\Vulkan\Context\SwapchainInfo.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Core\Renderer\Frontend\Texture\TextureDescription.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Core\Renderer\Backend\Vulkan\Context\PhysicalDeviceInfo.cpp">
@@ -123,13 +78,19 @@
     <ClCompile Include="Core\Renderer\Frontend\Pipeline\Pipeline.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Core\Platform\Base\Filesystem\Filesystem.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Core\Platform\Types\Win32\Filesystem\Win32Filesystem.cpp">
+    <ClCompile Include="Core\Platform\Types\Win32\Win32Filesystem.h">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Core\Renderer\Frontend\Buffer\Buffer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\Platform\Types\Win32\Win32Platform.h">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\Global\Global.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\Defines\Defines.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -149,13 +110,10 @@
     <ClInclude Include="Core\Logger\Logger.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Core\Platform\Base\Input\Input.h">
+    <ClInclude Include="Core\Platform\Base\Window.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Core\Platform\Base\Window\Window.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Core\Platform\Base\Platform\Platform.h">
+    <ClInclude Include="Core\Platform\Base\Platform.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Core\Renderer\Backend\Vulkan\Context\VulkanContext.h">
@@ -170,9 +128,6 @@
     <ClInclude Include="Core\Renderer\Context\RendererContext.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Core\Renderer\Frontend\FrontendRenderer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Core\Time\Time.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -182,25 +137,13 @@
     <ClInclude Include="Core\Utils\Fomatter.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Core\Platform\Types\Win32\Platform\Win32Platform.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Core\ApplicationState\ApplicationState.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Core\Platform\Types\Win32\Window\Win32Window.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Core\EventSystem\Base\EventBase.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Core\Platform\Types\Win32\Input\Win32Input.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Core\Platform\Base\Input\KeyCode.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Core\Maths\Vector2Int.h">
+    <ClInclude Include="Core\Platform\Base\KeyCode.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Core\EventSystem\GameEventSystem.h">
@@ -209,31 +152,16 @@
     <ClInclude Include="Core\Utils\MemoryUtils.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Core\Platform\Base\Input\InputUtils.h">
+    <ClInclude Include="Core\Platform\Base\InputUtils.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="Core\Platform\Types\Win32\Window\Win32Utils.h">
+    <ClInclude Include="Core\Platform\Types\Win32\Win32Utils.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Core\Platform\Base\Memory\Memory.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Core\Platform\Types\Win32\Memory\Win32Memory.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Core\EventSystem\Action.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Core\Maths\Maths.h">
+    <ClInclude Include="Core\Platform\Types\Win32\Win32Memory.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Core\Renderer\Frontend\Texture\Texture.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Core\Maths\Rect.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Core\Maths\Color.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Core\Renderer\Backend\Vulkan\Context\Renderpass.h">
@@ -260,25 +188,10 @@
     <ClInclude Include="Core\Renderer\Backend\Vulkan\Context\CommandPoolsInfo.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Core\Renderer\Frontend\Texture\TextureDescription.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Core\Renderer\Backend\Vulkan\Context\FrameBuffer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Core\Renderer\Backend\Vulkan\Context\Fence.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Core\Maths\Matrix4x4.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Core\Maths\Vector4.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Core\Maths\Matrix3x3.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Core\Maths\Vector3.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Core\Renderer\Frontend\Shader\Shader.h">
@@ -287,24 +200,26 @@
     <ClInclude Include="Core\Renderer\Frontend\Pipeline\Pipeline.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Core\Maths\Quaternion.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Core\Platform\Base\Filesystem\Filesystem.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Core\Platform\Types\Win32\Filesystem\Win32Filesystem.h">
+    <ClInclude Include="Core\Platform\Base\Filesystem.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Core\Renderer\Frontend\Buffer\Buffer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Core\Global\Global.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\Platform\Types\Win32\Win32Time.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\Platform\Base\Time.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\Platform\Base\Memory.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Assets\Builtin.ObjectShader.frag.glsl" />
-  </ItemGroup>
-  <ItemGroup>
-    <CopyFileToFolders Include="Assets\Builtin.ObjectShader.vert.spv" />
-    <CopyFileToFolders Include="Assets\Builtin.ObjectShader.frag.spv" />
   </ItemGroup>
 </Project>

@@ -2,8 +2,8 @@
 #include <vulkan/vulkan.h>
 #include "../../Backend/Vulkan/Context/Fence.h"
 
-class VulkanContext;
-class Memory;
+struct VulkanContext;
+struct Memory;
 
 struct BufferDescriptor
 {
@@ -24,7 +24,7 @@ public:
 public:
     static bool Create ( VulkanContext* context, BufferDescriptor descriptor , bool bindOnCreate ,Buffer* outBuffer );
     static bool Destroy ( VulkanContext* context, Buffer* outBuffer );
-    static bool Load ( VulkanContext* context, Memory* memory, uint32_t offset, uint32_t size , void* inDataPtr , uint32_t flags , Buffer* inBuffer );
+    static bool Load ( VulkanContext* context, uint32_t offset, uint32_t size , void* inDataPtr , uint32_t flags , Buffer* inBuffer );
     
     /// <summary>
     /// Takes the content of the buffer and maps it to a block of memory (outDataPtr in out case)

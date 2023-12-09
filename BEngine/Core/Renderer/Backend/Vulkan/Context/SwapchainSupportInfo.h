@@ -1,11 +1,11 @@
 #pragma once
 #include <vulkan/vulkan.h>
-#include <vector>
+#include <Containers/DArray.h>
 
 struct SwapchainSupportInfo
 {
 public:
     VkSurfaceCapabilitiesKHR capabilities;
-    std::vector<VkSurfaceFormatKHR> surfaceFormats;
-    std::vector<VkPresentModeKHR> presentModes;
+    DArray<VkSurfaceFormatKHR> surfaceFormats;
+    DArray<VkPresentModeKHR> presentModes;
 };

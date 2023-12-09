@@ -1,16 +1,16 @@
 #pragma once
 #include <vulkan/vulkan.h>
-#include <vector>
+#include <Containers/DArray.h>
 
-class VulkanContext;
-class Renderpass;
-class CommandBuffer;
+struct VulkanContext;
+struct Renderpass;
+struct CommandBuffer;
 
 struct PipelineDescriptor
 {
-    std::vector<VkVertexInputAttributeDescription> attributes;
-    std::vector<VkDescriptorSetLayout> descriptorSetLayouts;
-    std::vector<VkPipelineShaderStageCreateInfo> stages;
+    DArray<VkVertexInputAttributeDescription> attributes;
+    DArray<VkDescriptorSetLayout> descriptorSetLayouts;
+    DArray<VkPipelineShaderStageCreateInfo> stages;
     VkViewport viewport;
     VkRect2D scissor;
     bool isWireframe;

@@ -1,7 +1,7 @@
 #pragma once
 #include <stdint.h>
 
-class Application;
+struct Application;
 
 class Time
 {

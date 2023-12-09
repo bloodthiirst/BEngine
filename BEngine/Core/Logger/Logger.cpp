@@ -1,87 +1,84 @@
 #include "Logger.h"
 
-std::unordered_map<size_t, ILogger*>* Logger::loggers;
-
-void Logger::Initialize ()
+void Logger::Initialize()
 {
-	loggers = new std::unordered_map<size_t, ILogger*> ();
+    loggers = std::unordered_map<size_t, ILogger>();
 }
 
-void Logger::Destroy ()
+void Logger::Destroy()
 {
-	loggers->clear ();
-	delete loggers;
+    loggers.clear();
 };
 
-void Logger::Log ( const char* message , ...)
+BAPI void Logger::Log( const char* message, ... )
 {
-	va_list args;
-	va_start ( args, message );
+    va_list args;
+    va_start( args, message );
 
-	for ( auto& [key, GetNewID] : *loggers )
-	{
-		GetNewID->Log ( message , args );
-	}
+    for (auto& [key, logger] : loggers)
+    {
+        logger.log( &logger, message );
+    }
 
-	va_end ( args );
+    va_end( args );
 }
 
-void Logger::NewLine ()
+void Logger::NewLine( size_t repeat )
 {
-	for ( auto& [key, GetNewID] : *loggers )
-	{
-		GetNewID->NewLine ();
-	}
+    for (auto& [key, logger] : loggers)
+    {
+        logger.new_line( &logger, repeat );
+    }
 }
 
-void Logger::Info ( const char* message, ... )
+void Logger::Info( const char* message, ... )
 {
-	va_list args;
-	va_start ( args, message );
+    va_list args;
+    va_start( args, message );
 
-	for ( auto& [key, GetNewID] : *loggers )
-	{
-		GetNewID->Info ( message , args );
-	}
+    for (auto& [key, logger] : loggers)
+    {
+        logger.info( &logger, message );
+    }
 
-	va_end ( args );
+    va_end( args );
 }
 
-void Logger::Warning ( const char* message, ... )
+void Logger::Warning( const char* message, ... )
 {
-	va_list args;
-	va_start ( args, message );
+    va_list args;
+    va_start( args, message );
 
-	for ( auto& [key, GetNewID] : *loggers )
-	{
-		GetNewID->Warning ( message , args );
-	}
+    for (auto& [key, logger] : loggers)
+    {
+        logger.warning( &logger, message );
+    }
 
-	va_end ( args );
+    va_end( args );
 }
 
-void Logger::Error ( const char* message, ... )
+void Logger::Error( const char* message, ... )
 {
-	va_list args;
-	va_start ( args, message );
+    va_list args;
+    va_start( args, message );
 
-	for ( auto& [key, GetNewID] : *loggers )
-	{
-		GetNewID->Error ( message , args );
-	}
+    for (auto& [key, logger] : loggers)
+    {
+        logger.fatal( &logger, message );
+    }
 
-	va_end ( args );
+    va_end( args );
 }
 
-void Logger::Fatal ( const char* message, ... )
+void Logger::Fatal( const char* message, ... )
 {
-	va_list args;
-	va_start ( args, message );
+    va_list args;
+    va_start( args, message );
 
-	for ( auto& [key, GetNewID] : *loggers )
-	{
-		GetNewID->Fatal ( message , args );
-	}
+    for (auto& [key, logger] : loggers)
+    {
+        logger.fatal( &logger, message );
+    }
 
-	va_end ( args );
+    va_end( args );
 }

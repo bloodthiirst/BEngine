@@ -1,31 +1,23 @@
 #pragma once
-#include "../ApplicationState/ApplicationState.h"
-#include "../EventSystem/GameEventSystem.h"
-#include "../Platform/Base/Platform/Platform.h"
-#include "../Time/Time.h"
-#include "../Renderer/Frontend/FrontendRenderer.h"
-
+#include <String/StringView.h>
+#include <Maths/Rect.h>
 #include <GameApp.h>
+#include "../ApplicationState/ApplicationState.h"
 
+struct GameApp;
 
-class Application
+struct ApplicationStartup
 {
-public:
-	Application( GameApp* gameApp );
+    StringView executable_folder;
+    StringView executable_name;
+    Rect window_rect;
+};
 
-public:
-	GameApp* gameApp;
-	ApplicationState applicationState;
-	GameEventSystem gameEventSystem;
-	Platform* platform;
-	Time* time;
-	FrontendRenderer renderer;
+struct Application
+{
+	GameApp game_app;
+	ApplicationState application_state;
 
-public:
-	void Startup ();
 	bool Run ();	
-	void Destroy ();
-
-	~Application ();
 };
 

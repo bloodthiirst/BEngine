@@ -1,8 +1,6 @@
 #pragma once
 #include "Texture.h"
-#include "TextureDescription.h"
 #include "../../Backend/Vulkan/Context/VulkanContext.h"
-
 
 inline void CreateView ( VulkanContext* context, TextureDescriptor descriptor, Texture* texture )
 {

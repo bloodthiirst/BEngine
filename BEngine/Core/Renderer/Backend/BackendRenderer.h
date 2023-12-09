@@ -1,22 +1,23 @@
 #pragma once
-#include "../../Platform/Base/Platform/Platform.h"
+#include "../../Platform/Base/Platform.h"
 #include "../../Application/Application.h"
 #include "../Context/RendererContext.h"
+#include <Maths/Matrix4x4.h>
+#include <Maths/Vector3.h>
 
-class BackendRenderer
-{ 
-public:
-	Application* application;
-	Platform* platform;
-	size_t frameCount = { 0 };
+struct BackendRenderer
+{
+    size_t frame_count = { 0 };
 
-public:
-	virtual bool Startup () = 0;
-public:
-	virtual void Resize ( uint32_t width, uint32_t height ) = 0;
-	virtual bool StartFrame ( RendererContext rendererContext ) = 0;
-	virtual bool EndFrame ( RendererContext rendererContext ) = 0;
-	
-	virtual void Destroy () = 0;
+    void* user_data;
+
+    Func<bool,BackendRenderer* , ApplicationStartup> startup;
+
+    ActionParams<BackendRenderer*, uint32_t, uint32_t> resize;
+    Func<bool, BackendRenderer*, RendererContext> start_frame;
+    Func<bool, BackendRenderer*, Matrix4x4, Matrix4x4, Vector3, float, uint32_t > update_global_state;
+    Func<bool, BackendRenderer*, RendererContext> end_frame;
+
+    Func<bool, BackendRenderer*> destroy;
 };
 

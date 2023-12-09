@@ -1,7 +1,7 @@
 #pragma once
 #include <vulkan/vulkan.h>
-#include "../../../../Maths/Rect.h"
-#include "../../../../Maths/Color.h"
+#include <Maths/Rect.h>
+#include <Maths/Color.h>
 #include "CommandBuffer.h"
 
 enum class RenderpassState
