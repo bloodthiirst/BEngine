@@ -13,15 +13,16 @@ enum FileMode
 struct FileHandle
 {
     void* handle;
-    bool isValid;
+    bool is_valid;
 };
 
 struct Filesystem
 {
     Func<bool, const StringView> exists;
     Func<bool, const StringView, FileMode, bool, FileHandle*> open;
+    Func<bool, const FileHandle*, size_t*> get_size;
     Func<bool, FileHandle*> close;
     Func<bool, const FileHandle*, StringBuffer*> read_text;
-    Func<bool, const FileHandle, void** , uint64_t*> read_all;
+    Func<bool, const FileHandle, void* , uint64_t*> read_all;
     Func<bool,const FileHandle*, StringView> write_text;
 };

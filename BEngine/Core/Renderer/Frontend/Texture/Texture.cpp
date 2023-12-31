@@ -10,7 +10,7 @@ inline void CreateView ( VulkanContext* context, TextureDescriptor descriptor, T
     createViewInfo.image = texture->handle;
     createViewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
 
-    createViewInfo.subresourceRange.aspectMask = descriptor.viewAspectFlags;
+    createViewInfo.subresourceRange.aspectMask = descriptor.view_aspect_flags;
     createViewInfo.subresourceRange.baseArrayLayer = 0;
     createViewInfo.subresourceRange.levelCount = 1;
     createViewInfo.subresourceRange.layerCount = 1;
@@ -40,25 +40,29 @@ void Texture::Destroy ( VulkanContext* context, Texture* texture )
     }
 }
 
-void Texture::Create( VulkanContext* context, TextureDescriptor descriptor, Texture* texture )
+
+
+void Texture::Create( VulkanContext* context, TextureDescriptor descriptor,  Texture* texture )
 {
     texture->width = descriptor.width;
     texture->height = descriptor.height;
 
     VkImageCreateInfo createImageInfo = {};
     createImageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-    createImageInfo.imageType = descriptor.imageType;
+    
+    createImageInfo.imageType = descriptor.image_type;
     createImageInfo.extent.width = descriptor.width;
     createImageInfo.extent.height = descriptor.height;
     createImageInfo.extent.depth = 1;
+
     createImageInfo.mipLevels = 4;
     createImageInfo.arrayLayers = 1;
     createImageInfo.format = descriptor.format;
     createImageInfo.tiling = descriptor.tiling;
     createImageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
     createImageInfo.usage = descriptor.usage;
-    createImageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
-    createImageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+    createImageInfo.samples = VK_SAMPLE_COUNT_1_BIT; // the number of samples per pixel , this can be changed based on if the device supports multisampling 
+    createImageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE; // implies that the image can only be accessed by a single queue family at a time
 
     vkCreateImage ( context->logicalDeviceInfo.handle, &createImageInfo, context->allocator, &texture->handle );
 
@@ -67,8 +71,7 @@ void Texture::Create( VulkanContext* context, TextureDescriptor descriptor, Text
     vkGetImageMemoryRequirements ( context->logicalDeviceInfo.handle, texture->handle, &memoryReqs );
 
     uint32_t memoryTypeIndex = 0;
-    context->physicalDeviceInfo.FindMemoryIndex (memoryReqs.memoryTypeBits, descriptor.memoryFlags, &memoryTypeIndex );
-     
+    context->physicalDeviceInfo.FindMemoryIndex (memoryReqs.memoryTypeBits, descriptor.memory_flags, &memoryTypeIndex );  
 
     VkMemoryAllocateInfo allocateInfo = {};
     allocateInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
@@ -84,7 +87,7 @@ void Texture::Create( VulkanContext* context, TextureDescriptor descriptor, Text
 
     texture->memory = gpuImageMemory;
 
-    if ( descriptor.createView )
+    if ( descriptor.create_view )
     {
         CreateView ( context, descriptor, texture );
     }

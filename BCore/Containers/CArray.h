@@ -1,10 +1,9 @@
 #pragma once
-#include <cstdlib>
 #include <assert.h>
 #include "../Allocators/Allocator.h"
 
 template<typename T>
-class CArray
+struct CArray
 {
 public:
     size_t size;

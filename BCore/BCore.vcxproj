@@ -131,12 +131,16 @@
     <ClInclude Include="Containers\CArray.h" />
     <ClInclude Include="Containers\DArray.h" />
     <ClInclude Include="Command\Command.h" />
+    <ClInclude Include="Containers\HMap.h" />
+    <ClInclude Include="Context\CoreContext.h" />
     <ClInclude Include="String\StringBuffer.h" />
     <ClInclude Include="String\StringView.h" />
     <ClInclude Include="String\StringUtils.h" />
+    <ClInclude Include="String\ToString.h" />
     <ClInclude Include="Typedefs\Typedefs.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Context\CoreContext.cpp" />
     <ClCompile Include="String\StringBuffer.cpp" />
     <ClCompile Include="String\StringView.cpp" />
   </ItemGroup>

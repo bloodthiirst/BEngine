@@ -46,7 +46,7 @@ struct Win32Window
         GameApp game_app = Global::app.game_app;
         StringView name = Defines::engine_name;
 
-        Allocator heap_alloc = HeapAllocator::Create();
+        Allocator heap_alloc = Global::alloc_toolbox.heap_allocator;
 
         // note : includes the termination char
         size_t string_length = name.length + 1;

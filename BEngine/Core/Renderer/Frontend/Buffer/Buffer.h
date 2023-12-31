@@ -9,7 +9,7 @@ struct BufferDescriptor
 {
     uint32_t size;
     VkBufferUsageFlagBits usage;
-    uint32_t memoryPropertyFlags;
+    VkMemoryPropertyFlagBits memoryPropertyFlags;
 };
 
 class Buffer

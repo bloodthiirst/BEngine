@@ -5,6 +5,7 @@
 #endif
 
 #include <cstdint>
+#include <Context/CoreContext.h>
 #include <Allocators/Allocator.h>
 #include <String/StringBuffer.h>
 #include <String/StringView.h>
@@ -24,7 +25,8 @@
 #endif
 
 // Start the game with 500MB of frame arena memory
-#define INITIAL_ARENA_CAPACITY 500 * 1'024'000
+#define INITIAL_GAME_ARENA_CAPACITY 500 * 1'024'000
+#define INITIAL_LIB_ARENA_CAPACITY 30 * 1'024'000
 
 typedef GameApp( *GenerateGameProc )();
 
@@ -37,19 +39,28 @@ int main( int argc, char** argv )
     // get startup params from args 
     {
 #ifdef WIN32
-        Win32Platform::GetStartupArgs( argv, argc, &startup );
         Win32Platform::Create( &Global::platform );
+        
+        // init the memory func pointers that will be used by the core lib
+        {
+            CoreContext::free = Global::platform.memory.free;
+            CoreContext::malloc = Global::platform.memory.malloc;
+            CoreContext::realloc = Global::platform.memory.realloc;
+            CoreContext::mem_compare = Global::platform.memory.mem_compare;
+            CoreContext::mem_copy = Global::platform.memory.mem_copy;
+            CoreContext::mem_init = Global::platform.memory.mem_init;
+            CoreContext::mem_set = Global::platform.memory.mem_set;
+            CoreContext::core_arena = Arena::Create( INITIAL_LIB_ARENA_CAPACITY );
+        }
+
+        Win32Platform::GetStartupArgs( argv, argc, &startup );
 #endif
     }
 
     // main allocators
     {
         Global::alloc_toolbox.heap_allocator = HeapAllocator::Create();
-
-        Global::alloc_toolbox.frame_arena = {};
-        Global::alloc_toolbox.frame_arena.capacity = INITIAL_ARENA_CAPACITY;
-        Global::alloc_toolbox.frame_arena.offset = 0;
-        Global::alloc_toolbox.frame_arena.data = Global::alloc_toolbox.heap_allocator.alloc( Global::alloc_toolbox.heap_allocator, INITIAL_ARENA_CAPACITY );
+        Global::alloc_toolbox.frame_arena = Arena::Create( INITIAL_GAME_ARENA_CAPACITY );
     }
 
     //Global::platform.startup( &Global::platform );
@@ -72,14 +83,14 @@ int main( int argc, char** argv )
     // init core global systems, order matters
     {
         Global::event_system.Startup();
-        Global::platform.window.startup_callback(  &Global::platform.window , startup );
-        Global::backend_renderer.startup( &Global::backend_renderer , startup );
+        Global::platform.window.startup_callback( &Global::platform.window, startup );
+        Global::backend_renderer.startup( &Global::backend_renderer, startup );
     }
 
     GameApp client_game = {};
     HMODULE hmodule = nullptr;
-    
-    if (!TryGetGameDll( startup, &client_game, &hmodule ))
+
+    if ( !TryGetGameDll( startup, &client_game, &hmodule ) )
     {
         Global::logger.Fatal( "Couldn't find Game Dll" );
         goto cleanup;
@@ -94,14 +105,14 @@ int main( int argc, char** argv )
 
 cleanup:
 
-    if (client_game.destroy)
+    if ( client_game.destroy )
     {
         client_game.destroy( &client_game );
     }
 
     client_game = {};
 
-    if (hmodule)
+    if ( hmodule )
     {
         FreeLibrary( hmodule );
         hmodule = nullptr;
@@ -125,15 +136,16 @@ bool TryGetGameDll( ApplicationStartup startup, GameApp* out_game, HMODULE* out_
 
     *out_module = LoadLibraryA( "CustomGame.dll" );
 
-    if (out_module == nullptr) {
+    if ( out_module == nullptr )
+    {
         *out_game = {};
         *out_module = {};
         return false;
     }
 
-    GenerateGameProc load_game_proc = (GenerateGameProc)GetProcAddress( *out_module, "GetGameApp" );
+    GenerateGameProc load_game_proc = (GenerateGameProc) GetProcAddress( *out_module, "GetGameApp" );
 
-    if (load_game_proc == nullptr)
+    if ( load_game_proc == nullptr )
     {
         *out_game = {};
         *out_module = {};

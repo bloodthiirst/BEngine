@@ -93,6 +93,9 @@
     <ClCompile Include="Core\Defines\Defines.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Core\Renderer\Frontend\Shader\ShaderBuilder.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Core\Application\Application.h">
@@ -218,8 +221,20 @@
     <ClInclude Include="Core\Platform\Base\Memory.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Core\Renderer\Frontend\Shader\ShaderBuilder.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Assets\Builtin.ObjectShader.frag.glsl" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Core\Resources\Compile.bat">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="Core\Resources\SimpleShader.frag" />
+    <None Include="Core\Resources\SimpleShader.frag.spv" />
+    <None Include="Core\Resources\SimpleShader.vert" />
+    <None Include="Core\Resources\SimpleShader.vert.spv" />
   </ItemGroup>
 </Project>

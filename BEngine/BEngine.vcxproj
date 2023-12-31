@@ -196,6 +196,7 @@
     <ClCompile Include="Core\Renderer\Frontend\Buffer\Buffer.cpp" />
     <ClCompile Include="Core\Renderer\Frontend\Pipeline\Pipeline.cpp" />
     <ClCompile Include="Core\Renderer\Frontend\Shader\Shader.cpp" />
+    <ClCompile Include="Core\Renderer\Frontend\Shader\ShaderBuilder.cpp" />
     <ClCompile Include="Core\Renderer\Frontend\Texture\Texture.cpp" />
     <ClCompile Include="Core\Renderer\Backend\Vulkan\Context\SwapchainInfo.cpp" />
     <ClCompile Include="Core\Renderer\Backend\Vulkan\Context\FrameBuffer.cpp" />
@@ -243,6 +244,7 @@
     <ClInclude Include="Core\Renderer\Backend\Vulkan\Context\VulkanContext.h" />
     <ClInclude Include="Core\Renderer\Backend\Vulkan\Renderer\VulkanBackendRenderer.h" />
     <ClInclude Include="Core\Renderer\Context\RendererContext.h" />
+    <ClInclude Include="Core\Renderer\Frontend\Shader\ShaderBuilder.h" />
     <ClInclude Include="Core\Renderer\Frontend\Texture\Texture.h" />
     <ClInclude Include="Core\Time\Time.h" />
     <ClInclude Include="Core\Utils\FileUtils.h" />
@@ -263,6 +265,13 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </Resource>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Core\Resources\Compile.bat" />
+    <None Include="Core\Resources\SimpleShader.frag" />
+    <None Include="Core\Resources\SimpleShader.frag.spv" />
+    <None Include="Core\Resources\SimpleShader.vert" />
+    <None Include="Core\Resources\SimpleShader.vert.spv" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

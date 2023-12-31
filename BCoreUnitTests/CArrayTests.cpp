@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "CppUnitTest.h"
+#include <Context/CoreContext.h>
 #include <Containers/CArray.h>
 #include <Allocators/Allocator.h>
 
@@ -14,6 +15,8 @@ namespace BEngineMathsUnitTests
 
         TEST_METHOD(Create)
         {
+            CoreContext::DefaultContext();
+
             size_t size = 5;
             CArray<int> arr = {};
 
@@ -40,6 +43,8 @@ namespace BEngineMathsUnitTests
 
         TEST_METHOD(Add)
         {
+            CoreContext::DefaultContext();
+
             CArray<int>* arr = {};
 
             Allocator allocator = HeapAllocator::Create();
@@ -73,6 +78,9 @@ namespace BEngineMathsUnitTests
 
         TEST_METHOD(RemoveAll)
         {
+
+            CoreContext::DefaultContext();
+
             CArray<int>* arr = {};
 
             Allocator allocator = HeapAllocator::Create();
@@ -98,6 +106,8 @@ namespace BEngineMathsUnitTests
 
         TEST_METHOD(TryIndexOf)
         {
+            CoreContext::DefaultContext();
+
             CArray<int>* arr = {};
 
             Allocator allocator = HeapAllocator::Create();

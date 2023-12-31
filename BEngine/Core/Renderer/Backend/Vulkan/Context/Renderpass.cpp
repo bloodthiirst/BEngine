@@ -40,8 +40,9 @@ bool Renderpass::Create ( VulkanContext* context, Rect rect, Color color, float 
     // main subpass
     VkSubpassDescription subpassDesc = {};
     subpassDesc.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+    
+    Allocator heap_alloc = Global::alloc_toolbox.heap_allocator;
 
-    Allocator heap_alloc = HeapAllocator::Create();
     DArray<VkAttachmentDescription> attachementDescs;
     DArray<VkAttachmentDescription>::Create( 2, &attachementDescs, heap_alloc);
 

@@ -2,6 +2,7 @@
 #include <malloc.h>
 #include <cstdint>
 #include <crtdbg.h>
+#include "../Context/CoreContext.h"
 
 struct Allocator;
 
@@ -20,8 +21,37 @@ struct Allocator
 struct Arena
 {
     void* data;
-    uint32_t capacity;
-    uint32_t offset;
+    size_t capacity;
+    size_t offset;
+
+    static Arena Create( size_t capacity, bool init = true )
+    {
+        Arena res = {};
+        res.data = CoreContext::malloc( capacity );
+        res.capacity = capacity;
+
+        if ( init )
+        {
+            CoreContext::mem_init( res.data, capacity );
+        }
+
+        return res;
+    }
+
+    static Arena CreateSubArena( Arena* source )
+    {
+        Arena sub = {};
+        sub.data = ((char*) source->data) + source->offset;
+        sub.offset = 0;
+        sub.capacity = source->capacity - source->offset;
+
+        return sub;
+    }
+
+    static void* Reset( Arena* arena )
+    {
+        arena->offset = 0;
+    }
 };
 
 struct ArenaAllocator
@@ -38,42 +68,39 @@ public:
         return alloc;
     }
 
+
 private:
 
     static void* NextPowerOfTwo( void* ptr, size_t size )
     {
-        int64_t ptr_num = (int64_t)ptr;
+        int64_t ptr_num = (int64_t) ptr;
 
         ptr_num += size;
 
-        const int64_t mask = 0b11;
-        const int64_t stride = 4;
+        const size_t mask = 0b11;
+        const size_t stride = 4;
 
-        uint64_t res = ptr_num & mask;
+        size_t res = ptr_num & mask;
 
-        ptr_num += ((uint64_t)(res != 0)) * stride;
+        ptr_num += ((size_t) (res != 0)) * stride;
 
-        return (void*)ptr_num;
+        return (void*) ptr_num;
     }
 
 
     static void* Allocate( Allocator alloc, size_t size )
     {
-        Arena* arena = (Arena*)alloc.user_data;
+        Arena* arena = (Arena*) alloc.user_data;
 
-        _ASSERT( arena->capacity < (arena->offset + size) );
+        _ASSERT( (arena->offset + size) < arena->capacity );
 
-        void* ptr = (void*)((size_t)arena->data + arena->offset);
+        void* ptr = (void*) ((char*) arena->data + arena->offset);
 
-        arena->offset += (uint32_t)size;
+        arena->offset += size;
 
         return ptr;
     }
 
-    static void* Reset( Arena* arena )
-    {
-        arena->offset = 0;
-    }
 };
 
 /// <summary>
@@ -119,17 +146,17 @@ public:
 private:
     static void* Reallocate( Allocator alloc, void* ptr, size_t size )
     {
-        return realloc( ptr, size );
+        return CoreContext::realloc( ptr, size );
     }
 
     static void* Allocate( Allocator alloc, size_t size )
     {
-        return malloc( size );
+        return CoreContext::malloc( size );
     }
 
     static void Free( Allocator alloc, void* ptr )
     {
-        free( ptr );
+        CoreContext::free( ptr );
     }
 };
 
@@ -141,4 +168,4 @@ private:
 /// <summary>
 /// Returns stack allocated memory of size (size) and of type (type)
 /// </summary>
-#define STACK_ALLOC_ARRAY(type , count)  EmplaceAllocator::Create(alloca(sizeof(type) * count))
+#define STACK_ALLOC_ARRAY(type , count) EmplaceAllocator::Create(alloca(sizeof(type) * count))

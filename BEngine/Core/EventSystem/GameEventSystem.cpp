@@ -1,6 +1,7 @@
 #include "GameEventSystem.h"
 #include "Types/GameEvents.h"
 #include <Allocators/Allocator.h>
+#include "../Global/Global.h"
 
 void GameEventSystem::Startup ()
 {
@@ -25,7 +26,7 @@ void GameEventSystem::Startup ()
 
 	this->eventListenersCount = IDProvider<Event>::CurrentCounter ();
 
-    Allocator heap_alloc = HeapAllocator::Create();
+    Allocator heap_alloc = Global::alloc_toolbox.heap_allocator;
 
     DArray<DArray<void*>>::Create(this->eventListenersCount, &this->eventListenersCallbacks, heap_alloc);
 

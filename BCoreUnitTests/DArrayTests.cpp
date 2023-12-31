@@ -14,6 +14,8 @@ namespace BEngineMathsUnitTests
 
         TEST_METHOD(Create)
         {
+            CoreContext::DefaultContext();
+
             size_t size = 5;
             DArray<int> arr;
 
@@ -31,13 +33,15 @@ namespace BEngineMathsUnitTests
                 Assert::IsTrue(arr.data[i] == i);
             }
 
-            Assert::IsTrue(arr.capacity == size + 1);
+            Assert::IsTrue(arr.capacity == size);
             Assert::IsTrue(arr.size == size);
             Assert::IsTrue(arr.data != nullptr);
         }
 
         TEST_METHOD(Add)
         {
+            CoreContext::DefaultContext();
+
             DArray<int> arr;
 
             Allocator allocator = HeapAllocator::Create();
@@ -45,7 +49,7 @@ namespace BEngineMathsUnitTests
 
 
             Assert::IsTrue(arr.size == 0);
-            Assert::IsTrue(arr.capacity == 1);
+            Assert::IsTrue(arr.capacity == 0);
 
             DArray<int>::Add(&arr, 6);
 
@@ -55,12 +59,12 @@ namespace BEngineMathsUnitTests
             DArray<int>::Add(&arr, 9);
 
             Assert::IsTrue(arr.size == 2);
-            Assert::IsTrue(arr.capacity == 2);
+            Assert::IsTrue(arr.capacity == 3);
             
             DArray<int>::Add(&arr, 4);
 
             Assert::IsTrue(arr.size == 3);
-            Assert::IsTrue(arr.capacity == 4);
+            Assert::IsTrue(arr.capacity == 3);
 
 
             Assert::IsTrue(arr.data[0] == 6);
@@ -70,6 +74,9 @@ namespace BEngineMathsUnitTests
 
         TEST_METHOD(RemoveAll)
         {
+
+            CoreContext::DefaultContext();
+
             DArray<int> arr;
 
             Allocator allocator = HeapAllocator::Create();
@@ -81,7 +88,7 @@ namespace BEngineMathsUnitTests
             DArray<int>::Add(&arr, 0);
             DArray<int>::Add(&arr, 4);
 
-            size_t remove_count = DArray<int>::RemoveAll(&arr, 4 , allocator);
+            size_t remove_count = DArray<int>::RemoveAll(&arr, 4);
 
             Assert::IsTrue(arr.data[0] == 0);
             Assert::IsTrue(arr.data[1] == 0);
@@ -92,6 +99,8 @@ namespace BEngineMathsUnitTests
 
         TEST_METHOD(TryIndexOf)
         {
+            CoreContext::DefaultContext();
+
             DArray<int> arr;
 
             Allocator allocator = HeapAllocator::Create();

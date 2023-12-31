@@ -47,8 +47,9 @@ void SwapchainInfo::QuerySwapchainSupport( VkPhysicalDevice handle, VkSurfaceKHR
     // capabilities
     VkSurfaceCapabilitiesKHR capabilities = {};
     vkGetPhysicalDeviceSurfaceCapabilitiesKHR( handle, surface, &capabilities );
-
-    Allocator heap_alloc = HeapAllocator::Create();
+    
+    Allocator heap_alloc = Global::alloc_toolbox.heap_allocator;
+    
     // surface formats
     uint32_t formatsCount = 0;
     vkGetPhysicalDeviceSurfaceFormatsKHR( handle, surface, &formatsCount, nullptr );
@@ -301,12 +302,12 @@ bool SwapchainInfo::Create( VulkanContext* context, SwapchainCreateDescription d
         descriptor.format = context->physicalDeviceInfo.depthFormat;
         descriptor.width = swapchainExtent.width;
         descriptor.height = swapchainExtent.height;
-        descriptor.imageType = VK_IMAGE_TYPE_2D;
+        descriptor.image_type = VK_IMAGE_TYPE_2D;
         descriptor.tiling = VK_IMAGE_TILING_OPTIMAL;
         descriptor.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
-        descriptor.memoryFlags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
-        descriptor.createView = true;
-        descriptor.viewAspectFlags = VK_IMAGE_ASPECT_DEPTH_BIT;
+        descriptor.memory_flags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
+        descriptor.create_view = true;
+        descriptor.view_aspect_flags = VK_IMAGE_ASPECT_DEPTH_BIT;
 
         Texture depthTexture = {};
         Texture::Create( context, descriptor, &outSwapchain->depthAttachement );

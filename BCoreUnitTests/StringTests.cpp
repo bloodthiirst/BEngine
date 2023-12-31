@@ -16,25 +16,41 @@ namespace BEngineMathsUnitTests
 
         TEST_METHOD( TestGetLength )
         {
-            StringView str1 = StringView::Create("One");
-            StringView str2 = StringView::Create("Two");
-            StringView str3 = StringView::Create("Three");
+            CoreContext::DefaultContext();
 
-            size_t length = StringUtils::GetLength(str1 , str2, str3);
+            StringView str1 = StringView::Create( "One" );
+            StringView str2 = StringView::Create( "Two" );
+            StringView str3 = StringView::Create( "Three" );
+
+            size_t length = StringUtils::GetLength( str1, str2, str3 );
 
             Assert::IsTrue( length == 3 + 3 + 5 );
         }
-        
+
         TEST_METHOD( TestConcat )
         {
-            size_t total_length = StringUtils::GetLength( "One", "Two", "Three");
-            Allocator alloc = STACK_ALLOC( total_length );
-            StringBuffer result = StringUtils::Concat( alloc, total_length , "One", "Two", "Three");
+            CoreContext::DefaultContext();
 
-            Allocator cStrPtr = STACK_ALLOC( total_length + 1);
-            const char* cStr = StringView::ToCString(result.view , cStrPtr );
+            size_t total_length = StringUtils::GetLength( "One", "Two", "Three" );
+            Allocator alloc = STACK_ALLOC( total_length );
+            StringBuffer result = StringUtils::Concat( alloc, total_length, "One", "Two", "Three" );
+
+            Allocator cStrPtr = STACK_ALLOC( total_length + 1 );
+            const char* cStr = StringView::ToCString( result.view, cStrPtr );
 
             Assert::IsTrue( result.length == 3 + 3 + 5 );
+        }
+
+        TEST_METHOD( TestFormat )
+        {
+            CoreContext::DefaultContext();
+
+            Allocator alloc = ArenaAllocator::Create( &CoreContext::core_arena );
+
+            StringBuffer result = StringUtils::Format( alloc, "Hey {} World {} The rest", "Hello", "!!!!" );
+
+            char* cStr = StringView::ToCString( result.view, alloc );
+            Assert::IsTrue( strcmp( cStr, "Hey Hello World !!!! The rest" ) == 0 );
         }
     };
 }

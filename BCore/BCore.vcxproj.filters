@@ -39,12 +39,24 @@
     <ClInclude Include="Typedefs\Typedefs.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Context\CoreContext.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="String\ToString.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Containers\HMap.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="String\StringView.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="String\StringBuffer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Context\CoreContext.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

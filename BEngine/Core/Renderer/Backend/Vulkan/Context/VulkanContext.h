@@ -37,6 +37,10 @@ public:
     
     Shader default_shader;
 
+    Texture default_texture;
+
+    VkSampler default_sampler;
+
 	/// <summary>
 	/// <para>The index of the image that we're showing out the images provided by the swapchain</para>
 	/// <para>We can use this index to get the image from swapchainInfo.images </para>

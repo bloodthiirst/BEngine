@@ -71,7 +71,7 @@ public:
 
             if (curr == callback)
             {
-                DArray<ActionParams<TEvent>>::RemoveAll(&callbacksArr, curr, stack_alloc);
+                DArray<ActionParams<TEvent>>::RemoveAll(&callbacksArr, curr);
                 return;
             }
         }

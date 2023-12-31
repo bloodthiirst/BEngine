@@ -5,6 +5,7 @@
 #include <unordered_map>
 #include <cstdarg>
 #include <String/StringView.h>
+#include <String/StringUtils.h>
 
 class Logger
 {
@@ -31,11 +32,129 @@ public:
     }
 
 public:
-    BAPI void Log( StringView message, ... );
-    BAPI void NewLine( size_t repeat = 1 );
-    BAPI void Info(StringView message, ... );
-    BAPI void Warning(StringView message, ... );
-    BAPI void Error(StringView message, ... );
-    BAPI void Fatal(StringView message, ... );
+
+    BAPI void Log( StringView message)
+    {
+        for ( size_t i = 0; i < loggers.size(); ++i )
+        {
+            ILogger logger = loggers.at( i );
+            logger.log( &logger, message );
+        }
+    }
+
+    BAPI void Info( StringView message )
+    {
+        for ( size_t i = 0; i < loggers.size(); ++i )
+        {
+            ILogger logger = loggers.at( i );
+            logger.info( &logger, message );
+        }
+    }
+
+    BAPI void Warning( StringView message )
+    {
+        for ( size_t i = 0; i < loggers.size(); ++i )
+        {
+            ILogger logger = loggers.at( i );
+            logger.warning( &logger, message );
+        }
+    }
+
+    BAPI void Error( StringView message )
+    {
+        for ( size_t i = 0; i < loggers.size(); ++i )
+        {
+            ILogger logger = loggers.at( i );
+            logger.error( &logger, message );
+        }
+    }
+
+    BAPI void Fatal( StringView message)
+    {
+        for ( size_t i = 0; i < loggers.size(); ++i )
+        {
+            ILogger logger = loggers.at( i );
+            logger.fatal( &logger, message );
+        }
+    }
+
+    template<typename ...Args>
+    BAPI void Log( StringView message, Args... args )
+    {
+        Allocator alloc = ArenaAllocator::Create( &CoreContext::core_arena );
+
+        StringBuffer str = StringUtils::Format( alloc, message, args... );
+
+        for ( size_t i = 0; i < loggers.size(); ++i )
+        {
+            ILogger logger = loggers.at( i );
+            logger.log( &logger, str.view );
+        }
+    }
+
+    BAPI void NewLine( size_t repeat = 1 )
+    {
+        for ( auto& [key, logger] : loggers )
+        {
+            logger.new_line( &logger, repeat );
+        }
+    }
+
+    template<typename ...Args>
+    BAPI void Info(StringView message, Args... args )
+    {
+        Allocator alloc = ArenaAllocator::Create( &CoreContext::core_arena );
+
+        StringBuffer str = StringUtils::Format( alloc, message, args... );
+
+        for ( size_t i = 0; i < loggers.size(); ++i )
+        {
+            ILogger logger = loggers.at( i );
+            logger.info( &logger, str.view );
+        }
+    }
+
+    template<typename ...Args>
+    BAPI void Warning(StringView message, Args... args )
+    {
+        Allocator alloc = ArenaAllocator::Create( &CoreContext::core_arena );
+
+        StringBuffer str = StringUtils::Format( alloc, message, args... );
+
+        for ( size_t i = 0; i < loggers.size(); ++i )
+        {
+            ILogger logger = loggers.at( i );
+            logger.warning( &logger, str.view );
+        }
+    }
+
+
+    template<typename ...Args>
+    BAPI void Error(StringView message, Args... args )
+    {
+        Allocator alloc = ArenaAllocator::Create( &CoreContext::core_arena );
+
+        StringBuffer str = StringUtils::Format( alloc, message, args... );
+
+        for ( size_t i = 0; i < loggers.size(); ++i )
+        {
+            ILogger logger = loggers.at( i );
+            logger.error( &logger, str.view );
+        }
+    }
+
+    template<typename ...Args>
+    BAPI void Fatal(StringView message, Args... args )
+    {
+        Allocator alloc = ArenaAllocator::Create( &CoreContext::core_arena );
+
+        StringBuffer str = StringUtils::Format( alloc, message, args... );
+
+        for ( size_t i = 0; i < loggers.size(); ++i )
+        {
+            ILogger logger = loggers.at( i );
+            logger.fatal( &logger, str.view );
+        }
+    }
 };
 

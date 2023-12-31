@@ -1,5 +1,4 @@
 #pragma once
-struct StringBuffer;
 struct Allocator;
 
 /// <summary>

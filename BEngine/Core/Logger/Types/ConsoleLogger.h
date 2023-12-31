@@ -79,7 +79,7 @@ private:
     {
         for (size_t i = 0; i < repeat; ++i) 
         {
-            LogInternal( in_logger, "\n", FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_INTENSITY );
+            std::cout << "\n";
         }
     }
 

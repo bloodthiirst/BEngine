@@ -16,7 +16,7 @@ struct PipelineDescriptor
     bool isWireframe;
 };
 
-class Pipeline
+struct Pipeline
 {
 public:
     VkPipeline handle;

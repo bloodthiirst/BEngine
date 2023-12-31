@@ -33,7 +33,7 @@ struct AllocationToolbox
     T* HeapAlloc( bool init = true )
     {
         size_t size = sizeof( T );
-        T* ptr = (T*)Global::platform.memory.malloc( size );
+        T* ptr = (T*) Global::platform.memory.malloc( size );
 
         if (init)
         {
@@ -41,6 +41,25 @@ struct AllocationToolbox
         }
 
         return ptr;
+    }
+    template<typename T>
+    T* HeapAlloc( size_t count ,bool init = true )
+    {
+        size_t size = sizeof( T ) * count;
+        T* ptr = (T*)Global::platform.memory.malloc( size);
+
+        if (init)
+        {
+            Global::platform.memory.mem_init( ptr, size);
+        }
+
+        return ptr;
+    }
+
+    template<typename T>
+    void HeapFree(T* ptr)
+    {
+        Global::platform.memory.free( (void*) ptr );
     }
 
     template<typename T>
@@ -52,6 +71,20 @@ struct AllocationToolbox
         if (init)
         {
             Global::platform.memory.mem_init( ptr, size );
+        }
+
+        return ptr;
+    }
+
+    template<typename T>
+    T* ArenaAlloc(size_t count , bool init = true)
+    {
+        size_t size = sizeof(T) * count;
+        T* ptr = (T*)frame_allocator.alloc(frame_allocator, size);
+
+        if (init)
+        {
+            Global::platform.memory.mem_init(ptr, size );
         }
 
         return ptr;

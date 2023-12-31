@@ -3,6 +3,7 @@
 #include <profileapi.h>
 #include <cstdint>
 #include "../../Base/Time.h"
+#include "../../../Global/Global.h"
 
 struct Win32Time
 {
@@ -12,7 +13,7 @@ struct Win32Time
 
     static void Create(Time* out_time)
     {
-        Win32Time* time = new Win32Time();
+        Win32Time* time = Global::alloc_toolbox.HeapAlloc<Win32Time>();
 
         LARGE_INTEGER frequency;
         LARGE_INTEGER start_time;
