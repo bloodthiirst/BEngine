@@ -193,10 +193,12 @@
     <ClCompile Include="Core\Renderer\Backend\Vulkan\Context\CommandBuffer.cpp" />
     <ClCompile Include="Core\Renderer\Backend\Vulkan\Context\PhysicalDeviceInfo.cpp" />
     <ClCompile Include="Core\Renderer\Backend\Vulkan\Context\Renderpass.cpp" />
+    <ClCompile Include="Core\Renderer\Backend\Vulkan\Renderer\DescriptorManager.cpp" />
     <ClCompile Include="Core\Renderer\Frontend\Buffer\Buffer.cpp" />
     <ClCompile Include="Core\Renderer\Frontend\Pipeline\Pipeline.cpp" />
     <ClCompile Include="Core\Renderer\Frontend\Shader\Shader.cpp" />
     <ClCompile Include="Core\Renderer\Frontend\Shader\ShaderBuilder.cpp" />
+    <ClCompile Include="Core\Renderer\Frontend\Shader\ShaderUtils.cpp" />
     <ClCompile Include="Core\Renderer\Frontend\Texture\Texture.cpp" />
     <ClCompile Include="Core\Renderer\Backend\Vulkan\Context\SwapchainInfo.cpp" />
     <ClCompile Include="Core\Renderer\Backend\Vulkan\Context\FrameBuffer.cpp" />
@@ -222,6 +224,7 @@
     <ClInclude Include="Core\Renderer\Backend\Vulkan\Context\Renderpass.h" />
     <ClInclude Include="Core\Renderer\Backend\Vulkan\Context\SwapchainInfo.h" />
     <ClInclude Include="Core\Renderer\Backend\Vulkan\Context\SwapchainSupportInfo.h" />
+    <ClInclude Include="Core\Renderer\Backend\Vulkan\Renderer\DescriptorManager.h" />
     <ClInclude Include="Core\Renderer\Frontend\Buffer\Buffer.h" />
     <ClInclude Include="Core\Renderer\Frontend\Pipeline\Pipeline.h" />
     <ClInclude Include="Core\Renderer\Frontend\Shader\Shader.h" />
@@ -245,6 +248,7 @@
     <ClInclude Include="Core\Renderer\Backend\Vulkan\Renderer\VulkanBackendRenderer.h" />
     <ClInclude Include="Core\Renderer\Context\RendererContext.h" />
     <ClInclude Include="Core\Renderer\Frontend\Shader\ShaderBuilder.h" />
+    <ClInclude Include="Core\Renderer\Frontend\Shader\ShaderUtils.h" />
     <ClInclude Include="Core\Renderer\Frontend\Texture\Texture.h" />
     <ClInclude Include="Core\Time\Time.h" />
     <ClInclude Include="Core\Utils\FileUtils.h" />

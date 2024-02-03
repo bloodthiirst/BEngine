@@ -694,7 +694,7 @@ bool Startup( BackendRenderer* in_renderer, ApplicationStartup startup )
     swapchainDesc.height = Global::platform.window.height;
     swapchainDesc.imagesCount = 3;
 
-    if ( !SwapchainInfo::Create( ctx, swapchainDesc, &ctx->swapchain_info ) )
+    if ( !SwapchainInfo::Create( ctx, swapchainDesc, VK_NULL_HANDLE, &ctx->swapchain_info ) )
     {
         Global::logger.Error( "Couldn't create swapchain ...." );
         return false;
@@ -731,6 +731,13 @@ bool Startup( BackendRenderer* in_renderer, ApplicationStartup startup )
 
     Global::logger.Info( "Frame buffers created" );
 
+    // create descriptor set pools
+    {
+        DescriptorManager::Create( ctx, &ctx->descriptor_manager );
+        ctx->descriptor_manager.init_sets_count = 5;
+        ctx->descriptor_manager.resize_factor = 2;
+    }
+
     // build shader
     {
         Allocator alloc = HeapAllocator::Create();
@@ -766,9 +773,11 @@ bool Startup( BackendRenderer* in_renderer, ApplicationStartup startup )
         Global::platform.filesystem.read_all( vert_handle, vert_code.buffer, &bytes_read );
         Global::platform.filesystem.read_all( frag_handle, frag_code.buffer, &bytes_read );
 
-        bool created = ShaderBuilder::Get()
-            .SetStage( ShaderStageType::Vertex, vert_code.view )
-            .SetStage( ShaderStageType::Fragement, frag_code.view )
+        bool created = ShaderBuilder::Create()
+            .SetStage( VkShaderStageFlagBits::VK_SHADER_STAGE_VERTEX_BIT, vert_code.view )
+            .SetStage( VkShaderStageFlagBits::VK_SHADER_STAGE_FRAGMENT_BIT, frag_code.view )
+            .AddVertexAttribute( "position", 0, sizeof( Vector3 ), VkFormat::VK_FORMAT_R32G32B32A32_SFLOAT )
+            .AddDescriptor( "global_ubo", 0, 0, VkDescriptorType::VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER )
             .Build( ctx, &ctx->default_shader );
 
         StringBuffer::Destroy( &vert_code );
@@ -807,6 +816,8 @@ bool Startup( BackendRenderer* in_renderer, ApplicationStartup startup )
 
         vkCreateSampler( ctx->logicalDeviceInfo.handle, &create_sampler, ctx->allocator, &ctx->default_sampler );
     }
+
+    Global::logger.Info( "Default sampler created" );
 
     // create texture
     {
@@ -1053,7 +1064,6 @@ bool UpdateTexture( VulkanContext* context, Shader* in_shader )
 
     vkCmdBindDescriptorSets( currentCmdBuffer.handle, VK_PIPELINE_BIND_POINT_GRAPHICS, in_shader->pipeline.layout, 0, 1, &currentDescriptor, 0, nullptr );
 
-
     return false;
 }
 
@@ -1061,6 +1071,7 @@ bool UpdateTexture( VulkanContext* context, Shader* in_shader )
 bool UpdateGlobalState( BackendRenderer* in_backend, Matrix4x4 projection, Matrix4x4 view, Vector3 viewPos, float ambiant, uint32_t mode )
 {
     VulkanContext* ctx = (VulkanContext*) in_backend->user_data;
+
     CommandBuffer current_cmd = ctx->swapchain_info.graphics_cmd_buffers_per_image.data[ctx->current_image_index];
 
     // NOTE : the projection and view are passed by copy because the frame might not be done
@@ -1154,7 +1165,6 @@ bool EndFrame( BackendRenderer* in_backend, RendererContext rendererContext )
     // then reuse it as "in flight" fence
     ctx->swapchain_info.in_flight_fence_per_image.data[ctx->current_image_index] = submit_fence;
 
-
     VkSubmitInfo info = {};
     info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
     info.commandBufferCount = 1;
@@ -1211,7 +1221,7 @@ bool Destroy( BackendRenderer* in_backend )
 
     Shader::Destroy( ctx, &ctx->default_shader );
 
-    SwapchainInfo::Clear( ctx, &ctx->swapchain_info );
+    DescriptorManager::Destroy( &ctx->descriptor_manager );
 
     vkDestroyCommandPool( ctx->logicalDeviceInfo.handle, ctx->physicalDeviceInfo.commandPoolsInfo.graphicsCommandPool, ctx->allocator );
 

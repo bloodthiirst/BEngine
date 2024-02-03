@@ -79,7 +79,7 @@ public:
     }
 
     template<typename ...Args>
-    BAPI void Log( StringView message, Args... args )
+    void Log( StringView message, Args... args )
     {
         Allocator alloc = ArenaAllocator::Create( &CoreContext::core_arena );
 
@@ -101,7 +101,7 @@ public:
     }
 
     template<typename ...Args>
-    BAPI void Info(StringView message, Args... args )
+    void Info(StringView message, Args... args )
     {
         Allocator alloc = ArenaAllocator::Create( &CoreContext::core_arena );
 
@@ -115,7 +115,7 @@ public:
     }
 
     template<typename ...Args>
-    BAPI void Warning(StringView message, Args... args )
+    void Warning(StringView message, Args... args )
     {
         Allocator alloc = ArenaAllocator::Create( &CoreContext::core_arena );
 
@@ -130,7 +130,7 @@ public:
 
 
     template<typename ...Args>
-    BAPI void Error(StringView message, Args... args )
+    void Error(StringView message, Args... args )
     {
         Allocator alloc = ArenaAllocator::Create( &CoreContext::core_arena );
 
@@ -144,7 +144,7 @@ public:
     }
 
     template<typename ...Args>
-    BAPI void Fatal(StringView message, Args... args )
+    void Fatal(StringView message, Args... args )
     {
         Allocator alloc = ArenaAllocator::Create( &CoreContext::core_arena );
 

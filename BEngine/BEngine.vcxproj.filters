@@ -96,6 +96,12 @@
     <ClCompile Include="Core\Renderer\Frontend\Shader\ShaderBuilder.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Core\Renderer\Backend\Vulkan\Renderer\DescriptorManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\Renderer\Frontend\Shader\ShaderUtils.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Core\Application\Application.h">
@@ -222,6 +228,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Core\Renderer\Frontend\Shader\ShaderBuilder.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\Renderer\Backend\Vulkan\Renderer\DescriptorManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\Renderer\Frontend\Shader\ShaderUtils.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

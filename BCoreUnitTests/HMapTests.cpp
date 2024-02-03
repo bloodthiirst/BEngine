@@ -145,7 +145,6 @@ namespace BEngineMathsUnitTests
 
             for ( size_t i = 0; i < size; ++i )
             {
-                int as_int = (int) i;
                 HMap<int, float>::TryAdd( &map, i, 420.0f + i );
             }
 

@@ -9,6 +9,7 @@
 #include "CommandBuffer.h"
 #include "Renderpass.h"
 #include "Fence.h"
+#include "../../../Backend/Vulkan/Renderer/DescriptorManager.h"
 #include "../../../Frontend/Texture/Texture.h"
 #include "../../../Frontend/Shader/Shader.h"
 #include "../../../Frontend/Buffer/Buffer.h"
@@ -28,6 +29,8 @@ public:
 	PhysicalDeviceInfo physicalDeviceInfo;
 	SwapchainInfo swapchain_info;
     Renderpass renderPass;
+    
+    DescriptorManager descriptor_manager;
 
     Buffer vertexBuffer;
     Buffer indexBuffer;

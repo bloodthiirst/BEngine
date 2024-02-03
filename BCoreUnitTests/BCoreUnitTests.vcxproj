@@ -157,7 +157,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="CArrayTests.cpp" />
+    <ClCompile Include="ContainerUtilsTests.cpp" />
     <ClCompile Include="DArrayTests.cpp" />
     <ClCompile Include="HMapTests.cpp" />
     <ClCompile Include="pch.cpp">

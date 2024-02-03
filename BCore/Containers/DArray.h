@@ -3,6 +3,10 @@
 #include "../Allocators/Allocator.h"
 #include "../Context/CoreContext.h"
 
+/// <summary>
+/// Stands for Dynamic Array , pretty much an auto-resizing array so you can consider it the equivalent of std::vector
+/// </summary>
+/// <typeparam name="T">The type of the elements in the array</typeparam>
 template<typename T>
 struct DArray
 {
@@ -11,6 +15,16 @@ public:
     size_t size;
     size_t capacity;
     Allocator alloc;
+
+    static void Create( DArray* copy_src, DArray* copy_dest, size_t size, Allocator alloc )
+    {
+        copy_dest->alloc = alloc;
+        copy_dest->capacity = copy_src->size;
+        copy_dest->size = copy_src->size;
+        copy_dest->data = (T*) alloc.alloc( alloc, copy_src->size * sizeof( T ) );
+
+        CoreContext::mem_copy( copy_src->data, copy_dest->data, size * sizeof( T ) );
+    }
 
     static void Create( size_t capacity, DArray* out_arr, Allocator alloc, bool mem_init = true )
     {
@@ -25,6 +39,7 @@ public:
         }
     }
 
+
     static void Clear( DArray* in_arr )
     {
         in_arr->size = 0;
@@ -36,26 +51,33 @@ public:
             return;
 
         in_arr->alloc.free( in_arr->alloc, in_arr->data );
-        in_arr->data = nullptr;
+        *in_arr = {};
     }
 
     static void Resize( DArray* in_arr, size_t new_size )
     {
+        if ( in_arr->capacity >= new_size )
+            return;
+
+        in_arr->capacity = new_size;
+
         if ( in_arr->alloc.realloc )
         {
             in_arr->data = (T*) in_arr->alloc.realloc( in_arr->alloc, in_arr->data, new_size * sizeof( T ) );
+            return;
         }
-        else
+
+
+        T* new_data = (T*) in_arr->alloc.alloc( in_arr->alloc, new_size * sizeof( T ) );
+
+        CoreContext::mem_copy( in_arr->data, new_data, in_arr->size * sizeof( T ) );
+
+        if ( in_arr->alloc.free )
         {
-            if ( in_arr->alloc.free )
-            {
-                in_arr->alloc.free( in_arr->alloc, in_arr );
-            }
-
-            in_arr->data = (T*) in_arr->alloc.alloc( in_arr->alloc, new_size * sizeof( T ) );
+            in_arr->alloc.free( in_arr->alloc, in_arr->data );
         }
 
-        in_arr->capacity = new_size;
+        in_arr->data = new_data;
     }
 
     static void Add( DArray* in_arr, T item )
@@ -70,8 +92,8 @@ public:
 
     static bool TryIndexOf( DArray* in_arr, size_t from, size_t to, T item, size_t* index_found )
     {
-        assert( from    >= 0 && from   < in_arr->size );
-        assert( to      >= 0 && to     < in_arr->size );
+        assert( from >= 0 && from < in_arr->size );
+        assert( to >= 0 && to < in_arr->size );
         assert( from < to );
 
         for ( ; from < to; ++from )
@@ -89,7 +111,7 @@ public:
     static size_t RemoveAll( DArray* in_arr, T item )
     {
         // save arena start point
-        Allocator temp_alloc = ArenaAllocator::Create(&CoreContext::core_arena);
+        Allocator temp_alloc = ArenaAllocator::Create( &CoreContext::core_arena );
         size_t start_offset = CoreContext::core_arena.offset;
 
         // contains the deleted elements going from last to first
@@ -129,14 +151,14 @@ public:
         }
 
         in_arr->size -= indicies_count;
-        
+
         // reset arena
         CoreContext::core_arena.offset = start_offset;
 
         return indicies_count;
     }
 
-    static void RemoveAt( DArray* in_arr , size_t index )
+    static void RemoveAt( DArray* in_arr, size_t index )
     {
         assert( index >= 0 && index < in_arr->size );
 

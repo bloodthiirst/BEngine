@@ -60,7 +60,9 @@ int main( int argc, char** argv )
     // main allocators
     {
         Global::alloc_toolbox.heap_allocator = HeapAllocator::Create();
+
         Global::alloc_toolbox.frame_arena = Arena::Create( INITIAL_GAME_ARENA_CAPACITY );
+        Global::alloc_toolbox.frame_allocator = ArenaAllocator::Create( &Global::alloc_toolbox.frame_arena );
     }
 
     //Global::platform.startup( &Global::platform );

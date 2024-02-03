@@ -129,6 +129,7 @@
   <ItemGroup>
     <ClInclude Include="Allocators\Allocator.h" />
     <ClInclude Include="Containers\CArray.h" />
+    <ClInclude Include="Containers\ContainerUtils.h" />
     <ClInclude Include="Containers\DArray.h" />
     <ClInclude Include="Command\Command.h" />
     <ClInclude Include="Containers\HMap.h" />

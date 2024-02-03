@@ -53,8 +53,7 @@ public:
 public:
     static void QuerySwapchainSupport ( VkPhysicalDevice handle, VkSurfaceKHR surface, SwapchainSupportInfo* outSwapchainInfo );
     static bool Destroy ( VulkanContext* context, SwapchainInfo* outSwapchain );
-    static void Clear ( VulkanContext* context, SwapchainInfo* outSwapchain );
-    static bool Create ( VulkanContext* context, SwapchainCreateDescription descrption, SwapchainInfo* outSwapchain );
+    static bool Create ( VulkanContext* context, SwapchainCreateDescription descrption, VkSwapchainKHR old_swapchain, SwapchainInfo* outSwapchain );
     static bool Recreate ( VulkanContext* context, SwapchainCreateDescription descrption,SwapchainInfo* outSwapchain );
 public:
     bool CreateFrameBuffers ( VulkanContext* context );

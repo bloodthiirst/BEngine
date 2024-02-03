@@ -23,6 +23,12 @@ public:
     static BAPI AllocationToolbox alloc_toolbox;
 };
 
+struct ArenaCheckpoint
+{
+    Arena* arena;
+    size_t start_offset;
+};
+
 struct AllocationToolbox
 {
     Arena frame_arena;
@@ -88,6 +94,20 @@ struct AllocationToolbox
         }
 
         return ptr;
+    }
+
+
+    ArenaCheckpoint GetArenaCheckpoint()
+    {
+        ArenaCheckpoint res = {};
+        res.arena = &Global::alloc_toolbox.frame_arena;
+        res.start_offset = Global::alloc_toolbox.frame_arena.offset;
+        return res;
+    }
+
+    void ResetArenaOffset( ArenaCheckpoint* in_checkpoint )
+    {
+        in_checkpoint->arena->offset = in_checkpoint->start_offset;
     }
 };
 

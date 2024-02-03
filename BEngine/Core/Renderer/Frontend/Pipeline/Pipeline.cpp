@@ -2,21 +2,25 @@
 #include "Pipeline.h"
 #include "../../Backend/Vulkan/Context/VulkanContext.h"
 
-bool Pipeline::Create ( VulkanContext* context, Renderpass* renderpass, PipelineDescriptor descriptor, Pipeline* outPipeline )
+
+bool Pipeline::Create( VulkanContext* context, Renderpass* renderpass, PipelineDependencies* in_dependencies, ShaderBuilder* builder, Pipeline* outPipeline )
 {
+    ArenaCheckpoint arena = Global::alloc_toolbox.GetArenaCheckpoint();
+    Allocator temp_alloc = Global::alloc_toolbox.frame_allocator;
+
     // viewport
     VkPipelineViewportStateCreateInfo createPipelineViewport = {};
     createPipelineViewport.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
     createPipelineViewport.viewportCount = 1;
-    createPipelineViewport.pViewports = &descriptor.viewport;
+    createPipelineViewport.pViewports = &builder->viewport;
     createPipelineViewport.scissorCount = 1;
-    createPipelineViewport.pScissors = &descriptor.scissor;
+    createPipelineViewport.pScissors = &builder->scissor;
 
     // restarizer
     VkPipelineRasterizationStateCreateInfo createRasterizationInfo = {};
     createRasterizationInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
     createRasterizationInfo.rasterizerDiscardEnable = VK_FALSE;
-    createRasterizationInfo.polygonMode = descriptor.isWireframe ? VK_POLYGON_MODE_LINE : VK_POLYGON_MODE_FILL;
+    createRasterizationInfo.polygonMode = builder->has_wireframe ? VK_POLYGON_MODE_LINE : VK_POLYGON_MODE_FILL;
     createRasterizationInfo.lineWidth = 1.0f;
     createRasterizationInfo.cullMode = VK_CULL_MODE_NONE;
     createRasterizationInfo.frontFace = VK_FRONT_FACE_CLOCKWISE;
@@ -79,20 +83,49 @@ bool Pipeline::Create ( VulkanContext* context, Renderpass* renderpass, Pipeline
     dynamicStateCreateInfo.dynamicStateCount = dynamicsStateCount;
     dynamicStateCreateInfo.pDynamicStates = dynamicState;
 
-    VkVertexInputBindingDescription bindingDescription = {};
 
-    // binding index
-    bindingDescription.binding = 0;
-    bindingDescription.stride = sizeof ( Vector3 );
-    bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
 
     // attributes
     VkPipelineVertexInputStateCreateInfo vertexStateCreateInfo = {};
     vertexStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-    vertexStateCreateInfo.vertexBindingDescriptionCount = 1;
-    vertexStateCreateInfo.pVertexBindingDescriptions = &bindingDescription;
-    vertexStateCreateInfo.vertexAttributeDescriptionCount = (uint32_t) descriptor.attributes.size;
-    vertexStateCreateInfo.pVertexAttributeDescriptions = descriptor.attributes.data;
+
+
+    // attributes
+    {
+        DArray<VkVertexInputBindingDescription> attr = {};
+        DArray<VkVertexInputBindingDescription>::Create( builder->vertex_attributes.size, &attr, temp_alloc );
+
+        DArray<VkVertexInputAttributeDescription> desc = {};
+        DArray<VkVertexInputAttributeDescription>::Create( builder->vertex_attributes.size, &desc, temp_alloc );
+
+        uint32_t offset = 0;
+
+        for ( size_t i = 0; i < builder->vertex_attributes.size; ++i )
+        {
+            VertexAttributeInfo* curr = &builder->vertex_attributes.data[i];
+
+            // binding index
+            VkVertexInputBindingDescription binding = {};
+            binding.binding = (uint32_t) curr->binding;
+            binding.stride = (uint32_t) curr->size;
+            binding.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+
+            VkVertexInputAttributeDescription description = {};
+            description.binding = (uint32_t) curr->binding;
+            description.format = curr->format;
+            description.offset = offset;
+            description.location = 0;
+
+            offset += (uint32_t) curr->size;
+
+            DArray<VkVertexInputBindingDescription>::Add( &attr, binding );
+            DArray<VkVertexInputAttributeDescription>::Add( &desc, description );
+        }
+        vertexStateCreateInfo.vertexBindingDescriptionCount = (uint32_t) attr.size;
+        vertexStateCreateInfo.pVertexBindingDescriptions = attr.data;
+        vertexStateCreateInfo.vertexAttributeDescriptionCount = (uint32_t) desc.size;
+        vertexStateCreateInfo.pVertexAttributeDescriptions = desc.data;
+    }
 
     // input assembly
     VkPipelineInputAssemblyStateCreateInfo inputAssemblyCreateInfo = {};
@@ -100,19 +133,42 @@ bool Pipeline::Create ( VulkanContext* context, Renderpass* renderpass, Pipeline
     inputAssemblyCreateInfo.primitiveRestartEnable = VK_FALSE;
     inputAssemblyCreateInfo.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
 
-    // pipeline descriptor set layouts
-    VkPipelineLayoutCreateInfo pipelineLayoutCreateInfo = {};
-    pipelineLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-    pipelineLayoutCreateInfo.setLayoutCount = (uint32_t) descriptor.descriptorSetLayouts.size;
-    pipelineLayoutCreateInfo.pSetLayouts = descriptor.descriptorSetLayouts.data;
-
     VkPipelineLayout pipelineLayout = {};
-    vkCreatePipelineLayout ( context->logicalDeviceInfo.handle, &pipelineLayoutCreateInfo, context->allocator, &pipelineLayout );
+
+    // pipeline descriptor set layouts
+    {
+        VkPipelineLayoutCreateInfo pipelineLayoutCreateInfo = {};
+        pipelineLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+        pipelineLayoutCreateInfo.setLayoutCount = (uint32_t) in_dependencies->descriptor_set_layouts.size;
+        pipelineLayoutCreateInfo.pSetLayouts = in_dependencies->descriptor_set_layouts.data;
+
+        vkCreatePipelineLayout( context->logicalDeviceInfo.handle, &pipelineLayoutCreateInfo, context->allocator, &pipelineLayout );
+    }
 
     VkGraphicsPipelineCreateInfo graphicsPipelineCreateInfo = {};
     graphicsPipelineCreateInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
-    graphicsPipelineCreateInfo.stageCount = (uint32_t) descriptor.stages.size;
-    graphicsPipelineCreateInfo.pStages = descriptor.stages.data;
+
+    // stage count
+    {
+        DArray<VkPipelineShaderStageCreateInfo> tmp = {};
+        DArray<VkPipelineShaderStageCreateInfo>::Create( in_dependencies->shader_info.size ,  &tmp , temp_alloc);
+
+        for ( size_t i = 0; i < in_dependencies->shader_info.size; ++i )
+        {
+            PipelineShaderInfo* curr = &in_dependencies->shader_info.data[i];
+
+            VkPipelineShaderStageCreateInfo info = {};
+            info.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+            info.pName = StringView::ToCString(curr->function_name , temp_alloc);
+            info.module = curr->handle;
+            info.stage = curr->flags;
+
+            DArray<VkPipelineShaderStageCreateInfo>::Add( &tmp, info );
+        }
+        graphicsPipelineCreateInfo.stageCount = (uint32_t) tmp.size;
+        graphicsPipelineCreateInfo.pStages = tmp.data;
+    }
+
     graphicsPipelineCreateInfo.pVertexInputState = &vertexStateCreateInfo;
     graphicsPipelineCreateInfo.pTessellationState = nullptr;
     graphicsPipelineCreateInfo.pInputAssemblyState = &inputAssemblyCreateInfo;
@@ -128,7 +184,9 @@ bool Pipeline::Create ( VulkanContext* context, Renderpass* renderpass, Pipeline
     graphicsPipelineCreateInfo.renderPass = renderpass->handle;
 
     VkPipeline pipeline = {};
-    VkResult result = vkCreateGraphicsPipelines ( context->logicalDeviceInfo.handle, VK_NULL_HANDLE, 1, &graphicsPipelineCreateInfo, context->allocator, &pipeline );
+    VkResult result = vkCreateGraphicsPipelines( context->logicalDeviceInfo.handle, VK_NULL_HANDLE, 1, &graphicsPipelineCreateInfo, context->allocator, &pipeline );
+
+    Global::alloc_toolbox.ResetArenaOffset( &arena );
 
     if ( result != VK_SUCCESS )
     {
@@ -141,27 +199,27 @@ bool Pipeline::Create ( VulkanContext* context, Renderpass* renderpass, Pipeline
     return true;
 }
 
-bool Pipeline::Destroy ( VulkanContext* context, Pipeline* inPipeline )
+bool Pipeline::Destroy( VulkanContext* context, Pipeline* inPipeline )
 {
     if ( !inPipeline )
         return false;
 
     if ( inPipeline->handle )
     {
-        vkDestroyPipeline ( context->logicalDeviceInfo.handle, inPipeline->handle , context->allocator );
+        vkDestroyPipeline( context->logicalDeviceInfo.handle, inPipeline->handle, context->allocator );
         inPipeline->handle = {};
     }
     if ( inPipeline->layout )
     {
-        vkDestroyPipelineLayout ( context->logicalDeviceInfo.handle, inPipeline->layout, context->allocator );
+        vkDestroyPipelineLayout( context->logicalDeviceInfo.handle, inPipeline->layout, context->allocator );
         inPipeline->layout = {};
     }
 
     return true;
 }
 
-bool Pipeline::Bind ( CommandBuffer* inCmdBuffer, VkPipelineBindPoint bindPoint, Pipeline* inPipeline )
+bool Pipeline::Bind( CommandBuffer* inCmdBuffer, VkPipelineBindPoint bindPoint, Pipeline* inPipeline )
 {
-    vkCmdBindPipeline ( inCmdBuffer->handle, bindPoint, inPipeline->handle );
+    vkCmdBindPipeline( inCmdBuffer->handle, bindPoint, inPipeline->handle );
     return true;
 }

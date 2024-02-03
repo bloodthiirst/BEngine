@@ -1,6 +1,6 @@
 #pragma once
-#include "../Typedefs/Typedefs.h"
 #include "DArray.h"
+#include "../Typedefs/Typedefs.h"
 #include "../Allocators/Allocator.h"
 
 struct BucketLimits
@@ -43,14 +43,11 @@ private:
         return (a.keys_index == b.keys_index) && (a.values_index == b.values_index);
     }
 
-    /// <summary>
-    /// Initialize the dictionary with <paramref name="capacity"/> being the number of bucket and <paramref name="maxBucketCount"/>beings the initial size of each bucket
-    /// </summary>
-    /// <param name="capacity"></param>
-    /// <param name="maxBucketCount"></param>
-    /// <param name="hasher"></param>
-    /// <param name="comparer"></param>
 public:
+
+    /// <summary>
+    /// Initialize the dictionary with "capacity" being the number of bucket and "maxBucketCount" beings the initial size of each bucket
+    /// </summary>
     static bool Create( HMap* out_map, Allocator alloc, size_t capacity, size_t maxBucketCount, Func<size_t, TKey> hasher, Func<bool, TKey, TKey> comparer )
     {
         out_map->allocator = alloc;
@@ -59,8 +56,8 @@ public:
         out_map->hasher = hasher;
         out_map->comparer = comparer;
         out_map->count = 0;
-
         out_map->bucket_per_hash = {};
+        
         DArray<DArray<BucketLimits>>::Create( capacity, &out_map->bucket_per_hash, alloc );
 
         for ( size_t i = 0; i < capacity; i++ )
@@ -79,7 +76,23 @@ public:
         return true;
     }
 
-    static bool TryAdd( HMap* in_map, TKey key, TValue value )
+    static bool Destroy( HMap* in_map )
+    {
+        for ( size_t i = 0; i < in_map->bucket_per_hash.size; i++ )
+        {
+            DArray<BucketLimits>::Destroy(&in_map->bucket_per_hash.data[i]);
+        }
+
+        DArray<DArray<BucketLimits>>::Destroy(&in_map->bucket_per_hash);
+        DArray<TKey>::Destroy(&in_map->all_keys);
+        DArray<TValue>::Destroy(&in_map->all_values);
+
+        *in_map = {};
+
+        return true;
+    }
+
+    static bool TryAdd( HMap* in_map, TKey key, TValue value , size_t* out_index )
     {
         // TODO : check for the capacity threshold and implement hashmap expansion
         size_t hash = in_map->hasher( key );
@@ -95,6 +108,7 @@ public:
 
             if ( in_map->comparer( in_map->all_keys.data[b.keys_index], key ) )
             {
+                *out_index = -1;
                 return false;
             }
         }
@@ -109,6 +123,7 @@ public:
         new_bucket.keys_index = keyIndex;
         new_bucket.values_index = valueIndex;
 
+        *out_index = keyIndex;
         DArray<BucketLimits>::Add( buckets, new_bucket );
         in_map->count++;
 
@@ -223,7 +238,51 @@ public:
     }
 
 
-    static void RecreateDictionary()
+    static void Resize( HMap* in_map , size_t capacity)
     {
+        assert( in_map < capacity );
+
+        Allocator alloc = ArenaAllocator::Create( &CoreContext::core_arena );
+        size_t start_offset = CoreContext::core_arena.offset;
+        {
+            DArray<Pair<TKey, TValue>> pairs = {};
+            DArray<Pair<TKey, TValue>>::Create( in_map->count, &pairs, alloc );
+
+            // save the old values
+            HMap<TKey, TValue>::GetAll( in_map, &pairs );
+
+            in_map->count = pairs.size;
+            in_map->capacity = capacity;
+            
+            DArray<BucketLimits>::Clear(&in_map->bucket_per_hash);
+            DArray<TKey>::Clear(&in_map->all_keys);
+            DArray<TValue>::Clear(&in_map->all_values);
+
+            // add the key-value back into the new resized hmap
+            for ( size_t i = 0; i < pairs.size; ++i )
+            {
+                TKey key = pairs.data[i].key;
+                TKey value = pairs.data[i].value;
+
+                size_t hash = in_map->hasher( key );
+                size_t index = hash % in_map->capacity;
+
+                // get the bucket using the mod'ed hash
+                DArray<BucketLimits>* buckets = &in_map->bucket_per_hash.data[index];
+
+                size_t keyIndex = in_map->all_keys.size;
+                DArray<TKey>::Add( &in_map->all_keys, key );
+
+                size_t valueIndex = in_map->all_values.size;
+                DArray<TValue>::Add( &in_map->all_values, value );
+
+                BucketLimits new_bucket = {};
+                new_bucket.keys_index = keyIndex;
+                new_bucket.values_index = valueIndex;
+
+                DArray<BucketLimits>::Add( buckets, new_bucket );
+            }
+        }
+        CoreContext::core_arena.offset = start_offset;
     }
 };

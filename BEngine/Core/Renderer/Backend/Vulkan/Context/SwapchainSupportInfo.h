@@ -4,7 +4,6 @@
 
 struct SwapchainSupportInfo
 {
-public:
     VkSurfaceCapabilitiesKHR capabilities;
     DArray<VkSurfaceFormatKHR> surfaceFormats;
     DArray<VkPresentModeKHR> presentModes;

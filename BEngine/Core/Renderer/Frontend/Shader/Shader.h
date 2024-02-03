@@ -4,12 +4,10 @@
 #include "../../../Platform/Base/Memory.h"
 #include "../../Frontend/Buffer/Buffer.h"
 #include "../Pipeline/Pipeline.h"
-#include "ShaderBuilder.h"
-
 
 struct Filesystem;
 struct ShaderBuilder;
-struct Shader;
+struct DescriptorPoolInfo;
 
 
 struct GlobalUniformObject
@@ -47,20 +45,17 @@ struct Shader
     /// </summary>
     VkDescriptorSet globalDescriptorSets[3];
 
-
     VkDescriptorSet material_descriptor_sets[3];
 
     /// <summary>
     /// Pool used to create the descriptor sets
     /// </summary>
-    VkDescriptorPool globalDescriptorPool;
+    DescriptorPoolInfo* globalDescriptorPool;
 
     /// <summary>
     /// Describes the layout of the data described by the descriptor set
     /// </summary>
-    VkDescriptorSetLayout globalDescriptorSetLayout;
-
-    VkDescriptorSetLayout material_descriptor_set_layout;
+    DArray<VkDescriptorSetLayout> descriptor_set_layouts;
 
 public:
     static bool Destroy( VulkanContext* context, Shader* inShader );

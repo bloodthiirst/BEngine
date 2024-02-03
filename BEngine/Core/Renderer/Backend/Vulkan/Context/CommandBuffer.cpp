@@ -45,7 +45,8 @@ void CommandBuffer::End ()
 
 void CommandBuffer::Allocate( VulkanContext* context, VkCommandPool pool, bool isPrimary, CommandBuffer* outCommandBuffer )
 {
-    // todo : zero out the memory of outCommandBuffer
+    *outCommandBuffer = {};
+    
     VkCommandBufferAllocateInfo allocateInfo = {};
     allocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
     allocateInfo.commandPool = pool;
