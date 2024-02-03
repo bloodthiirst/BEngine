@@ -11,6 +11,7 @@ The engine uses Win32 API and Vulkan as a rendering backend.
   - HMap (Hashmap - Dictionary)
 - StringView an StringBuffer instead of C-style null terminated strings
 - Support for custom allocators for all allocation related operations
-
+- Custom Math library (with plans to support SIMD)
+- 
 # First Triangle
 ![alt text](https://github.com/bloodthiirst/BEngine/blob/master/first_triangle.PNG?raw=true)
