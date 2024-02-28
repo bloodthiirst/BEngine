@@ -3,7 +3,6 @@
 #include <cstdint>
 #include <crtdbg.h>
 #include "../Context/CoreContext.h"
-
 struct Allocator;
 
 typedef void* (*Alloc)(Allocator, size_t);

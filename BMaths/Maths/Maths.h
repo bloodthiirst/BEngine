@@ -33,6 +33,22 @@ public:
         return radians * mul;
     }
 
+    static float ClampAngle( float angle_in_degrees )
+    {
+        float sign = angle_in_degrees < 0 ? -1.0f : 1.0;
+        int full_2pi = ((int) (abs( (long) angle_in_degrees ) / 360.0));
+
+        if ( angle_in_degrees < 0 )
+        {
+            full_2pi++;
+        }
+
+        float clamped_angle = (angle_in_degrees + (full_2pi * 360 * -sign));
+
+        return clamped_angle;
+    }
+
+
 	template<typename T>
 	static T Clamp ( T value, T min, T max )
 	{

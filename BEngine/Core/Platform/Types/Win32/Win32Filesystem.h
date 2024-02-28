@@ -47,7 +47,7 @@ private:
         outFileHandle->is_valid = false;
         outFileHandle->handle = 0;
 
-        const char* str_mode = nullptr;
+        const char* str_mode = "";
 
         switch ( mode )
         {

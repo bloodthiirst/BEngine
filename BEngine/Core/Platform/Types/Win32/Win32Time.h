@@ -31,5 +31,22 @@ struct Win32Time
         // get the current "tick" counter of the CPU
         // we consider this to be the "startTime" of the engine
         QueryPerformanceCounter(&start_time);
+
+        out_time->user_data = time;
+        out_time->get_system_time = GetTimeWin32;
+    }
+
+    static double GetTimeWin32( Time* in_time )
+    {
+        LARGE_INTEGER curr_ticks;
+        QueryPerformanceCounter( &curr_ticks );
+
+        Win32Time* time = (Win32Time*) in_time->user_data;
+
+        int64_t elapsed_ticks = curr_ticks.QuadPart - time->startTime;
+
+        double time_elapsed = elapsed_ticks * time->seconds_per_tick;
+
+        return time_elapsed;
     }
 };

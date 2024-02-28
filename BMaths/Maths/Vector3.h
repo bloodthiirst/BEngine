@@ -70,7 +70,7 @@ public:
 
     static inline float MagnitudeSqr ( const Vector3& vec )
     {
-        float res = (vec.x * vec.x) + (vec.y * vec.y) + (vec.z * vec.y);
+        float res = (vec.x * vec.x) + (vec.y * vec.y) + (vec.z * vec.z);
 
         return res;
     }

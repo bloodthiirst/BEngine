@@ -4,7 +4,6 @@
 #include <GameApp.h>
 #include "../ApplicationState/ApplicationState.h"
 
-struct GameApp;
 
 struct ApplicationStartup
 {

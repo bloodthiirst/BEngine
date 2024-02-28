@@ -82,8 +82,7 @@ namespace BEngineMathsUnitTests
         TEST_METHOD ( RotationMatrix )
         {
             Vector3 input = Vector3::Right ();
-            Vector3 axis = Vector3::Up();
-            Quaternion rot = Quaternion::AxisRotation ( 90, axis );
+            Quaternion rot = Quaternion::AxisRotation ( 90, Vector3::Up() );
             Matrix4x4 mat = Matrix4x4::Rotate(rot);
 
             Vector3 output = mat * input;
@@ -95,6 +94,33 @@ namespace BEngineMathsUnitTests
             Assert::IsTrue ( result == true );
         }
 
+        TEST_METHOD( DoubleRotationMatrix )
+        {
+            Vector3 input = Vector3(0,0,0);
+            
+            Vector3 translate = Vector3(0,0,-1);
+            Quaternion rot = Quaternion::AxisRotation( 90, Vector3::Up() );
+            
+            Matrix4x4 tra_mat = Matrix4x4::Translate( translate );
+            Matrix4x4 rot_mat = Matrix4x4::Rotate( rot );
+
+            Vector3 translated = (tra_mat) * input;
+            Vector3 rotated = (rot_mat) * translated;
+        }
+
+        TEST_METHOD( MultiplyMatrix )
+        {
+            Vector3 input = Vector3( 0, 1, 0 );
+            Matrix4x4 mat = Matrix4x4::Translate( Vector3::Right() );
+
+            Vector3 output = (mat * mat) * input;
+
+            Vector3 expected = Vector3( 2, 1, 0 );
+
+            bool result = expected == output;
+
+            Assert::IsTrue( result == true );
+        }
 
         TEST_METHOD ( TranslationMatrix )
         {          

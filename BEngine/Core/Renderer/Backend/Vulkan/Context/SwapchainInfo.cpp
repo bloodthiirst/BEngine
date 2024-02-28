@@ -41,8 +41,39 @@ bool QueryDepthBufferFormat( VulkanContext* context, VkFormat* outDepthFormat )
     return false;
 }
 
+
+void QuerySwapchainSupport( VkPhysicalDevice handle, VkSurfaceKHR surface, SwapchainSupportInfo* outSwapchainInfo )
+{
+    // capabilities
+    VkSurfaceCapabilitiesKHR capabilities = {};
+    vkGetPhysicalDeviceSurfaceCapabilitiesKHR( handle, surface, &capabilities );
+
+    Allocator heap_alloc = Global::alloc_toolbox.heap_allocator;
+
+    // surface formats
+    uint32_t formatsCount = 0;
+    vkGetPhysicalDeviceSurfaceFormatsKHR( handle, surface, &formatsCount, nullptr );
+    DArray<VkSurfaceFormatKHR> formats;
+    DArray<VkSurfaceFormatKHR>::Create( formatsCount, &formats, heap_alloc );
+
+    vkGetPhysicalDeviceSurfaceFormatsKHR( handle, surface, &formatsCount, formats.data );
+
+    // present modes
+    uint32_t presentModeCount = 0;
+    vkGetPhysicalDeviceSurfacePresentModesKHR( handle, surface, &presentModeCount, nullptr );
+    DArray<VkPresentModeKHR> presentModes;
+    DArray<VkPresentModeKHR>::Create( presentModeCount, &presentModes, heap_alloc );
+    vkGetPhysicalDeviceSurfacePresentModesKHR( handle, surface, &presentModeCount, presentModes.data );
+
+    // todo : here we add a check for device extensions
+
+    outSwapchainInfo->capabilities = capabilities;
+    outSwapchainInfo->presentModes = presentModes;
+    outSwapchainInfo->surfaceFormats = formats;
+}
+
 bool AllocateResource( VulkanContext* context, SwapchainInfo* outSwapchain )
-{   
+{
     uint32_t image_count = outSwapchain->imagesCount;
 
     Allocator alloc = Global::alloc_toolbox.heap_allocator;
@@ -147,6 +178,8 @@ bool AllocateResource( VulkanContext* context, SwapchainInfo* outSwapchain )
         DArray<Fence*>::Create( context->swapchain_info.imagesCount, &outSwapchain->in_flight_fence_per_image, heap_alloc );
         outSwapchain->in_flight_fence_per_image.size = image_count;
     }
+
+    return true;
 }
 
 void FreeResources( VulkanContext* context, SwapchainInfo* outSwapchain )
@@ -160,14 +193,6 @@ void FreeResources( VulkanContext* context, SwapchainInfo* outSwapchain )
 
     DArray<CommandBuffer>::Clear( &outSwapchain->graphics_cmd_buffers_per_image );
 
-    for ( uint32_t i = 0; i < outSwapchain->frameBuffers.size; ++i )
-    {
-        FrameBuffer* curr = &outSwapchain->frameBuffers.data[i];
-
-        FrameBuffer::Destroy( context, curr );
-    }
-
-    DArray<FrameBuffer>::Clear( &outSwapchain->frameBuffers );
 
     for ( uint32_t i = 0; i < outSwapchain->in_flight_fence_per_image.size; ++i )
     {
@@ -208,37 +233,6 @@ void FreeResources( VulkanContext* context, SwapchainInfo* outSwapchain )
 }
 
 
-
-void SwapchainInfo::QuerySwapchainSupport( VkPhysicalDevice handle, VkSurfaceKHR surface, SwapchainSupportInfo* outSwapchainInfo )
-{
-    // capabilities
-    VkSurfaceCapabilitiesKHR capabilities = {};
-    vkGetPhysicalDeviceSurfaceCapabilitiesKHR( handle, surface, &capabilities );
-
-    Allocator heap_alloc = Global::alloc_toolbox.heap_allocator;
-
-    // surface formats
-    uint32_t formatsCount = 0;
-    vkGetPhysicalDeviceSurfaceFormatsKHR( handle, surface, &formatsCount, nullptr );
-    DArray<VkSurfaceFormatKHR> formats;
-    DArray<VkSurfaceFormatKHR>::Create( formatsCount, &formats, heap_alloc );
-
-    vkGetPhysicalDeviceSurfaceFormatsKHR( handle, surface, &formatsCount, formats.data );
-
-    // present modes
-    uint32_t presentModeCount = 0;
-    vkGetPhysicalDeviceSurfacePresentModesKHR( handle, surface, &presentModeCount, nullptr );
-    DArray<VkPresentModeKHR> presentModes;
-    DArray<VkPresentModeKHR>::Create( presentModeCount, &presentModes, heap_alloc );
-    vkGetPhysicalDeviceSurfacePresentModesKHR( handle, surface, &presentModeCount, presentModes.data );
-
-    // todo : here we add a check for device extensions
-
-    outSwapchainInfo->capabilities = capabilities;
-    outSwapchainInfo->presentModes = presentModes;
-    outSwapchainInfo->surfaceFormats = formats;
-}
-
 bool SwapchainInfo::Destroy( VulkanContext* context, SwapchainInfo* outSwapchain )
 {
     Texture::Destroy( context, &outSwapchain->depthAttachement );
@@ -255,13 +249,10 @@ bool SwapchainInfo::Destroy( VulkanContext* context, SwapchainInfo* outSwapchain
     return true;
 }
 
-
-
-bool SwapchainInfo::Create( VulkanContext* context, SwapchainCreateDescription descrption, VkSwapchainKHR old_swapchain, SwapchainInfo* outSwapchain )
+bool CreateInternal( VulkanContext* context, SwapchainCreateDescription description , VkSwapchainKHR old_swapchain , SwapchainInfo* out_swapchain )
 {
     // query the swapchain support
     QuerySwapchainSupport( context->physicalDeviceInfo.handle, context->surface, &context->physicalDeviceInfo.swapchainSupportInfo );
-
 
     // we select the image format that the swapchain's image will use
     // first we try to get format => R8G8B8A8 and colorSpace =>  VK_COLOR_SPACE_SRGB_NONLINEAR_KHR
@@ -275,7 +266,7 @@ bool SwapchainInfo::Create( VulkanContext* context, SwapchainCreateDescription d
 
             if ( curr->format == VK_FORMAT_R8G8B8A8_UNORM && curr->colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR )
             {
-                outSwapchain->surfaceFormat = *curr;
+                out_swapchain->surfaceFormat = *curr;
                 found = true;
                 break;
             }
@@ -283,10 +274,9 @@ bool SwapchainInfo::Create( VulkanContext* context, SwapchainCreateDescription d
 
         if ( !found )
         {
-            outSwapchain->surfaceFormat = context->physicalDeviceInfo.swapchainSupportInfo.surfaceFormats.data[0];
+            out_swapchain->surfaceFormat = context->physicalDeviceInfo.swapchainSupportInfo.surfaceFormats.data[0];
         }
     }
-
 
     // we select the swapchain's present mode
     // vulkan specifices that all GPU must support FIFO so we start with it as the default mode
@@ -314,7 +304,7 @@ bool SwapchainInfo::Create( VulkanContext* context, SwapchainCreateDescription d
     swapchainExtent.height = Maths::Clamp( swapchainExtent.height, gpuMin.height, gpuMax.height );
 
     // minImage count is usually 2 , so +1 gives 3
-    uint32_t imagesCount = descrption.imagesCount;
+    uint32_t imagesCount = description.imagesCount;
 
     imagesCount = Maths::Clamp
     (
@@ -360,26 +350,43 @@ bool SwapchainInfo::Create( VulkanContext* context, SwapchainCreateDescription d
         swapchainCreateInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
     }
 
-    VkResult createSwapchainResult = vkCreateSwapchainKHR( context->logicalDeviceInfo.handle, &swapchainCreateInfo, context->allocator, &outSwapchain->handle );
-
+    VkResult createSwapchainResult = vkCreateSwapchainKHR( context->logicalDeviceInfo.handle, &swapchainCreateInfo, context->allocator, &out_swapchain->handle );
 
     context->current_frame = 0;
-    outSwapchain->imagesCount = 0;
+    out_swapchain->imagesCount = 0;
 
     // here we take the image count returned by vulkan even though we already specified a wanted count
     // we do this since the number returned can be less than the count we requested (for whatever reason) 
-    VkResult getImagesResult = vkGetSwapchainImagesKHR( context->logicalDeviceInfo.handle, outSwapchain->handle, &outSwapchain->imagesCount, nullptr );
+    VkResult getImagesResult = vkGetSwapchainImagesKHR( context->logicalDeviceInfo.handle, out_swapchain->handle, &out_swapchain->imagesCount, nullptr );
 
-    outSwapchain->maxFramesInFlight = outSwapchain->imagesCount - 1;
+    out_swapchain->maxFramesInFlight = out_swapchain->imagesCount - 1;
 
-    // allocate resource
-    // TODO : move this to a AllocateResources
-    // and make it take care Destroying unneeded resouces OR creating new ones 
-    // based on the new image count of the Swapchain
+    return true;
+}
+
+
+bool SwapchainInfo::Create( VulkanContext* context, SwapchainCreateDescription description, VkSwapchainKHR old_swapchain, SwapchainInfo* out_swapchain )
+{
+    if ( !CreateInternal( context, description, old_swapchain, out_swapchain ) )
     {
-        AllocateResource( context,  outSwapchain );
-
+        return false;
     }
+
+    AllocateResource( context, out_swapchain );
+}
+
+bool DestroyFrameBuffers( VulkanContext* context , SwapchainInfo* in_swapchain )
+{
+
+    for ( uint32_t i = 0; i < in_swapchain->frameBuffers.size; ++i )
+    {
+        FrameBuffer* curr = &in_swapchain->frameBuffers.data[i];
+
+        FrameBuffer::Destroy( context, curr );
+    }
+
+    DArray<FrameBuffer>::Clear( &in_swapchain->frameBuffers );
+
     return true;
 }
 
@@ -429,8 +436,10 @@ bool SwapchainInfo::Recreate( VulkanContext* context, SwapchainCreateDescription
 
     // recreate
     {
+        DestroyFrameBuffers( context, &context->swapchain_info );
         FreeResources( context, outSwapchain );
-        Create( context, descrption, old_swap, outSwapchain );
+        CreateInternal( context, descrption, old_swap, outSwapchain );
+        AllocateResource( context, outSwapchain );
         outSwapchain->CreateFrameBuffers( context );
     }
 
@@ -459,15 +468,11 @@ bool SwapchainInfo::AcquireNextImageIndex( VulkanContext* context, uint32_t time
 
     if ( result == VK_ERROR_OUT_OF_DATE_KHR )
     {
-        VkSwapchainKHR old_swap = context->swapchain_info.handle;
-
-        SwapchainInfo::Destroy( context, this );
-
         SwapchainCreateDescription desc = {};
         desc.width = context->frameBufferSize.x;
         desc.height = context->frameBufferSize.y;
 
-        SwapchainInfo::Create( context, desc, old_swap, this );
+        SwapchainInfo::Recreate( context, desc, &context->swapchain_info );
         return false;
     }
 

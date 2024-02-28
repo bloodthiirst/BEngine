@@ -183,6 +183,7 @@
   <ItemGroup>
     <ClCompile Include="Core\Application\Application.cpp" />
     <ClCompile Include="Core\Defines\Defines.cpp" />
+    <ClCompile Include="Core\EntityManager\EntityManager.cpp" />
     <ClCompile Include="Core\EventSystem\Types\GameEvents.h" />
     <ClCompile Include="Core\Global\Global.cpp" />
     <ClCompile Include="Core\Logger\Logger.cpp" />
@@ -203,13 +204,13 @@
     <ClCompile Include="Core\Renderer\Backend\Vulkan\Context\SwapchainInfo.cpp" />
     <ClCompile Include="Core\Renderer\Backend\Vulkan\Context\FrameBuffer.cpp" />
     <ClCompile Include="Core\Renderer\Backend\Vulkan\Context\Fence.cpp" />
+    <ClInclude Include="Core\EntityManager\EntityManager.h" />
     <ClInclude Include="Core\Global\Global.h" />
     <ClInclude Include="Core\Platform\Base\Filesystem.h" />
     <ClInclude Include="Core\Platform\Base\InputUtils.h" />
     <ClCompile Include="Core\Platform\Types\Win32\Win32Utils.cpp" />
     <ClCompile Include="Core\Renderer\Backend\Vulkan\Renderer\VulkanBackendRenderer.cpp" />
     <ClCompile Include="Core\Time\Time.cpp" />
-    <ClCompile Include="Core\Utils\FileUtils.cpp" />
     <ClCompile Include="Core\WinMain.cpp" />
     <ClCompile Include="Core\Platform\Types\Win32\Win32Window.h" />
     <ClCompile Include="Core\EventSystem\GameEventSystem.cpp" />
@@ -251,8 +252,6 @@
     <ClInclude Include="Core\Renderer\Frontend\Shader\ShaderUtils.h" />
     <ClInclude Include="Core\Renderer\Frontend\Texture\Texture.h" />
     <ClInclude Include="Core\Time\Time.h" />
-    <ClInclude Include="Core\Utils\FileUtils.h" />
-    <ClInclude Include="Core\Utils\Fomatter.h" />
     <ClInclude Include="Core\EventSystem\Base\EventBase.h" />
     <ClInclude Include="Core\EventSystem\GameEventSystem.h" />
     <ClInclude Include="Core\Utils\MemoryUtils.h" />

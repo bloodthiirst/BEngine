@@ -58,6 +58,15 @@ static StringBuffer ToString( char* value, Allocator alloc )
     return res;
 }
 
+static StringBuffer ToString( float value, Allocator alloc )
+{
+    float f = 1.123456789;
+    char* buf = (char*) alloc.alloc( alloc, 50);
+    sprintf_s( buf, 50 , "%g", f );
+
+    return StringBuffer::Create( buf, alloc );
+}
+
 static StringBuffer ToString( uint32_t value, Allocator alloc )
 {
     size_t length = 0;

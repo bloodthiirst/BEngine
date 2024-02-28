@@ -1,5 +1,6 @@
 #include "VulkanBackendRenderer.h"
 #include <Windows.h>
+#include <vulkan/vulkan.h>
 #include <vulkan/vulkan_win32.h>
 #include <Maths/Maths.h>
 #include <Maths/Rect.h>
@@ -7,16 +8,20 @@
 #include <Maths/Vector3.h>
 #include <String/StringView.h>
 #include <String/StringUtils.h>
+#include "../../BackendRenderer.h"
+#include "../../../Context/RendererContext.h"
+#include "../Context/VulkanContext.h"
 #include "../../../../Defines/Defines.h"
 #include "../../../Frontend/Texture/Texture.h"
 #include "../Context/CommandBuffer.h"
 #include "../../../Frontend/Shader/Shader.h"
 #include "../../../Frontend/Buffer/Buffer.h"
 #include "../../../../Global/Global.h"
+#include "../../../../Logger/Logger.h"
+//#include "../../../../Logger/Logger.Template.h"
 #include "../../../../Platform/Base/Platform.h"
 #include "../../../../Platform/Base/Window.h"
 #include "../../../../Platform/Types/Win32/Win32Platform.h"
-
 
 struct PhysicalDeviceRequirements
 {
@@ -36,9 +41,11 @@ struct LogicalDeviceRequirements
 const char* INSATNCE_EXTENSION[] =
 {
     VK_KHR_SURFACE_EXTENSION_NAME,
+
 #if defined(_WIN32)
     VK_KHR_WIN32_SURFACE_EXTENSION_NAME,
 #endif
+
 #if defined(_DEBUG)
     VK_EXT_DEBUG_UTILS_EXTENSION_NAME
 #endif
@@ -124,7 +131,7 @@ bool CreateSurface( VulkanContext* context, VkSurfaceKHR* surface )
     createInfo.hinstance = win32plat->process_handle;
     createInfo.hwnd = win32plat->window_handle;
 
-    VkResult result = vkCreateWin32SurfaceKHR( context->vulkanInstance, &createInfo, nullptr, surface );
+    VK_CHECK( vkCreateWin32SurfaceKHR( context->vulkanInstance, &createInfo, nullptr, surface ), result );
 
     return result == VK_SUCCESS;
 
@@ -192,7 +199,7 @@ bool CreateLogicalDevice( VkInstance vkInstance, VkSurfaceKHR surface, PhysicalD
     createDeviceInfo.enabledLayerCount = 0;
     createDeviceInfo.ppEnabledLayerNames = nullptr;
 
-    VkResult result = vkCreateDevice( physicalDeviceinfo->handle, &createDeviceInfo, allocator, handle );
+    VK_CHECK( vkCreateDevice( physicalDeviceinfo->handle, &createDeviceInfo, allocator, handle ), result );
 
     // free the prio queues
     for ( uint32_t i = 0; i < queueCreationInfos.size; ++i )
@@ -731,6 +738,8 @@ bool Startup( BackendRenderer* in_renderer, ApplicationStartup startup )
 
     Global::logger.Info( "Frame buffers created" );
 
+
+
     // create descriptor set pools
     {
         DescriptorManager::Create( ctx, &ctx->descriptor_manager );
@@ -1068,7 +1077,7 @@ bool UpdateTexture( VulkanContext* context, Shader* in_shader )
 }
 
 
-bool UpdateGlobalState( BackendRenderer* in_backend, Matrix4x4 projection, Matrix4x4 view, Vector3 viewPos, float ambiant, uint32_t mode )
+bool UpdateGlobalState( BackendRenderer* in_backend, Matrix4x4 projection, Matrix4x4 view, float ambiant, uint32_t mode )
 {
     VulkanContext* ctx = (VulkanContext*) in_backend->user_data;
 
@@ -1093,11 +1102,20 @@ bool EndFrame( BackendRenderer* in_backend, RendererContext rendererContext )
     {
         Shader::Bind( ctx, &ctx->default_shader );
 
+        GameState* state = &Global::app.game_app.game_state;
+        Quaternion xRot = Quaternion::AxisRotation( state->camera_rotation.x, Vector3::Right() );
+        Quaternion yRot = Quaternion::AxisRotation( state->camera_rotation.y, Vector3::Up() );
+        Quaternion zRot = Quaternion::AxisRotation( state->camera_rotation.z, Vector3::Forward() );
+
+        Quaternion rot = xRot * yRot * zRot;
+
         float aspect = Global::platform.window.width / (float) Global::platform.window.height;
         Matrix4x4 proj = Matrix4x4::Perspective( 60, 0.1f, 1000, aspect );
-        Matrix4x4 view = Matrix4x4::Translate( Vector3( 0, 0, -1 ) );
-        Vector3 pos = Vector3( 0, 0, 0 );
+        //Matrix4x4 view = Matrix4x4::Translate( state->camera_position );
+        //Matrix4x4 view = Matrix4x4::Translate( state->camera_position);
 
+        Matrix4x4 rot_mat = Matrix4x4::Rotate( yRot );
+        Matrix4x4 view = rot_mat;
 
         {
             // vulkan considers (0,0) to be the upper-left corner
@@ -1121,7 +1139,7 @@ bool EndFrame( BackendRenderer* in_backend, RendererContext rendererContext )
             vkCmdSetScissor( cmdBuffer.handle, 0, 1, &scissor );
         }
 
-        UpdateGlobalState( in_backend, proj, view, pos, 1, 0 );
+        UpdateGlobalState( in_backend, proj, view, 1, 0 );
         // UpdateTexture( ctx, &ctx->default_shader );
 
         VkDeviceSize offsets[1] = { 0 };

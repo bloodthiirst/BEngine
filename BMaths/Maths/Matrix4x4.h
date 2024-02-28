@@ -371,14 +371,14 @@ public:
         return memcmp ( lhs.values, rhs.values, sizeof ( rhs.values ) ) == 0;
     }
 
-    inline Matrix4x4 operator*( Matrix4x4& other )
+    inline Matrix4x4 operator*( Matrix4x4 other )
     {
         // should be this.row * other.column
         Matrix4x4 result = {};
 
         for ( unsigned short c = 0; c < 4; ++c )
         {
-            Vector4Ref col = other.GetColumn ( c );
+            Vector4Ref col = other.GetColumn( c );
 
             for ( unsigned short r = 0; r < 4; ++r )
             {

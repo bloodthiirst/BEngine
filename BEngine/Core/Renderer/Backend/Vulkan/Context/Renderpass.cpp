@@ -113,7 +113,7 @@ bool Renderpass::Create ( VulkanContext* context, Rect rect, Color color, float 
         DArray< VkAttachmentDescription>::Add( &attachementDescs, depthAttachmentDesc );
     }
 
-    // todo : we could have other attacheent (input , resolve , preserve)
+    // todo : we could have other attachement (input , resolve , preserve)
 
     subpassDesc.colorAttachmentCount = 1;
     subpassDesc.pColorAttachments = &colorReference;

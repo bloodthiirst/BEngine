@@ -51,7 +51,6 @@ public:
 
     Texture depthAttachement;
 public:
-    static void QuerySwapchainSupport ( VkPhysicalDevice handle, VkSurfaceKHR surface, SwapchainSupportInfo* outSwapchainInfo );
     static bool Destroy ( VulkanContext* context, SwapchainInfo* outSwapchain );
     static bool Create ( VulkanContext* context, SwapchainCreateDescription descrption, VkSwapchainKHR old_swapchain, SwapchainInfo* outSwapchain );
     static bool Recreate ( VulkanContext* context, SwapchainCreateDescription descrption,SwapchainInfo* outSwapchain );

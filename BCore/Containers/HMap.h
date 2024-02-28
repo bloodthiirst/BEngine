@@ -57,7 +57,7 @@ public:
         out_map->comparer = comparer;
         out_map->count = 0;
         out_map->bucket_per_hash = {};
-        
+
         DArray<DArray<BucketLimits>>::Create( capacity, &out_map->bucket_per_hash, alloc );
 
         for ( size_t i = 0; i < capacity; i++ )
@@ -80,21 +80,25 @@ public:
     {
         for ( size_t i = 0; i < in_map->bucket_per_hash.size; i++ )
         {
-            DArray<BucketLimits>::Destroy(&in_map->bucket_per_hash.data[i]);
+            DArray<BucketLimits>::Destroy( &in_map->bucket_per_hash.data[i] );
         }
 
-        DArray<DArray<BucketLimits>>::Destroy(&in_map->bucket_per_hash);
-        DArray<TKey>::Destroy(&in_map->all_keys);
-        DArray<TValue>::Destroy(&in_map->all_values);
+        DArray<DArray<BucketLimits>>::Destroy( &in_map->bucket_per_hash );
+        DArray<TKey>::Destroy( &in_map->all_keys );
+        DArray<TValue>::Destroy( &in_map->all_values );
 
         *in_map = {};
 
         return true;
     }
 
-    static bool TryAdd( HMap* in_map, TKey key, TValue value , size_t* out_index )
+    static bool TryAdd( HMap* in_map, TKey key, TValue value, size_t* out_index )
     {
-        // TODO : check for the capacity threshold and implement hashmap expansion
+        if ( (in_map->count + 1) > in_map->capacity )
+        {
+            Resize( in_map, (in_map->count * 2) + 1 );
+        }
+
         size_t hash = in_map->hasher( key );
         size_t index = hash % in_map->capacity;
 
@@ -209,7 +213,7 @@ public:
         }
 
         BucketLimits to_remove = bucket->data[limit_index];
-        
+
         *out_removed = in_map->all_values.data[to_remove.values_index];
 
         DArray<BucketLimits>::RemoveAt( bucket, limit_index );
@@ -222,7 +226,7 @@ public:
 
             for ( size_t j = 0; j < b->size; ++j )
             {
-                BucketLimits* curr_b = &b->data[i];
+                BucketLimits* curr_b = &b->data[j];
 
                 size_t key_pushback = (size_t) curr_b->keys_index > to_remove.keys_index;
                 size_t val_pushback = (size_t) curr_b->values_index > to_remove.values_index;
@@ -238,10 +242,12 @@ public:
     }
 
 
-    static void Resize( HMap* in_map , size_t capacity)
+    static void Resize( HMap* in_map, size_t capacity )
     {
-        assert( in_map < capacity );
+        int32_t diff = capacity - in_map->count;
+        assert( diff >= 0 );
 
+        // TODO : actually expand the map
         Allocator alloc = ArenaAllocator::Create( &CoreContext::core_arena );
         size_t start_offset = CoreContext::core_arena.offset;
         {
@@ -253,16 +259,27 @@ public:
 
             in_map->count = pairs.size;
             in_map->capacity = capacity;
-            
-            DArray<BucketLimits>::Clear(&in_map->bucket_per_hash);
-            DArray<TKey>::Clear(&in_map->all_keys);
-            DArray<TValue>::Clear(&in_map->all_values);
+
+            for ( size_t i = 0; i < in_map->bucket_per_hash.size; ++i )
+            {
+                DArray<BucketLimits>::Clear( &in_map->bucket_per_hash.data[i] );
+            }
+
+            for ( size_t i = 0; i < diff; ++i )
+            {
+                DArray<BucketLimits> new_bucket = {};
+                DArray<BucketLimits>::Create( 0, &new_bucket, in_map->allocator );
+                DArray<DArray<BucketLimits>>::Add( &in_map->bucket_per_hash, new_bucket );
+            }
+
+            DArray<TKey>::Clear( &in_map->all_keys );
+            DArray<TValue>::Clear( &in_map->all_values );
 
             // add the key-value back into the new resized hmap
             for ( size_t i = 0; i < pairs.size; ++i )
             {
                 TKey key = pairs.data[i].key;
-                TKey value = pairs.data[i].value;
+                TValue value = pairs.data[i].value;
 
                 size_t hash = in_map->hasher( key );
                 size_t index = hash % in_map->capacity;

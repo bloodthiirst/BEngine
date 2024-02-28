@@ -1,7 +1,6 @@
 #pragma once
 #include <String/StringView.h>
 #include <Typedefs/Typedefs.h>
-#include <stdarg.h>
 
 struct ILogger
 {

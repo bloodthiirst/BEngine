@@ -1,6 +1,7 @@
 #pragma once
 #include <String/StringBuffer.h>
 #include <Typedefs/Typedefs.h>
+#include <Maths/Vector3.h>
 struct __declspec(dllexport) GameStartup
 {
 public:
@@ -14,7 +15,9 @@ public:
 struct __declspec(dllexport) GameState
 {
 public:
-    bool isRunning;
+    Vector3 camera_position;
+    Vector3 camera_rotation;
+    bool is_running;
 
 };
 
@@ -26,6 +29,7 @@ struct GameApp
     ActionParams<GameApp*, float> on_render;
     ActionParams<GameApp*> destroy;
 
+
     GameStartup game_startup = { 0 };
-    GameState game_state = { 0 };
+    GameState game_state = { };
 };

@@ -15,7 +15,7 @@ struct BackendRenderer
 
     ActionParams<BackendRenderer*, uint32_t, uint32_t> resize;
     Func<bool, BackendRenderer*, RendererContext> start_frame;
-    Func<bool, BackendRenderer*, Matrix4x4, Matrix4x4, Vector3, float, uint32_t > update_global_state;
+    Func<bool, BackendRenderer*, Matrix4x4, Matrix4x4, float, uint32_t > update_global_state;
     Func<bool, BackendRenderer*, RendererContext> end_frame;
 
     Func<bool, BackendRenderer*> destroy;

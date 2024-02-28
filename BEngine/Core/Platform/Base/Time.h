@@ -4,5 +4,5 @@
 struct Time
 {
     void* user_data;
-    Func<double> get_system_time;
+    Func<double ,Time*> get_system_time;
 };
