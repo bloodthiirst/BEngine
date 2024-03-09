@@ -1106,7 +1106,7 @@ bool EndFrame( BackendRenderer* in_backend, RendererContext rendererContext )
 
         GameState* state = &Global::app.game_app.game_state;
 
-        float aspect = Global::platform.window.width / (float) Global::platform.window.height;
+        float aspect = (float) Global::platform.window.height / Global::platform.window.width;
         Matrix4x4 proj = Matrix4x4::Perspective( 60, 0.1f, 100, aspect );
 
         Matrix4x4 cor_mat = Matrix4x4( { 1,0,0,0 }, { 0,-1,0,0 }, { 0,0,-1,0 }, { 0,0,0,1 } );

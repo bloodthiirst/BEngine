@@ -105,19 +105,19 @@ public:
         return res;
     }
 
+    // NOTE : aspect is height/width
     static inline Matrix4x4 Perspective( const float& fov, float zNear, float zFar, const float& aspect )
     {
-
         float angle = Maths::DegreesToRadian( fov );
 
         float w = (float) tan( angle * 0.5f );
         float z = zFar - zNear;
 
         Matrix4x4 res = Matrix4x4(
-            { 1 / (aspect * w)  , 0     , 0                     , 0 },
+            { (aspect) / w      , 0     , 0                     , 0 },
             { 0                 , 1 / w , 0                     , 0 },
-            { 0                 , 0     , -(zFar + zNear) / z   , -(2 * (zFar * zNear)) / z },
-            { 0                 , 0     , -1                    , 0 }
+            { 0                 , 0     , zFar / z   , -(zFar * zNear) / z },
+            { 0                 , 0     , 1                    , 0 }
         );
 
         return res;

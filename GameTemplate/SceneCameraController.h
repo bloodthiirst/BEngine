@@ -41,7 +41,7 @@ struct SceneCameraController
         // movement
         {
             {
-                move_delta.z -= Global::platform.input.mouseState.currentScrollWheelDelta;
+                move_delta.z += Global::platform.input.mouseState.currentScrollWheelDelta;
             }
 
             if ( Global::platform.input.IsPressed( KeyCode::KEY_RIGHT ) )
@@ -69,12 +69,12 @@ struct SceneCameraController
         {
             if ( Global::platform.input.IsPressed( KeyCode::KEY_Z ) )
             {
-                rotation_delta.y += 1;
+                rotation_delta.y -= 1;
             }
 
             if ( Global::platform.input.IsPressed( KeyCode::KEY_S ) )
             {
-                rotation_delta.y -= 1;
+                rotation_delta.y += 1;
             }
 
             if ( Global::platform.input.IsPressed( KeyCode::KEY_D ) )
