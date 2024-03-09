@@ -2,6 +2,8 @@
 #include <String/StringBuffer.h>
 #include <Typedefs/Typedefs.h>
 #include <Maths/Vector3.h>
+#include <Maths/Quaternion.h>
+
 struct __declspec(dllexport) GameStartup
 {
 public:
@@ -16,7 +18,7 @@ struct __declspec(dllexport) GameState
 {
 public:
     Vector3 camera_position;
-    Vector3 camera_rotation;
+    Quaternion camera_rotation;
     bool is_running;
 
 };
@@ -32,4 +34,5 @@ struct GameApp
 
     GameStartup game_startup = { 0 };
     GameState game_state = { };
+    void* user_data;
 };

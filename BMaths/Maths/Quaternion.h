@@ -12,10 +12,10 @@ public:
     {
         struct
         {
+            float w;
             float x;
             float y;
             float z;
-            float w;
         };
         struct
         {
@@ -48,15 +48,15 @@ public:
     Quaternion ( float x, float y, float z, float w )
     {
         memset(this, 0, sizeof(Quaternion));
-        this->x = x;
-        this->y = y;
-        this->z = z;
-        this->w = w;
+        this->w = x;
+        this->x = y;
+        this->y = z;
+        this->z = w;
     }
 
     static inline float Quadrant ( const Quaternion& src )
     {
-        return (src.x * src.x) + (src.y * src.y) + (src.z * src.z) + (src.w * src.w);
+        return (src.w * src.w) + (src.x * src.x) + (src.y * src.y) + (src.z * src.z);
     }
     static inline Quaternion Conjugate ( const Quaternion& src )
     {
@@ -111,20 +111,20 @@ public:
     {
         Quaternion q = Conjugate ( src );
         float quadrant = Quadrant ( src );
-        q.x /= quadrant;
-        q.y /= quadrant;
         q.z /= quadrant;
         q.w /= quadrant;
+        q.x /= quadrant;
+        q.y /= quadrant;
         return q;
     }
 
     inline friend Quaternion operator+( const Quaternion& lhs, const Quaternion& rhs )
     {
         Quaternion res = {};
-        res.x = lhs.x + rhs.x;
-        res.y = lhs.y + rhs.y;
         res.z = lhs.z + rhs.z;
         res.w = lhs.w + rhs.w;
+        res.x = lhs.x + rhs.x;
+        res.y = lhs.y + rhs.y;
 
         return res;
     }
@@ -151,20 +151,20 @@ public:
     inline friend Quaternion operator*( const Quaternion& lhs, const float& rhs )
     {
         Quaternion res = lhs;
-        res.x *= rhs;
-        res.y *= rhs;
         res.z *= rhs;
         res.w *= rhs;
+        res.x *= rhs;
+        res.y *= rhs;
         return res;
     }
 
     inline friend Quaternion operator/( const Quaternion& lhs, const float& rhs )
     {
         Quaternion res = lhs;
-        res.x /= rhs;
-        res.y /= rhs;
         res.z /= rhs;
         res.w /= rhs;
+        res.x /= rhs;
+        res.y /= rhs;
         return res;
     }
 

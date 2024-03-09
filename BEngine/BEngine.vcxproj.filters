@@ -27,7 +27,7 @@
     <ClCompile Include="Core\Platform\Base\Input.h">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Core\Renderer\Backend\Vulkan\Renderer\VulkanBackendRenderer.cpp">
+    <ClCompile Include="Core\Renderer\VulkanBackend\VulkanBackendRenderer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Core\Time\Time.cpp">
@@ -48,37 +48,34 @@
     <ClCompile Include="Core\Platform\Types\Win32\Win32Utils.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Core\Renderer\Frontend\Texture\Texture.cpp">
+    <ClCompile Include="Core\Renderer\Texture\Texture.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Core\Renderer\Backend\Vulkan\Context\Renderpass.cpp">
+    <ClCompile Include="Core\Renderer\CommandBuffer\CommandBuffer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Core\Renderer\Backend\Vulkan\Context\CommandBuffer.cpp">
+    <ClCompile Include="Core\Renderer\Context\SwapchainInfo.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Core\Renderer\Backend\Vulkan\Context\SwapchainInfo.cpp">
+    <ClCompile Include="Core\Renderer\Context\PhysicalDeviceInfo.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Core\Renderer\Backend\Vulkan\Context\PhysicalDeviceInfo.cpp">
+    <ClCompile Include="Core\Renderer\FrameBuffer\FrameBuffer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Core\Renderer\Backend\Vulkan\Context\FrameBuffer.cpp">
+    <ClCompile Include="Core\Renderer\Fence\Fence.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Core\Renderer\Backend\Vulkan\Context\Fence.cpp">
+    <ClCompile Include="Core\Renderer\Shader\Shader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Core\Renderer\Frontend\Shader\Shader.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Core\Renderer\Frontend\Pipeline\Pipeline.cpp">
+    <ClCompile Include="Core\Renderer\Pipeline\Pipeline.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Core\Platform\Types\Win32\Win32Filesystem.h">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Core\Renderer\Frontend\Buffer\Buffer.cpp">
+    <ClCompile Include="Core\Renderer\Buffer\Buffer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Core\Platform\Types\Win32\Win32Platform.h">
@@ -90,13 +87,13 @@
     <ClCompile Include="Core\Defines\Defines.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Core\Renderer\Frontend\Shader\ShaderBuilder.cpp">
+    <ClCompile Include="Core\Renderer\Shader\ShaderBuilder.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Core\Renderer\Backend\Vulkan\Renderer\DescriptorManager.cpp">
+    <ClCompile Include="Core\Renderer\DescriptorManager\DescriptorManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Core\Renderer\Frontend\Shader\ShaderUtils.cpp">
+    <ClCompile Include="Core\Renderer\Shader\ShaderUtils.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Core\EntityManager\EntityManager.cpp">
@@ -125,10 +122,10 @@
     <ClInclude Include="Core\Platform\Base\Platform.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Core\Renderer\Backend\Vulkan\Context\VulkanContext.h">
+    <ClInclude Include="Core\Renderer\Context\VulkanContext.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Core\Renderer\Backend\Vulkan\Renderer\VulkanBackendRenderer.h">
+    <ClInclude Include="Core\Renderer\VulkanBackend\VulkanBackendRenderer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Core\Renderer\Backend\BackendRenderer.h">
@@ -164,49 +161,49 @@
     <ClInclude Include="Core\Platform\Types\Win32\Win32Memory.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Core\Renderer\Frontend\Texture\Texture.h">
+    <ClInclude Include="Core\Renderer\Texture\Texture.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Core\Renderer\Backend\Vulkan\Context\Renderpass.h">
+    <ClInclude Include="Core\Renderer\Renderpass\Renderpass.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Core\Renderer\Backend\Vulkan\Context\SwapchainSupportInfo.h">
+    <ClInclude Include="Core\Renderer\Context\SwapchainSupportInfo.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Core\Renderer\Backend\Vulkan\Context\QueuesInfo.h">
+    <ClInclude Include="Core\Renderer\Context\QueuesInfo.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Core\Renderer\Backend\Vulkan\Context\LogicalDeviceInfo.h">
+    <ClInclude Include="Core\Renderer\Context\LogicalDeviceInfo.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Core\Renderer\Backend\Vulkan\Context\PhysicalDeviceInfo.h">
+    <ClInclude Include="Core\Renderer\Context\PhysicalDeviceInfo.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Core\Renderer\Backend\Vulkan\Context\SwapchainInfo.h">
+    <ClInclude Include="Core\Renderer\Context\SwapchainInfo.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Core\Renderer\Backend\Vulkan\Context\CommandBuffer.h">
+    <ClInclude Include="Core\Renderer\CommandBuffer\CommandBuffer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Core\Renderer\Backend\Vulkan\Context\CommandPoolsInfo.h">
+    <ClInclude Include="Core\Renderer\CommandBuffer\CommandPoolsInfo.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Core\Renderer\Backend\Vulkan\Context\FrameBuffer.h">
+    <ClInclude Include="Core\Renderer\FrameBuffer\FrameBuffer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Core\Renderer\Backend\Vulkan\Context\Fence.h">
+    <ClInclude Include="Core\Renderer\Fence\Fence.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Core\Renderer\Frontend\Shader\Shader.h">
+    <ClInclude Include="Core\Renderer\Shader\Shader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Core\Renderer\Frontend\Pipeline\Pipeline.h">
+    <ClInclude Include="Core\Renderer\Pipeline\Pipeline.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Core\Platform\Base\Filesystem.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Core\Renderer\Frontend\Buffer\Buffer.h">
+    <ClInclude Include="Core\Renderer\Buffer\Buffer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Core\Global\Global.h">
@@ -221,16 +218,22 @@
     <ClInclude Include="Core\Platform\Base\Memory.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Core\Renderer\Frontend\Shader\ShaderBuilder.h">
+    <ClInclude Include="Core\Renderer\Shader\ShaderBuilder.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Core\Renderer\Backend\Vulkan\Renderer\DescriptorManager.h">
+    <ClInclude Include="Core\Renderer\DescriptorManager\DescriptorManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Core\Renderer\Frontend\Shader\ShaderUtils.h">
+    <ClInclude Include="Core\Renderer\Shader\ShaderUtils.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Core\EntityManager\EntityManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\Renderer\Renderpasses\BasicRenderpass.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\Renderer\Mesh\Vertex3D.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -242,8 +245,6 @@
       <Filter>Source Files</Filter>
     </None>
     <None Include="Core\Resources\SimpleShader.frag" />
-    <None Include="Core\Resources\SimpleShader.frag.spv" />
     <None Include="Core\Resources\SimpleShader.vert" />
-    <None Include="Core\Resources\SimpleShader.vert.spv" />
   </ItemGroup>
 </Project>

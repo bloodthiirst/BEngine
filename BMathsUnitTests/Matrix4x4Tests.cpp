@@ -94,7 +94,7 @@ namespace BEngineMathsUnitTests
             Assert::IsTrue ( result == true );
         }
 
-        TEST_METHOD( DoubleRotationMatrix )
+        TEST_METHOD( OrderMatrix )
         {
             Vector3 input = Vector3(0,0,0);
             
@@ -104,8 +104,7 @@ namespace BEngineMathsUnitTests
             Matrix4x4 tra_mat = Matrix4x4::Translate( translate );
             Matrix4x4 rot_mat = Matrix4x4::Rotate( rot );
 
-            Vector3 translated = (tra_mat) * input;
-            Vector3 rotated = (rot_mat) * translated;
+            Vector3 result = tra_mat * rot_mat * input;
         }
 
         TEST_METHOD( MultiplyMatrix )

@@ -60,7 +60,7 @@ BAPI void Logger::NewLine( size_t repeat )
 
 BAPI void Logger::Log( StringView message )
 {
-    LOG(log)
+    LOG( log )
 };
 
 BAPI void Logger::Info( StringView message )

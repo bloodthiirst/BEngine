@@ -35,8 +35,8 @@ public:
 
     static float ClampAngle( float angle_in_degrees )
     {
-        float sign = angle_in_degrees < 0 ? -1.0f : 1.0;
-        int full_2pi = ((int) (abs( (long) angle_in_degrees ) / 360.0));
+        float sign = angle_in_degrees < 0.0f ? -1.0f : 1.0f;
+        int full_2pi = (int) (fabsf( angle_in_degrees ) / 360.0f);
 
         if ( angle_in_degrees < 0 )
         {

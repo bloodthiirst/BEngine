@@ -144,6 +144,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="CustomGame.h" />
+    <ClInclude Include="SceneCameraController.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CustomGame.cpp" />

@@ -18,7 +18,7 @@
 #include "Platform/Base/Platform.h"
 #include "Logger/Types/ConsoleLogger.h"
 #include "Renderer/Backend/BackendRenderer.h"
-#include "Renderer/Backend/Vulkan/Renderer/VulkanBackendRenderer.h"
+#include "Renderer/VulkanBackend/VulkanBackendRenderer.h"
 
 #ifdef _WIN32
 #include "Platform/Types/Win32/Win32Platform.h"

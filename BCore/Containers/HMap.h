@@ -244,7 +244,7 @@ public:
 
     static void Resize( HMap* in_map, size_t capacity )
     {
-        int32_t diff = capacity - in_map->count;
+        int32_t diff = (uint32_t)capacity - (uint32_t)in_map->count;
         assert( diff >= 0 );
 
         // TODO : actually expand the map

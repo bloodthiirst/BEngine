@@ -1,10 +1,14 @@
+#if _WIN32
+#include <windows.h>
+#include <synchapi.h>
+#endif
 #include <GameApp.h>
 #include "Application.h"
 #include "../Defines/Defines.h"
 #include "../Global/Global.h"
 #include "../Platform/Base/Platform.h"
 #include "../Renderer/Backend/BackendRenderer.h"
-#include "../Renderer/Backend/Vulkan/Renderer/VulkanBackendRenderer.h"
+#include "../Renderer/VulkanBackend/VulkanBackendRenderer.h"
 
 bool Application::Run()
 {
@@ -18,6 +22,8 @@ bool Application::Run()
         double curr_time = Global::platform.time.get_system_time( time );
 
         float delta = (float) (curr_time - last_time);
+
+        last_time = curr_time;
 
         // input
         Global::platform.input.OnUpdate( delta );
@@ -49,7 +55,7 @@ bool Application::Run()
 
     post_frame:
         Global::platform.input.OnPostUpdate( delta );
-        last_time = curr_time;
+        Sleep( 0 );
     }
 
     return true;

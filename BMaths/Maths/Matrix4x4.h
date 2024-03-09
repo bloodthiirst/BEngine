@@ -14,8 +14,9 @@ public:
     float& w;
 
 public:
-    Vector4Ref ( float& x, float& y, float& z, float& w ) : x ( x ), y ( y ), z ( z ), w ( w )
-    {}
+    Vector4Ref( float& x, float& y, float& z, float& w ) : x( x ), y( y ), z( z ), w( w )
+    {
+    }
 };
 
 struct Matrix4x4
@@ -25,28 +26,28 @@ public:
     {
         struct
         {
-            float r1c1;
-            float r1c2;
-            float r1c3;
-            float r1c4;
+            float m00;
+            float m10;
+            float m20;
+            float m30;
 
 
-            float r2c1;
-            float r2c2;
-            float r2c3;
-            float r2c4;
+            float m01;
+            float m11;
+            float m21;
+            float m31;
 
 
-            float r3c1;
-            float r3c2;
-            float r3c3;
-            float r3c4;
+            float m02;
+            float m12;
+            float m22;
+            float m32;
 
 
-            float r4c1;
-            float r4c2;
-            float r4c3;
-            float r4c4;
+            float m03;
+            float m13;
+            float m23;
+            float m33;
         };
 
         struct
@@ -62,11 +63,11 @@ public:
 
 public:
 
-    Matrix4x4 () = default;
+    Matrix4x4() = default;
 
-    Matrix4x4 ( const Vector4 r1, const Vector4 r2, const Vector4 r3, const Vector4 r4 )
+    Matrix4x4( const Vector4 r1, const Vector4 r2, const Vector4 r3, const Vector4 r4 )
     {
-        memset(this, 0, sizeof(Matrix4x4));
+        memset( this, 0, sizeof( Matrix4x4 ) );
         rows[0] = r1;
         rows[1] = r2;
         rows[2] = r3;
@@ -75,28 +76,28 @@ public:
 
 public:
 
-    inline float Get ( short column, short rows )
+    inline float Get( short column, short rows )
     {
         return values[column + (rows * 4)];
     }
 
-    inline Vector4Ref GetRow ( int index )
+    inline Vector4Ref GetRow( int index )
     {
         short firstIndex = (index * 4);
-        Vector4Ref vecRef ( values[firstIndex], values[firstIndex + 1], values[firstIndex + 2], values[firstIndex + 3] );
+        Vector4Ref vecRef( values[firstIndex], values[firstIndex + 1], values[firstIndex + 2], values[firstIndex + 3] );
         return vecRef;
     }
 
-    inline Vector4Ref GetColumn ( int index )
+    inline Vector4Ref GetColumn( int index )
     {
-        Vector4Ref vecRef ( values[index], values[index + 4], values[index + 8], values[index + 12] );
+        Vector4Ref vecRef( values[index], values[index + 4], values[index + 8], values[index + 12] );
         return vecRef;
     }
 
 public:
-    static inline Matrix4x4 Identity ()
+    static inline Matrix4x4 Identity()
     {
-        Matrix4x4 res = Matrix4x4 {};
+        Matrix4x4 res = Matrix4x4{};
         res.values[0] = 1;
         res.values[5] = 1;
         res.values[10] = 1;
@@ -104,15 +105,15 @@ public:
         return res;
     }
 
-    static inline Matrix4x4 Perspective ( const float& fov, float zNear, float zFar, const float& aspect )
+    static inline Matrix4x4 Perspective( const float& fov, float zNear, float zFar, const float& aspect )
     {
 
-        float angle = Maths::DegreesToRadian ( fov );
+        float angle = Maths::DegreesToRadian( fov );
 
-        float w = (float) tan ( angle * 0.5f );
+        float w = (float) tan( angle * 0.5f );
         float z = zFar - zNear;
 
-        Matrix4x4 res = Matrix4x4 (
+        Matrix4x4 res = Matrix4x4(
             { 1 / (aspect * w)  , 0     , 0                     , 0 },
             { 0                 , 1 / w , 0                     , 0 },
             { 0                 , 0     , -(zFar + zNear) / z   , -(2 * (zFar * zNear)) / z },
@@ -122,7 +123,7 @@ public:
         return res;
     }
 
-    static inline float Determinant ( Matrix4x4& source )
+    static inline float Determinant( Matrix4x4& source )
     {
         float det = 0;
         float mul;
@@ -131,41 +132,41 @@ public:
         // 0
         {
             mul = source.values[0];
-            m3.values[0] = source.Get ( 1, 1 ); m3.values[1] = source.Get ( 2, 1 ); m3.values[2] = source.Get ( 3, 1 );
-            m3.values[3] = source.Get ( 1, 2 ); m3.values[4] = source.Get ( 2, 2 ); m3.values[5] = source.Get ( 3, 2 );
-            m3.values[6] = source.Get ( 1, 3 ); m3.values[7] = source.Get ( 2, 3 ); m3.values[8] = source.Get ( 3, 3 );
+            m3.values[0] = source.Get( 1, 1 ); m3.values[1] = source.Get( 2, 1 ); m3.values[2] = source.Get( 3, 1 );
+            m3.values[3] = source.Get( 1, 2 ); m3.values[4] = source.Get( 2, 2 ); m3.values[5] = source.Get( 3, 2 );
+            m3.values[6] = source.Get( 1, 3 ); m3.values[7] = source.Get( 2, 3 ); m3.values[8] = source.Get( 3, 3 );
 
-            det += Matrix3x3::Determinant ( m3 ) * mul;
+            det += Matrix3x3::Determinant( m3 ) * mul;
         }
 
         // 1
         {
             mul = source.values[1];
-            m3.values[0] = source.Get ( 0, 1 ); m3.values[1] = source.Get ( 2, 1 ); m3.values[2] = source.Get ( 3, 1 );
-            m3.values[3] = source.Get ( 0, 2 ); m3.values[4] = source.Get ( 2, 2 ); m3.values[5] = source.Get ( 3, 2 );
-            m3.values[6] = source.Get ( 0, 3 ); m3.values[7] = source.Get ( 2, 3 ); m3.values[8] = source.Get ( 3, 3 );
+            m3.values[0] = source.Get( 0, 1 ); m3.values[1] = source.Get( 2, 1 ); m3.values[2] = source.Get( 3, 1 );
+            m3.values[3] = source.Get( 0, 2 ); m3.values[4] = source.Get( 2, 2 ); m3.values[5] = source.Get( 3, 2 );
+            m3.values[6] = source.Get( 0, 3 ); m3.values[7] = source.Get( 2, 3 ); m3.values[8] = source.Get( 3, 3 );
 
-            det += Matrix3x3::Determinant ( m3 ) * -mul;
+            det += Matrix3x3::Determinant( m3 ) * -mul;
         }
 
         // 2
         {
             mul = source.values[2];
-            m3.values[0] = source.Get ( 0, 1 ); m3.values[1] = source.Get ( 1, 1 ); m3.values[2] = source.Get ( 3, 1 );
-            m3.values[3] = source.Get ( 0, 2 ); m3.values[4] = source.Get ( 1, 2 ); m3.values[5] = source.Get ( 3, 2 );
-            m3.values[6] = source.Get ( 0, 3 ); m3.values[7] = source.Get ( 1, 3 ); m3.values[8] = source.Get ( 3, 3 );
+            m3.values[0] = source.Get( 0, 1 ); m3.values[1] = source.Get( 1, 1 ); m3.values[2] = source.Get( 3, 1 );
+            m3.values[3] = source.Get( 0, 2 ); m3.values[4] = source.Get( 1, 2 ); m3.values[5] = source.Get( 3, 2 );
+            m3.values[6] = source.Get( 0, 3 ); m3.values[7] = source.Get( 1, 3 ); m3.values[8] = source.Get( 3, 3 );
 
-            det += Matrix3x3::Determinant ( m3 ) * mul;
+            det += Matrix3x3::Determinant( m3 ) * mul;
         }
 
         // 3
         {
             mul = source.values[3];
-            m3.values[0] = source.Get ( 0, 1 ); m3.values[1] = source.Get ( 1, 1 ); m3.values[2] = source.Get ( 2, 1 );
-            m3.values[3] = source.Get ( 0, 2 ); m3.values[4] = source.Get ( 1, 2 ); m3.values[5] = source.Get ( 2, 2 );
-            m3.values[6] = source.Get ( 0, 3 ); m3.values[7] = source.Get ( 1, 3 ); m3.values[8] = source.Get ( 2, 3 );
+            m3.values[0] = source.Get( 0, 1 ); m3.values[1] = source.Get( 1, 1 ); m3.values[2] = source.Get( 2, 1 );
+            m3.values[3] = source.Get( 0, 2 ); m3.values[4] = source.Get( 1, 2 ); m3.values[5] = source.Get( 2, 2 );
+            m3.values[6] = source.Get( 0, 3 ); m3.values[7] = source.Get( 1, 3 ); m3.values[8] = source.Get( 2, 3 );
 
-            det += Matrix3x3::Determinant ( m3 ) * -mul;
+            det += Matrix3x3::Determinant( m3 ) * -mul;
         }
 
         return det;
@@ -173,19 +174,19 @@ public:
     }
 
 
-    static inline bool ApproxEqual ( const Matrix4x4& lhs, const Matrix4x4& rhs, const float EPSILON )
+    static inline bool ApproxEqual( const Matrix4x4& lhs, const Matrix4x4& rhs, const float EPSILON )
     {
-        bool r0 = Vector4::ApproxEqual ( lhs.rows[0], rhs.rows[0], EPSILON );
-        bool r1 = Vector4::ApproxEqual ( lhs.rows[1], rhs.rows[1], EPSILON );
-        bool r2 = Vector4::ApproxEqual ( lhs.rows[2], rhs.rows[2], EPSILON );
-        bool r3 = Vector4::ApproxEqual ( lhs.rows[3], rhs.rows[3], EPSILON );
+        bool r0 = Vector4::ApproxEqual( lhs.rows[0], rhs.rows[0], EPSILON );
+        bool r1 = Vector4::ApproxEqual( lhs.rows[1], rhs.rows[1], EPSILON );
+        bool r2 = Vector4::ApproxEqual( lhs.rows[2], rhs.rows[2], EPSILON );
+        bool r3 = Vector4::ApproxEqual( lhs.rows[3], rhs.rows[3], EPSILON );
 
         return r0 && r1 && r2 && r3;
     }
 
-    static inline Matrix4x4 Scale ( Vector3 scale )
+    static inline Matrix4x4 Scale( Vector3 scale )
     {
-        Matrix4x4 res = Matrix4x4 (
+        Matrix4x4 res = Matrix4x4(
             { scale.x,0,0 ,0 },
             { 0,scale.y,0 ,0 },
             { 0,0,scale.z ,0 },
@@ -195,9 +196,9 @@ public:
         return res;
     }
 
-    static inline Matrix4x4 Translate ( Vector3 translation )
+    static inline Matrix4x4 Translate( Vector3 translation )
     {
-        Matrix4x4 res = Matrix4x4 (
+        Matrix4x4 res = Matrix4x4(
             { 1,0,0,translation.x },
             { 0,1,0,translation.y },
             { 0,0,1,translation.z },
@@ -207,57 +208,59 @@ public:
         return res;
     }
 
-    static inline Matrix4x4 Rotate ( Quaternion q )
+    static inline Matrix4x4 Rotate( Quaternion q )
     {
+        // s + ix + jy + kz
+        // w + ix + jy + kz
         Matrix4x4 res = Matrix4x4
         (
             {
-                2 * ((q.x * q.x) + (q.y * q.y)) - 1 ,
-                2 * ((q.y * q.z) - (q.x * q.w)) ,
-                2 * ((q.y * q.w) + (q.x * q.z)),
+                1 - (2 * ((q.y * q.y) - (q.z * q.z))) ,
+                2 * ((q.x * q.y) - (q.w * q.z)) ,
+                2 * ((q.x * q.z) + (q.w * q.y)),
                 0
             },
 
             {
-                2 * ((q.y * q.z) + (q.x * q.w)) ,
-                2 * ((q.x * q.x) + (q.z * q.z)) - 1 ,
-                2 * ((q.z * q.w) - (q.x * q.y)),
+                2 * ((q.x * q.y) + (q.w * q.z)) ,
+                1 - (2 * ((q.x * q.x) + (q.z * q.z))) ,
+                2 * ((q.y * q.z) - (q.w * q.x)),
                 0
             },
 
             {
-                2 * ((q.y * q.w) - (q.x * q.z)) ,
-                2 * ((q.z * q.w) + (q.x * q.y)) ,
-                2 * ((q.x * q.x) + (q.w * q.w)) - 1,
+                2 * ((q.x * q.z) - (q.w * q.y)) ,
+                2 * ((q.y * q.z) + (q.w * q.x)) ,
+                1 - (2 * ((q.x * q.x) + (q.y * q.y))),
                 0
             },
 
             {
-                0,0,0,0
+                0,0,0,1
             }
-        );
+            );
 
         return res;
     }
 
-    static inline Matrix4x4 Inverse ( Matrix4x4& source )
+    static inline Matrix4x4 Inverse( Matrix4x4& source )
     {
         Matrix4x4 res = {};
 
-        float det = Determinant ( source );
+        float det = Determinant( source );
 
         float detInverse = 1 / det;
 
-        Matrix4x4 cofactor = Cofactor ( source );
+        Matrix4x4 cofactor = Cofactor( source );
 
-        Matrix4x4 transposedCofactor = Transpose ( cofactor );
+        Matrix4x4 transposedCofactor = Transpose( cofactor );
 
         res = transposedCofactor / det;
 
         return res;
     }
 
-    inline void SubMatrix ( int r, int c, Matrix3x3& result )
+    inline void SubMatrix( int r, int c, Matrix3x3& result )
     {
         int colInsert = 0;
         int rowInsert = 0;
@@ -270,7 +273,7 @@ public:
                 {
                     if ( x != c )
                     {
-                        result.values[colInsert + (rowInsert * 3)] = Get ( x, y );
+                        result.values[colInsert + (rowInsert * 3)] = Get( x, y );
                         colInsert++;
                     }
 
@@ -284,16 +287,16 @@ public:
 
     }
 
-    inline Matrix3x3 SubMatrix ( int r, int c )
+    inline Matrix3x3 SubMatrix( int r, int c )
     {
         Matrix3x3 res = {};
 
-        SubMatrix ( r, c, res );
+        SubMatrix( r, c, res );
 
         return res;
     }
 
-    static inline Matrix4x4 Cofactor ( Matrix4x4& source )
+    static inline Matrix4x4 Cofactor( Matrix4x4& source )
     {
         Matrix4x4 res = {};
         Matrix3x3 temp = {};
@@ -302,8 +305,8 @@ public:
         {
             for ( int c = 0; c < 4; c++ )
             {
-                source.SubMatrix ( r, c, temp );
-                res.values[c + (r * 4)] = Matrix3x3::Determinant ( temp ) * sign;
+                source.SubMatrix( r, c, temp );
+                res.values[c + (r * 4)] = Matrix3x3::Determinant( temp ) * sign;
                 sign *= -1;
             }
 
@@ -313,13 +316,13 @@ public:
         return res;
     }
 
-    static inline Matrix4x4 Transpose ( Matrix4x4& source )
+    static inline Matrix4x4 Transpose( Matrix4x4& source )
     {
         Matrix4x4 res = {};
 
         for ( short i = 0; i < 4; ++i )
         {
-            Vector4Ref vecRef = source.GetColumn ( i );
+            Vector4Ref vecRef = source.GetColumn( i );
             res.rows[i].x = vecRef.x;
             res.rows[i].y = vecRef.y;
             res.rows[i].z = vecRef.z;
@@ -368,31 +371,39 @@ public:
 
     inline friend bool operator==( const Matrix4x4& lhs, const Matrix4x4& rhs )
     {
-        return memcmp ( lhs.values, rhs.values, sizeof ( rhs.values ) ) == 0;
+        return memcmp( lhs.values, rhs.values, sizeof( rhs.values ) ) == 0;
     }
 
-    inline Matrix4x4 operator*( Matrix4x4 other )
+    /// <summary>
+    /// <para>Multiplies two matricies together</para>
+    /// <para>The resulting matrix would combine both matricies apply the rhs first , followed by the lhs</para>
+    /// </summary>
+    /// <param name="lhs">Left hand side matrix</param>
+    /// <param name="rhs">Right hand side matrix</param>
+    /// <returns></returns>
+    inline friend Matrix4x4 operator*(Matrix4x4 lhs , Matrix4x4 rhs )
     {
-        // should be this.row * other.column
-        Matrix4x4 result = {};
+        Matrix4x4 res;
+        res.m00 = rhs.m00 * lhs.m00 + rhs.m01 * lhs.m10 + rhs.m02 * lhs.m20 + rhs.m03 * lhs.m30;
+        res.m01 = rhs.m00 * lhs.m01 + rhs.m01 * lhs.m11 + rhs.m02 * lhs.m21 + rhs.m03 * lhs.m31;
+        res.m02 = rhs.m00 * lhs.m02 + rhs.m01 * lhs.m12 + rhs.m02 * lhs.m22 + rhs.m03 * lhs.m32;
+        res.m03 = rhs.m00 * lhs.m03 + rhs.m01 * lhs.m13 + rhs.m02 * lhs.m23 + rhs.m03 * lhs.m33;
 
-        for ( unsigned short c = 0; c < 4; ++c )
-        {
-            Vector4Ref col = other.GetColumn( c );
+        res.m10 = rhs.m10 * lhs.m00 + rhs.m11 * lhs.m10 + rhs.m12 * lhs.m20 + rhs.m13 * lhs.m30;
+        res.m11 = rhs.m10 * lhs.m01 + rhs.m11 * lhs.m11 + rhs.m12 * lhs.m21 + rhs.m13 * lhs.m31;
+        res.m12 = rhs.m10 * lhs.m02 + rhs.m11 * lhs.m12 + rhs.m12 * lhs.m22 + rhs.m13 * lhs.m32;
+        res.m13 = rhs.m10 * lhs.m03 + rhs.m11 * lhs.m13 + rhs.m12 * lhs.m23 + rhs.m13 * lhs.m33;
 
-            for ( unsigned short r = 0; r < 4; ++r )
-            {
-                Vector4 r_row = rows[r];
+        res.m20 = rhs.m20 * lhs.m00 + rhs.m21 * lhs.m10 + rhs.m22 * lhs.m20 + rhs.m23 * lhs.m30;
+        res.m21 = rhs.m20 * lhs.m01 + rhs.m21 * lhs.m11 + rhs.m22 * lhs.m21 + rhs.m23 * lhs.m31;
+        res.m22 = rhs.m20 * lhs.m02 + rhs.m21 * lhs.m12 + rhs.m22 * lhs.m22 + rhs.m23 * lhs.m32;
+        res.m23 = rhs.m20 * lhs.m03 + rhs.m21 * lhs.m13 + rhs.m22 * lhs.m23 + rhs.m23 * lhs.m33;
 
-                result.values[c + (r * 4)] =
-                    (r_row.x * col.x) +
-                    (r_row.y * col.y) +
-                    (r_row.z * col.z) +
-                    (r_row.w * col.w);
-            }
-        }
+        res.m30 = rhs.m30 * lhs.m00 + rhs.m31 * lhs.m10 + rhs.m32 * lhs.m20 + rhs.m33 * lhs.m30;
+        res.m31 = rhs.m30 * lhs.m01 + rhs.m31 * lhs.m11 + rhs.m32 * lhs.m21 + rhs.m33 * lhs.m31;
+        res.m32 = rhs.m30 * lhs.m02 + rhs.m31 * lhs.m12 + rhs.m32 * lhs.m22 + rhs.m33 * lhs.m32;
+        res.m33 = rhs.m30 * lhs.m03 + rhs.m31 * lhs.m13 + rhs.m32 * lhs.m23 + rhs.m33 * lhs.m33;
 
-        return result;
+        return res;
     }
-
 };
