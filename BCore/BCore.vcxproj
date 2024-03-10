@@ -102,7 +102,7 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;_CORE_EXPORT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
     </ClCompile>
     <Link>
@@ -134,6 +134,7 @@
     <ClInclude Include="Command\Command.h" />
     <ClInclude Include="Containers\HMap.h" />
     <ClInclude Include="Context\CoreContext.h" />
+    <ClInclude Include="Defines\Defines.h" />
     <ClInclude Include="String\StringBuffer.h" />
     <ClInclude Include="String\StringView.h" />
     <ClInclude Include="String\StringUtils.h" />

@@ -8,7 +8,7 @@
 #include "ToString.h"
 #include "../Context/CoreContext.h"
 
-class StringUtils
+class CORE_API StringUtils
 {
 private:
 

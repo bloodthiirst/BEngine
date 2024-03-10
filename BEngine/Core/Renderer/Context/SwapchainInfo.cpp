@@ -125,7 +125,6 @@ bool AllocateResource( VulkanContext* context, SwapchainInfo* outSwapchain )
         descriptor.create_view = true;
         descriptor.view_aspect_flags = VK_IMAGE_ASPECT_DEPTH_BIT;
 
-        Texture depthTexture = {};
         Texture::Create( context, descriptor, &outSwapchain->depthAttachement );
     }
 

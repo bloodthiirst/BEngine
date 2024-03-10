@@ -3,6 +3,7 @@
 #include <Typedefs/Typedefs.h>
 #include "Core/Global/Global.h"
 #include "Core/Logger/Logger.h"
+#include <Context/CoreContext.h>
 #include <Maths/Maths.h>
 #include "SceneCameraController.h"
 
@@ -43,9 +44,10 @@ void OnUpdate( GameApp* game_app, float delta_time )
     game_app->game_state.camera_position = new_pos;
     game_app->game_state.camera_rotation = new_rot;
 
+    Arena* arena = &CoreContext::core_arena;
 
     // TODO : investigate arena init per module
-    //Global::logger.Log( StringUtils::Format( Global::alloc_toolbox.frame_allocator, "Current camera pos {} , {} , {}", old_pos->x, old_pos->y, old_pos->z ).view );
+    Global::logger.Log( StringUtils::Format( Global::alloc_toolbox.frame_allocator, "Current camera pos {} , {} , {}", new_pos.x, new_pos.y, new_pos.z ).view );
 }
 
 void OnRender( GameApp* game_app, float delta_time )

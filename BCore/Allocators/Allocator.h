@@ -9,7 +9,7 @@ typedef void* (*Alloc)(Allocator, size_t);
 typedef void* (*Realloc)(Allocator, void*, size_t);
 typedef void (*Free)(Allocator, void*);
 
-struct Allocator
+struct CORE_API Allocator
 {
     void* user_data;
     Alloc alloc;
@@ -17,7 +17,7 @@ struct Allocator
     Free free;
 };
 
-struct Arena
+struct CORE_API Arena
 {
     void* data;
     size_t capacity;
@@ -47,7 +47,7 @@ struct Arena
         return sub;
     }
 
-    static void* Reset( Arena* arena )
+    static void Reset( Arena* arena )
     {
         arena->offset = 0;
     }

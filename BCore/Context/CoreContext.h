@@ -2,10 +2,11 @@
 #include <stdint.h>
 #include <memory>
 #include "../Typedefs/Typedefs.h"
+#include "../Defines/Defines.h"
 
-struct Arena;
+struct CORE_API Arena;
 
-struct CoreContext
+struct CORE_API CoreContext
 {
     /// <summary>
     /// Allocate the specified amount of bytes from the heap and return a pointer to the allocated block
