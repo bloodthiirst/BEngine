@@ -1,12 +1,14 @@
 #pragma once
+#include "../Defines/Defines.h"
 #include "StringView.h"
 #include "../Allocators/Allocator.h"
+
 
 /// <summary>
 /// <para>A wrapper around an editable chunk of memory used to represent strings</para>
 /// <para>A StringBuffer supports editing and manipulating the memory used for the string</para>
 /// </summary>
-struct StringBuffer
+struct CORE_API StringBuffer
 {
     /// <summary>
     /// The allocator used to manipulate the memory associated with the string

@@ -1147,7 +1147,7 @@ bool EndFrame( BackendRenderer* in_backend, RendererContext rendererContext )
         for ( size_t i = 0; i < currSet->size; ++i )
         {
             VkDescriptorSet* curr = &currSet->data[i];
-            vkCmdBindDescriptorSets( cmdBuffer.handle, VK_PIPELINE_BIND_POINT_GRAPHICS, ctx->default_shader.pipeline.layout, i, 1, curr, 0, nullptr );
+            vkCmdBindDescriptorSets( cmdBuffer.handle, VK_PIPELINE_BIND_POINT_GRAPHICS, ctx->default_shader.pipeline.layout, (uint32_t) i, 1, curr, 0, nullptr );
         }
 
         VkDeviceSize pos_offsets[1] = { 0 };

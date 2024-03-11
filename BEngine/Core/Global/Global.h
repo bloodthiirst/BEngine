@@ -37,7 +37,7 @@ struct ArenaCheckpoint
     size_t start_offset;
 };
 
-struct AllocationToolbox
+struct BAPI AllocationToolbox
 {
     Arena frame_arena;
     Allocator heap_allocator;

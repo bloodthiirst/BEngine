@@ -1,4 +1,5 @@
 #include "CustomGame.h"
+#include <String/StringView.h>
 #include <String/StringBuffer.h>
 #include <Typedefs/Typedefs.h>
 #include "Core/Global/Global.h"
@@ -21,6 +22,8 @@ StringView GetName( GameApp* game_app )
 
 void Initialize( GameApp* game_app )
 {
+    CoreContext::DefaultContext();
+
     game_app->game_state.camera_position = Vector3( 0, 0, -3 );
     game_app->game_state.camera_rotation = { 1,0,0,0 };
 
@@ -28,6 +31,7 @@ void Initialize( GameApp* game_app )
     state->camera_controller.position = Vector3( 0, 0, -3 );
     state->camera_controller.xRotation = 0;
     state->camera_controller.yRotation = 0;
+
 
     game_app->user_data = state;
 }
@@ -45,9 +49,6 @@ void OnUpdate( GameApp* game_app, float delta_time )
     game_app->game_state.camera_rotation = new_rot;
 
     Arena* arena = &CoreContext::core_arena;
-
-    // TODO : investigate arena init per module
-    Global::logger.Log( StringUtils::Format( Global::alloc_toolbox.frame_allocator, "Current camera pos {} , {} , {}", new_pos.x, new_pos.y, new_pos.z ).view );
 }
 
 void OnRender( GameApp* game_app, float delta_time )

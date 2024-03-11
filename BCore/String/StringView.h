@@ -1,4 +1,6 @@
 #pragma once
+#include "../Defines/Defines.h"
+
 struct Allocator;
 
 /// <summary>
@@ -22,7 +24,7 @@ struct StringView
     /// </summary>
     /// <param name="str"></param>
     /// <returns></returns>
-    static StringView Create(const char* str);
+    static CORE_API StringView Create(const char* str);
 
     /// <summary>
     /// Create a C string (with termination character) from the view
@@ -32,8 +34,8 @@ struct StringView
     /// <returns></returns>
     static char* ToCString(StringView str_view, Allocator alloc);
 
-    StringView( const char* c_str );
-    StringView() = default;
+    CORE_API StringView( const char* c_str );
+    CORE_API StringView() = default;
 
     operator const char*() const { 
         return buffer;

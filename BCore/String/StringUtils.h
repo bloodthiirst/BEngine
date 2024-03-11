@@ -1,5 +1,6 @@
 #pragma once
 #include <cassert>
+#include "../Defines/Defines.h"
 #include "../Allocators/Allocator.h"
 #include "../Containers/DArray.h"
 #include "StringBuffer.h"

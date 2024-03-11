@@ -370,6 +370,8 @@ bool SwapchainInfo::Create( VulkanContext* context, SwapchainCreateDescription d
     }
 
     AllocateResource( context, out_swapchain );
+
+    return true;
 }
 
 bool SwapchainInfo::Recreate( VulkanContext* context, SwapchainCreateDescription descrption, SwapchainInfo* outSwapchain )

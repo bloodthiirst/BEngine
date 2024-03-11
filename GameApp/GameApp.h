@@ -4,7 +4,7 @@
 #include <Maths/Vector3.h>
 #include <Maths/Quaternion.h>
 
-struct __declspec(dllexport) GameStartup
+struct GameStartup
 {
 public:
     int width;
@@ -14,7 +14,7 @@ public:
 };
 
 
-struct __declspec(dllexport) GameState
+struct GameState
 {
 public:
     Vector3 camera_position;

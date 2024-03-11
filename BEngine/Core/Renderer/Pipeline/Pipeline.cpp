@@ -99,7 +99,7 @@ bool Pipeline::Create( VulkanContext* context, Renderpass* renderpass, PipelineD
         description.binding = 0;
         description.format = curr->format;
         description.offset = offset;
-        description.location = curr->location;
+        description.location = (uint32_t) curr->location;
 
         // this can be used for both offset and accumulating the total size
         offset += (uint32_t) curr->size;

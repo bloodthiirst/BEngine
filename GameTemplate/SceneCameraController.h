@@ -12,16 +12,16 @@ struct SceneCameraController
     Vector3 mousePos;
 
     // roll (x), pitch (y), yaw (z), angles are in radians
-    Quaternion ToQuaternion( double roll, double pitch, double yaw ) 
+    Quaternion ToQuaternion( float roll, float pitch, float yaw )
     {
         // Abbreviations for the various angular functions
 
-        double cr = cos( roll * 0.5 );
-        double sr = sin( roll * 0.5 );
-        double cp = cos( pitch * 0.5 );
-        double sp = sin( pitch * 0.5 );
-        double cy = cos( yaw * 0.5 );
-        double sy = sin( yaw * 0.5 );
+        float cr = (float) cos( roll * 0.5 );
+        float sr = (float) sin( roll * 0.5 );
+        float cp = (float) cos( pitch * 0.5 );
+        float sp = (float) sin( pitch * 0.5 );
+        float cy = (float) cos( yaw * 0.5 );
+        float sy = (float) sin( yaw * 0.5 );
 
         Quaternion q;
         q.z = cr * cp * cy + sr * sp * sy;
