@@ -134,8 +134,6 @@ struct Win32Window
             DispatchMessage( &msg );
 
             hasQuit |= (msg.message == WM_QUIT);
-
-            Sleep( 1 );
         }
 
         return !hasQuit;

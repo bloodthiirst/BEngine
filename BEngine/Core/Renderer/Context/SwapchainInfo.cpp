@@ -356,8 +356,6 @@ bool CreateInternal( VulkanContext* context, SwapchainCreateDescription descript
     // we do this since the number returned can be less than the count we requested (for whatever reason) 
     VkResult getImagesResult = vkGetSwapchainImagesKHR( context->logicalDeviceInfo.handle, out_swapchain->handle, &out_swapchain->imagesCount, nullptr );
 
-    out_swapchain->maxFramesInFlight = out_swapchain->imagesCount - 1;
-
     return true;
 }
 
@@ -453,15 +451,11 @@ bool SwapchainInfo::Present( VulkanContext* context, VkSemaphore render_complete
 
     if ( result == VK_ERROR_OUT_OF_DATE_KHR )
     {
-        VkSwapchainKHR old_swap = context->swapchain_info.handle;
-
-        SwapchainInfo::Destroy( context, &context->swapchain_info );
-
         SwapchainCreateDescription desc = {};
         desc.width = context->frameBufferSize.x;
         desc.height = context->frameBufferSize.y;
 
-        SwapchainInfo::Create( context, desc, old_swap, &context->swapchain_info );
+        SwapchainInfo::Recreate( context, desc, &context->swapchain_info );
         return false;
     }
 

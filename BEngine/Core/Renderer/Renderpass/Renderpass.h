@@ -33,6 +33,7 @@ public:
 
     DArray<RenderTarget> render_targets;
     ActionParams<Renderpass*, CommandBuffer*> begin;
+    ActionParams<Renderpass*, CommandBuffer* , RendererContext*> draw;
     ActionParams<Renderpass*, CommandBuffer*> end;
     ActionParams<Renderpass*> on_resize;
     ActionParams<Renderpass*> on_destroy;

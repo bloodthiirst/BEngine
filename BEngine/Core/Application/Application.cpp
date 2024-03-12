@@ -17,7 +17,7 @@ bool Application::Run()
     Time* time = &Global::platform.time;
     double last_time = Global::platform.time.get_system_time( time );
 
-    while (application_state.isRunning = Global::platform.window.handle_messages())
+    while ( application_state.isRunning = Global::platform.window.handle_messages() )
     {
         double curr_time = Global::platform.time.get_system_time( time );
 
@@ -30,20 +30,25 @@ bool Application::Run()
 
         // update game
         game_app.on_update( &game_app, delta );
-        
+
         game_app.on_render( &game_app, delta );
 
         RendererContext renderer_ctx = RendererContext();
 
         // draw frame
         {
-            if (!Global::backend_renderer.start_frame( &Global::backend_renderer, renderer_ctx ))
+            if ( !Global::backend_renderer.start_frame( &Global::backend_renderer, &renderer_ctx ) )
             {
                 Global::logger.Error( "Couldn't start frame" );
                 goto post_frame;
             }
 
-            if (!Global::backend_renderer.end_frame( &Global::backend_renderer, renderer_ctx ))
+            if ( !Global::backend_renderer.draw_frame( &Global::backend_renderer, &renderer_ctx ) )
+            {
+                Global::logger.Error( "Couldn't draw frame" );
+            }
+
+            if ( !Global::backend_renderer.end_frame( &Global::backend_renderer, &renderer_ctx ) )
             {
                 Global::logger.Error( "Couldn't end frame" );
                 goto post_frame;
@@ -54,8 +59,7 @@ bool Application::Run()
         }
 
     post_frame:
-        Global::platform.input.OnPostUpdate( delta );
-        Sleep( 0 );
+        Global::platform.input.OnPostUpdate( delta );;
     }
 
     return true;

@@ -22,7 +22,6 @@ public:
     VkSurfaceFormatKHR surfaceFormat;
     VkPresentModeKHR presentMode;
 
-    uint32_t maxFramesInFlight;
     uint32_t imagesCount;
     DArray<VkImage> images;
     DArray<VkImageView> imageViews;

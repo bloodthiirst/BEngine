@@ -2,6 +2,7 @@
 #include <Containers/DArray.h>
 #include "../../Global/Global.h"
 #include "../Renderpass/Renderpass.h"
+#include "../CommandBuffer/CommandBuffer.h"
 #include "../Context/VulkanContext.h"
 
 struct BasicRenderpassParams
@@ -145,9 +146,11 @@ struct BasicRenderpass
         out_renderpass->internal_data = data;
         out_renderpass->handle = vkRenderpass;
         out_renderpass->begin = Begin;
+        out_renderpass->draw = Draw;
         out_renderpass->end = End;
         out_renderpass->on_resize = OnResize;
         out_renderpass->on_destroy = OnDestroy;
+
         Allocator alloc = Global::alloc_toolbox.heap_allocator;
         DArray<RenderTarget>::Create( ctx->swapchain_info.imagesCount, &out_renderpass->render_targets, alloc );
         for ( size_t i = 0; i < ctx->swapchain_info.imagesCount; ++i )
@@ -157,7 +160,7 @@ struct BasicRenderpass
             DArray<VkImageView> attachements = {};
             DArray<VkImageView>::Create( 2, &attachements, alloc );
             DArray<VkImageView>::Add( &attachements, ctx->swapchain_info.imageViews.data[i] );
-            DArray<VkImageView>::Add( &attachements, ctx->swapchain_info.depthAttachement.view);
+            DArray<VkImageView>::Add( &attachements, ctx->swapchain_info.depthAttachement.view );
 
             FrameBuffer framebuffer = {};
             FrameBuffer::Create( ctx, out_renderpass, ctx->frameBufferSize, attachements, &framebuffer );
@@ -165,9 +168,115 @@ struct BasicRenderpass
             rt.framebuffer = framebuffer;
 
             DArray<RenderTarget>::Add( &out_renderpass->render_targets, rt );
-        }      
-        
+        }
+
         return true;
+    }
+
+    static bool UpdateTexture( VulkanContext* context, Shader* in_shader )
+    {
+        uint32_t currentIndex = context->current_image_index;
+        CommandBuffer currentCmdBuffer = context->swapchain_info.graphics_cmd_buffers_per_image.data[currentIndex];
+        VkDescriptorSet currentDescriptor = in_shader->descriptor_sets[currentIndex].data[1];
+
+        VkDescriptorImageInfo image_info = {};
+        image_info.imageView = context->default_texture.view;
+        image_info.sampler = context->default_sampler;
+        image_info.imageLayout = VkImageLayout::VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+        VkWriteDescriptorSet writeDescriptor = {};
+        writeDescriptor.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+        writeDescriptor.dstSet = currentDescriptor;   // "dst" stands for "descriptor" here 
+        writeDescriptor.dstBinding = 0;               // "dst" stands for "descriptor" here
+        writeDescriptor.dstArrayElement = 0;          // "dst" stands for "descriptor" here
+        writeDescriptor.descriptorCount = 1;
+        writeDescriptor.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+        writeDescriptor.pImageInfo = &image_info;
+
+        vkUpdateDescriptorSets( context->logicalDeviceInfo.handle, 1, &writeDescriptor, 0, nullptr );
+
+        return true;
+    }
+
+    static bool UpdateGlobalState( BackendRenderer* in_backend, Matrix4x4 projection, Matrix4x4 view, float ambiant, uint32_t mode )
+    {
+        VulkanContext* ctx = (VulkanContext*) in_backend->user_data;
+
+        CommandBuffer current_cmd = ctx->swapchain_info.graphics_cmd_buffers_per_image.data[ctx->current_image_index];
+
+        // NOTE : the projection and view are passed by copy because the frame might not be done
+        ctx->default_shader.global_UBO.projection = projection;
+        ctx->default_shader.global_UBO.view = view;
+
+        Shader::UpdateGlobalBuffer( ctx, ctx->default_shader.global_UBO, &ctx->default_shader );
+
+        return true;
+    }
+
+    static void Draw( Renderpass* in_renderpass, CommandBuffer* cmd, RendererContext* render_ctx )
+    {
+        BasicRenderpassParams* data = (BasicRenderpassParams*) in_renderpass->internal_data;
+        BackendRenderer* in_backend = &Global::backend_renderer;
+        VulkanContext* ctx = (VulkanContext*) Global::backend_renderer.user_data;
+
+        uint32_t frame_index = ctx->current_image_index;
+        FrameBuffer framebuffer = in_renderpass->render_targets.data[frame_index].framebuffer;
+
+        // test code
+        {
+            Shader::Bind( ctx, &ctx->default_shader );
+
+            GameState* state = &Global::app.game_app.game_state;
+
+            float aspect = (float) Global::platform.window.height / Global::platform.window.width;
+            Matrix4x4 proj = Matrix4x4::Perspective( 60, 0.1f, 100, aspect );
+
+            Matrix4x4 corrective_mat = Matrix4x4( { 1,0,0,0 }, { 0,-1,0,0 }, { 0,0,0,0 }, { 0,0,0,1 } );
+            Matrix4x4 tra_mat = Matrix4x4::Translate( state->camera_position );
+            Matrix4x4 rot_mat = Matrix4x4::Rotate( state->camera_rotation );
+            Matrix4x4 scl_mat = Matrix4x4::Scale( Vector3( 1, 1, -1 ) );
+            Matrix4x4 nonInvView = tra_mat * rot_mat;
+            Matrix4x4 view = Matrix4x4::Inverse( nonInvView ) * scl_mat;
+
+            {
+                // vulkan considers (0,0) to be the upper-left corner
+                // to get "standanrdized" zero point , we set the the center to be (bottom-left)
+                // hence why the y == height and height = -height
+                VkViewport viewport = {};
+                viewport.x = 0;
+                viewport.y = (float) ctx->frameBufferSize.y;
+                viewport.width = (float) ctx->frameBufferSize.x;
+                viewport.height = -(float) ctx->frameBufferSize.y;
+                viewport.maxDepth = 1;
+                viewport.minDepth = 0;
+
+                VkRect2D scissor = { };
+                scissor.offset.x = 0;
+                scissor.offset.y = 0;
+                scissor.extent.width = ctx->frameBufferSize.x;
+                scissor.extent.height = ctx->frameBufferSize.y;
+
+                vkCmdSetViewport( cmd->handle, 0, 1, &viewport );
+                vkCmdSetScissor( cmd->handle, 0, 1, &scissor );
+            }
+
+            UpdateTexture( ctx, &ctx->default_shader );
+            UpdateGlobalState( in_backend, proj, view, 1, 0 );
+
+            DArray<VkDescriptorSet>* currSet = &ctx->default_shader.descriptor_sets[frame_index];
+            for ( size_t i = 0; i < currSet->size; ++i )
+            {
+                VkDescriptorSet* curr = &currSet->data[i];
+                vkCmdBindDescriptorSets( cmd->handle, VK_PIPELINE_BIND_POINT_GRAPHICS, ctx->default_shader.pipeline.layout, (uint32_t) i, 1, curr, 0, nullptr );
+            }
+
+            VkDeviceSize pos_offsets[1] = { 0 };
+            VkDeviceSize tex_offsets[1] = { 12 };
+            vkCmdBindVertexBuffers( cmd->handle, 0, 1, &ctx->vertexBuffer.handle, (VkDeviceSize*) pos_offsets );
+            vkCmdBindVertexBuffers( cmd->handle, 1, 1, &ctx->vertexBuffer.handle, (VkDeviceSize*) tex_offsets );
+            vkCmdBindIndexBuffer( cmd->handle, ctx->indexBuffer.handle, 0, VkIndexType::VK_INDEX_TYPE_UINT32 );
+            vkCmdDrawIndexed( cmd->handle, 6, 1, 0, 0, 0 );
+        }
     }
 
     static void Begin( Renderpass* in_renderpass, CommandBuffer* cmd )
@@ -212,7 +321,7 @@ struct BasicRenderpass
 
         for ( size_t i = 0; i < in_renderpass->render_targets.size; ++i )
         {
-            FrameBuffer::Destroy( ctx, &in_renderpass->render_targets.data[i].framebuffer);
+            FrameBuffer::Destroy( ctx, &in_renderpass->render_targets.data[i].framebuffer );
         }
 
         DArray<RenderTarget>::Clear( &in_renderpass->render_targets );
@@ -240,6 +349,12 @@ struct BasicRenderpass
         data->area.height = (float) ctx->frameBufferSize.y;
     }
 
+    static void End( Renderpass* in_renderpass, CommandBuffer* cmd )
+    {
+        vkCmdEndRenderPass( cmd->handle );
+        cmd->state = CommandBufferState::Recording;
+    }
+
     static void OnDestroy( Renderpass* in_renderpass )
     {
         VulkanContext* ctx = (VulkanContext*) Global::backend_renderer.user_data;
@@ -249,12 +364,6 @@ struct BasicRenderpass
             FrameBuffer::Destroy( ctx, &in_renderpass->render_targets.data[i].framebuffer );
         }
 
-        DArray<RenderTarget>::Destroy(&in_renderpass->render_targets);
-    }
-
-    static void End( Renderpass* in_renderpass, CommandBuffer* cmd )
-    {
-        vkCmdEndRenderPass( cmd->handle );
-        cmd->state = CommandBufferState::Recording;
+        DArray<RenderTarget>::Destroy( &in_renderpass->render_targets );
     }
 };

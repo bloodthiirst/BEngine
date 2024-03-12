@@ -986,7 +986,7 @@ void Resize( BackendRenderer* in_backend, uint32_t width, uint32_t height )
 // Waits for the last frame's submittion if needed
 // Acquires and updates the new image index from the swapchain
 // current frame is still the same , it gets updated after "Present"
-bool StartFrame( BackendRenderer* in_backend, RendererContext rendererContext )
+bool StartFrame( BackendRenderer* in_backend, RendererContext* rendererContext )
 {
     VulkanContext* ctx = (VulkanContext*) in_backend->user_data;
     LogicalDeviceInfo device = ctx->logicalDeviceInfo;
@@ -1053,113 +1053,24 @@ bool StartFrame( BackendRenderer* in_backend, RendererContext rendererContext )
     return true;
 }
 
-bool UpdateTexture( VulkanContext* context, Shader* in_shader )
-{
-    uint32_t currentIndex = context->current_image_index;
-    CommandBuffer currentCmdBuffer = context->swapchain_info.graphics_cmd_buffers_per_image.data[currentIndex];
-    VkDescriptorSet currentDescriptor = in_shader->descriptor_sets[currentIndex].data[1];
-
-    VkDescriptorImageInfo image_info = {};
-    image_info.imageView = context->default_texture.view;
-    image_info.sampler = context->default_sampler;
-    image_info.imageLayout = VkImageLayout::VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-
-    VkWriteDescriptorSet writeDescriptor = {};
-    writeDescriptor.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-    writeDescriptor.dstSet = currentDescriptor;   // "dst" stands for "descriptor" here 
-    writeDescriptor.dstBinding = 0;               // "dst" stands for "descriptor" here
-    writeDescriptor.dstArrayElement = 0;          // "dst" stands for "descriptor" here
-    writeDescriptor.descriptorCount = 1;
-    writeDescriptor.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-    writeDescriptor.pImageInfo = &image_info;
-
-    vkUpdateDescriptorSets( context->logicalDeviceInfo.handle, 1, &writeDescriptor, 0, nullptr );
-
-    return true;
-}
-
-
-bool UpdateGlobalState( BackendRenderer* in_backend, Matrix4x4 projection, Matrix4x4 view, float ambiant, uint32_t mode )
+bool DrawFrame( BackendRenderer* in_backend, RendererContext* rendererContext )
 {
     VulkanContext* ctx = (VulkanContext*) in_backend->user_data;
-
-    CommandBuffer current_cmd = ctx->swapchain_info.graphics_cmd_buffers_per_image.data[ctx->current_image_index];
-
-    // NOTE : the projection and view are passed by copy because the frame might not be done
-    ctx->default_shader.global_UBO.projection = projection;
-    ctx->default_shader.global_UBO.view = view;
-
-    Shader::UpdateGlobalBuffer( ctx, ctx->default_shader.global_UBO, &ctx->default_shader );
+    uint32_t current_index = ctx->current_image_index;
+    CommandBuffer cmd = ctx->swapchain_info.graphics_cmd_buffers_per_image.data[current_index];
+    ctx->renderPass.draw( &ctx->renderPass, &cmd , rendererContext );
 
     return true;
 }
 
 /// Once we reach this function , the image_index represents the current image that's we're working on to send to presentation
-bool EndFrame( BackendRenderer* in_backend, RendererContext rendererContext )
+bool EndFrame( BackendRenderer* in_backend, RendererContext* rendererContext )
 {
     VulkanContext* ctx = (VulkanContext*) in_backend->user_data;
-    CommandBuffer cmdBuffer = ctx->swapchain_info.graphics_cmd_buffers_per_image.data[ctx->current_image_index];
+    CommandBuffer cmd = ctx->swapchain_info.graphics_cmd_buffers_per_image.data[ctx->current_image_index];
 
-    // test code
-    {
-        Shader::Bind( ctx, &ctx->default_shader );
-
-        GameState* state = &Global::app.game_app.game_state;
-
-        float aspect = (float) Global::platform.window.height / Global::platform.window.width;
-        Matrix4x4 proj = Matrix4x4::Perspective( 60, 0.1f, 100, aspect );
-
-        Matrix4x4 cor_mat = Matrix4x4( { 1,0,0,0 }, { 0,-1,0,0 }, { 0,0,-1,0 }, { 0,0,0,1 } );
-        Matrix4x4 tra_mat = Matrix4x4::Translate( state->camera_position );
-        Matrix4x4 rot_mat = Matrix4x4::Rotate( state->camera_rotation );
-        Matrix4x4 scl_mat = Matrix4x4::Scale( Vector3( 1, 1, -1 ) );
-        Matrix4x4 nonInvView = tra_mat * rot_mat;
-        Matrix4x4 view = Matrix4x4::Inverse( nonInvView ) * scl_mat;
-
-        {
-            // vulkan considers (0,0) to be the upper-left corner
-            // to get "standanrdized" zero point , we set the the center to be (bottom-left)
-            // hence why the y == height and height = -height
-            VkViewport viewport = {};
-            viewport.x = 0;
-            viewport.y = (float) ctx->frameBufferSize.y;
-            viewport.width = (float) ctx->frameBufferSize.x;
-            viewport.height = -(float) ctx->frameBufferSize.y;
-            viewport.maxDepth = 1;
-            viewport.minDepth = 0;
-
-            VkRect2D scissor = { };
-            scissor.offset.x = 0;
-            scissor.offset.y = 0;
-            scissor.extent.width = ctx->frameBufferSize.x;
-            scissor.extent.height = ctx->frameBufferSize.y;
-
-            vkCmdSetViewport( cmdBuffer.handle, 0, 1, &viewport );
-            vkCmdSetScissor( cmdBuffer.handle, 0, 1, &scissor );
-        }
-
-        uint32_t currentImageIndex = ctx->current_image_index;
-
-        UpdateTexture( ctx, &ctx->default_shader );
-        UpdateGlobalState( in_backend, proj, view, 1, 0 );
-
-        DArray<VkDescriptorSet>* currSet = &ctx->default_shader.descriptor_sets[currentImageIndex];
-        for ( size_t i = 0; i < currSet->size; ++i )
-        {
-            VkDescriptorSet* curr = &currSet->data[i];
-            vkCmdBindDescriptorSets( cmdBuffer.handle, VK_PIPELINE_BIND_POINT_GRAPHICS, ctx->default_shader.pipeline.layout, (uint32_t) i, 1, curr, 0, nullptr );
-        }
-
-        VkDeviceSize pos_offsets[1] = { 0 };
-        VkDeviceSize tex_offsets[1] = { 12 };
-        vkCmdBindVertexBuffers( cmdBuffer.handle, 0, 1, &ctx->vertexBuffer.handle, (VkDeviceSize*) pos_offsets );
-        vkCmdBindVertexBuffers( cmdBuffer.handle, 1, 1, &ctx->vertexBuffer.handle, (VkDeviceSize*) tex_offsets );
-        vkCmdBindIndexBuffer( cmdBuffer.handle, ctx->indexBuffer.handle, 0, VkIndexType::VK_INDEX_TYPE_UINT32 );
-        vkCmdDrawIndexed( cmdBuffer.handle, 6, 1, 0, 0, 0 );
-    }
-
-    ctx->renderPass.end( &ctx->renderPass, &cmdBuffer );
-    cmdBuffer.End();
+    ctx->renderPass.end( &ctx->renderPass, &cmd );
+    cmd.End();
 
     // NOTE : a very important detail to understand here is that we're reusing the Fence used to signal "CommandBuffer finished" to also signal "Frame Present"
     // this might seem confusing at first , but since "Present" always happens after "CommandBuffer finished"
@@ -1196,7 +1107,7 @@ bool EndFrame( BackendRenderer* in_backend, RendererContext rendererContext )
     VkSubmitInfo info = {};
     info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
     info.commandBufferCount = 1;
-    info.pCommandBuffers = &cmdBuffer.handle;
+    info.pCommandBuffers = &cmd.handle;
 
     // signaled when the queue is complete
     info.signalSemaphoreCount = 1;
@@ -1215,7 +1126,7 @@ bool EndFrame( BackendRenderer* in_backend, RendererContext rendererContext )
     // from the docs : fence is an optional handle to a fence to be signaled once all submitted command buffers have completed execution
     vkQueueSubmit( ctx->physicalDeviceInfo.queuesInfo.graphicsQueue, 1, &info, submit_fence->handle );
 
-    cmdBuffer.UpdateSubmitted();
+    cmd.UpdateSubmitted();
 
     // note : accordring to the spec
     // presentation requests sent in a particular queue are always performed in order
@@ -1230,7 +1141,7 @@ bool EndFrame( BackendRenderer* in_backend, RendererContext rendererContext )
     );
 
     // increments and loop frame count
-    ctx->current_frame = (ctx->current_frame + 1) % ctx->swapchain_info.maxFramesInFlight;
+    ctx->current_frame = (ctx->current_frame + 1) % ctx->swapchain_info.imagesCount;
 
     return true;
 }
@@ -1271,6 +1182,6 @@ void VulkanBackendRenderer::Create( BackendRenderer* out_renderer )
     out_renderer->resize = Resize;
     out_renderer->start_frame = StartFrame;
     out_renderer->end_frame = EndFrame;
-    out_renderer->update_global_state = UpdateGlobalState;
+    out_renderer->draw_frame = DrawFrame;
     out_renderer->destroy = Destroy;
 }
