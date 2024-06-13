@@ -5,11 +5,11 @@
 #include <Maths/Vector2Int.h>
 #include <GameApp.h>
 #include "Win32Utils.h"
+#include "../../Base/Input.h"
+#include "../../Base/Window.h"
 #include "../../../EventSystem/GameEventSystem.h"
 #include "../../../Global/Global.h"
 #include "../../../EventSystem/Types/GameEvents.h"
-#include "../../Base/Input.h"
-#include "../../Base/Window.h"
 #include "../../../Application/Application.h"
 
 struct Win32WindowState
@@ -21,9 +21,8 @@ struct Win32WindowState
 struct Win32Window
 {
 
-    static void Create( Window* window, Platform* platform )
+    static void Create( Window* window )
     {
-        window->platform = platform;
         window->handle_messages = HandleMessages;
         window->startup_callback = Startup;
     }
@@ -50,7 +49,7 @@ struct Win32Window
 
         // note : includes the termination char
         size_t string_length = name.length + 1;
-        wchar_t* appName = (wchar_t*) heap_alloc.alloc( heap_alloc, sizeof( wchar_t ) * string_length );
+        wchar_t* appName = (wchar_t*) ALLOC( heap_alloc , sizeof( wchar_t ) * string_length , nullptr );
 
         size_t converted_chars;
         size_t size = mbstowcs_s( &converted_chars, appName, string_length, name.buffer, name.length );
@@ -95,10 +94,10 @@ struct Win32Window
             appName, // window text
             (DWORD) windowStyle, // window style
             windowX, windowY, windowWidth, windowHeight,//position and size
-            NULL,// parent wnd
-            NULL,// Menu
+            nullptr,// parent wnd
+            nullptr,// Menu
             state->process_handle, // app process
-            NULL // additional app data
+            nullptr // additional app data
         );
 
 
@@ -114,7 +113,7 @@ struct Win32Window
 
         if ( ShowWindow( state->window_handle, SW_SHOW ) )
         {
-            MessageBox( NULL, TEXT( "Showing of the window failed" ), TEXT( "Error" ), MB_OK );
+            MessageBox( nullptr, TEXT( "Showing of the window failed" ), TEXT( "Error" ), MB_OK );
             return;
         }
 
@@ -168,7 +167,6 @@ struct Win32Window
         {
             if ( MessageBox( hwnd, TEXT( "Are you sure you want to exit?" ), TEXT( "Exit" ), MB_YESNO | MB_ICONQUESTION ) == IDYES )
             {
-                Application* app = (Application*) (GetWindowLongPtr( hwnd, GWLP_USERDATA ));
                 EngineCloseEvent evt = EngineCloseEvent();
 
                 Global::event_system.Trigger<EngineCloseEvent>( evt );
@@ -189,7 +187,6 @@ struct Win32Window
 
         case WM_SETFOCUS:
         {
-            Application* app = &Global::app;
             Global::app.application_state.isFocused = true;
 
             WindowFocusEvent evt = WindowFocusEvent();
@@ -200,8 +197,7 @@ struct Win32Window
         }
         case WM_KILLFOCUS:
         {
-            Application* app = &Global::app;
-            app->application_state.isFocused = false;
+            Global::app.application_state.isFocused = false;
 
             WindowUnfocusEvent evt = WindowUnfocusEvent();
 
@@ -215,8 +211,6 @@ struct Win32Window
 
             // get the new window size
             GetClientRect( hwnd, &size );
-
-            Application* app = (Application*) (GetWindowLongPtr( hwnd, GWLP_USERDATA ));
 
             uint32_t windowX = size.left;
             uint32_t windowY = size.top;
@@ -239,7 +233,6 @@ struct Win32Window
         // todo : look what is SYSKEY message
         case WM_KEYUP:
         {
-            Application* app = &Global::app;
             Global::platform.input.SetKeyUp( (KeyCode) wParam );
             return 0;
         }
@@ -263,8 +256,6 @@ struct Win32Window
             pos.x = x;
             pos.y = y;
 
-            Application* app = &Global::app;
-
             Global::platform.input.SetMousePosition( pos );
 
             return 0;
@@ -272,7 +263,7 @@ struct Win32Window
 
         case WM_MOUSEWHEEL:
         {
-            short delta = GET_WHEEL_DELTA_WPARAM( wParam );
+            int16_t delta = GET_WHEEL_DELTA_WPARAM( wParam );
 
             size_t scrollDeltaLookupIndex = (size_t) (delta > 0);
 
@@ -283,7 +274,6 @@ struct Win32Window
         case WM_LBUTTONDOWN:
         {
             SetCapture( hwnd );
-            Application* app = (Application*) (GetWindowLongPtr( hwnd, GWLP_USERDATA ));
             Global::platform.input.SetMouseDown( MouseButton::LeftMouseButton );
 
             return 0;
@@ -291,7 +281,6 @@ struct Win32Window
         case WM_MBUTTONDOWN:
         {
             SetCapture( hwnd );
-            Application* app = (Application*) (GetWindowLongPtr( hwnd, GWLP_USERDATA ));
             Global::platform.input.SetMouseDown( MouseButton::MiddleMouseButton );
 
             return 0;
@@ -299,7 +288,6 @@ struct Win32Window
         case WM_RBUTTONDOWN:
         {
             SetCapture( hwnd );
-            Application* app = (Application*) (GetWindowLongPtr( hwnd, GWLP_USERDATA ));
             Global::platform.input.SetMouseDown( MouseButton::RightMouseButton );
 
             return 0;
@@ -307,7 +295,6 @@ struct Win32Window
         case WM_LBUTTONUP:
         {
             ReleaseCapture();
-            Application* app = (Application*) (GetWindowLongPtr( hwnd, GWLP_USERDATA ));
             Global::platform.input.SetMouseUp( MouseButton::LeftMouseButton );
 
             return 0;
@@ -315,7 +302,6 @@ struct Win32Window
         case WM_MBUTTONUP:
         {
             ReleaseCapture();
-            Application* app = (Application*) (GetWindowLongPtr( hwnd, GWLP_USERDATA ));
             Global::platform.input.SetMouseUp( MouseButton::MiddleMouseButton );
 
             return 0;
@@ -323,7 +309,6 @@ struct Win32Window
         case WM_RBUTTONUP:
         {
             ReleaseCapture();
-            Application* app = (Application*) (GetWindowLongPtr( hwnd, GWLP_USERDATA ));
             Global::platform.input.SetMouseUp( MouseButton::RightMouseButton );
             return 0;
         }

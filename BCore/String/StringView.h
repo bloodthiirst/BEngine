@@ -7,7 +7,7 @@ struct Allocator;
 /// <para>A wrapper around strings that represents a readonly view of them</para>
 /// <para>The buffer is not guaranteed to be null-terminated , it can be a view into a chunch int the middle of another string </para>
 /// </summary>
-struct StringView
+struct CORE_API StringView
 {
     /// <summary>
     /// Pointer to the start of the string
@@ -24,7 +24,7 @@ struct StringView
     /// </summary>
     /// <param name="str"></param>
     /// <returns></returns>
-    static CORE_API StringView Create(const char* str);
+    static StringView Create(const char* str);
 
     /// <summary>
     /// Create a C string (with termination character) from the view
@@ -34,11 +34,17 @@ struct StringView
     /// <returns></returns>
     static char* ToCString(StringView str_view, Allocator alloc);
 
-    CORE_API StringView( const char* c_str );
-    CORE_API StringView() = default;
+    StringView( const char* c_str )
+    {
+        buffer = c_str;
+        length = 0;
 
-    operator const char*() const { 
-        return buffer;
+        while ( c_str[length] != '\0' )
+        {
+            ++length;
+        }
     }
+
+    StringView() = default;
 };
 

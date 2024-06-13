@@ -37,14 +37,15 @@ struct CORE_API StringBuffer
 
     };
 
-    static StringBuffer Create(size_t length, Allocator allocator);
+    static StringBuffer Create( size_t length, Allocator allocator );
 
-    static StringBuffer Create(const char* str, size_t from, size_t to, Allocator allocator);
+    static StringBuffer Create( const char* str, size_t from, size_t to, Allocator allocator );
 
-    static StringBuffer Create(const char* str, Allocator allocator);
+    static StringBuffer Create( const char* str, Allocator allocator );
 
-    static StringBuffer Create(StringView str, Allocator allocator);
-    static void Destroy( StringBuffer* str);
+    static StringBuffer Create( StringView str, Allocator allocator );
 
-    static void Resize(StringBuffer* str, size_t size);
+    static void Destroy( StringBuffer* str );
+
+    static void Resize( StringBuffer* str, size_t size );
 };

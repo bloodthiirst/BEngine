@@ -42,7 +42,7 @@ private:
         return stat( path_mem, &buffer );
     }
 
-    static bool Win32Open( StringView path, FileMode mode, bool binary, FileHandle* outFileHandle )
+    static bool Win32Open( StringView path, FileModeFlag mode, bool binary, FileHandle* outFileHandle )
     {
         outFileHandle->is_valid = false;
         outFileHandle->handle = 0;
@@ -51,17 +51,17 @@ private:
 
         switch ( mode )
         {
-        case FileMode::ReadWrite:
+        case FileModeFlag::ReadWrite:
         {
             str_mode = binary ? "w+b" : "w+";
             break;
         }
-        case FileMode::Read:
+        case FileModeFlag::Read:
         {
             str_mode = binary ? "rb" : "r";
             break;
         }
-        case FileMode::Write:
+        case FileModeFlag::Write:
         {
             str_mode = binary ? "wb" : "w";
             break;

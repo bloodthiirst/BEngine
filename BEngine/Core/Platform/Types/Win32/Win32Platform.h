@@ -41,6 +41,6 @@ struct Win32Platform
         Win32Memory::Create(&platform_out->memory);
         Win32Filesystem::Create(&platform_out->filesystem);
         Win32Time::Create(&platform_out->time);
-        Win32Window::Create(&platform_out->window , platform_out);
+        Win32Window::Create(&platform_out->window);
     }
 };

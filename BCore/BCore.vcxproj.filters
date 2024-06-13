@@ -54,6 +54,9 @@
     <ClInclude Include="Defines\Defines.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Containers\FreeList.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="String\StringView.cpp">

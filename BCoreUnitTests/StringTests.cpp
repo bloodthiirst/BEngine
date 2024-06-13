@@ -18,9 +18,9 @@ namespace BEngineMathsUnitTests
         {
             CoreContext::DefaultContext();
 
-            StringView str1 = StringView::Create( "One" );
-            StringView str2 = StringView::Create( "Two" );
-            StringView str3 = StringView::Create( "Three" );
+            StringView str1 = "One";
+            StringView str2 = "Two";
+            StringView str3 = "Three";
 
             size_t length = StringUtils::GetLength( str1, str2, str3 );
 

@@ -49,8 +49,10 @@ void OnUpdate( GameApp* game_app, float delta_time )
 
     Arena* arena = &CoreContext::core_arena;
 
+    /*
     int fps = (int) (1.0f / delta_time);
     Global::logger.Log( StringUtils::Format( Global::alloc_toolbox.frame_allocator, "FPS {} , frame time : {}", fps , delta_time ).view );
+    */
 }
 
 void OnRender( GameApp* game_app, float delta_time )

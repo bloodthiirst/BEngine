@@ -132,6 +132,7 @@
     <ClInclude Include="Containers\ContainerUtils.h" />
     <ClInclude Include="Containers\DArray.h" />
     <ClInclude Include="Command\Command.h" />
+    <ClInclude Include="Containers\FreeList.h" />
     <ClInclude Include="Containers\HMap.h" />
     <ClInclude Include="Context\CoreContext.h" />
     <ClInclude Include="Defines\Defines.h" />

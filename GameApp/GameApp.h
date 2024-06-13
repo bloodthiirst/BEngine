@@ -6,21 +6,17 @@
 
 struct GameStartup
 {
-public:
     int width;
     int height;
     int x;
     int y;
 };
 
-
 struct GameState
 {
-public:
     Vector3 camera_position;
     Quaternion camera_rotation;
     bool is_running;
-
 };
 
 struct GameApp
@@ -30,7 +26,6 @@ struct GameApp
     ActionParams<GameApp*, float> on_update;
     ActionParams<GameApp*, float> on_render;
     ActionParams<GameApp*> destroy;
-
 
     GameStartup game_startup = { 0 };
     GameState game_state = { };

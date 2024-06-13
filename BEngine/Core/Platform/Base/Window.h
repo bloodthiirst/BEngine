@@ -1,7 +1,7 @@
 #pragma once
+#include <stdint.h>
 #include <Typedefs/Typedefs.h>
 #include "../../Application/Application.h"
-#include <stdint.h>
 
 struct Platform;
 
@@ -11,11 +11,6 @@ struct Window
     /// A pointer to a custom user-defined struct for extra state
     /// </summary>
     void* user_data;
-
-    /// <summary>
-    /// Pointer to current platform
-    /// </summary>
-    Platform* platform;
 
     /// <summary>
     /// Window width

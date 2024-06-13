@@ -41,7 +41,8 @@ namespace BEngineMathsUnitTests
             for ( size_t i = 0; i < size; ++i )
             {
                 int as_int = (int) i;
-                HMap<int, float>::TryAdd( &map, as_int, 420.0f + i );
+                size_t out_idx = {};
+                HMap<int, float>::TryAdd( &map, as_int, 420.0f + i, &out_idx );
             }
 
             DArray<Pair<int, float>> result = {};
@@ -77,7 +78,8 @@ namespace BEngineMathsUnitTests
             for ( size_t i = 0; i < size; ++i )
             {
                 int as_int = (int) i;
-                HMap<int, float>::TryAdd( &map, i, 420.0f + i );
+                size_t out_idx = {};
+                HMap<int, float>::TryAdd( &map, (int) i, 420.0f + i, &out_idx );
             }
 
             float* zero_value = {};
@@ -110,7 +112,8 @@ namespace BEngineMathsUnitTests
             for ( size_t i = 0; i < size; ++i )
             {
                 int as_int = (int) i;
-                HMap<int, float>::TryAdd( &map, 0, 420.0f + i );
+                size_t out_idx = {};
+                HMap<int, float>::TryAdd( &map, 0, 420.0f + i, &out_idx );
             }
 
             DArray<Pair<int, float>> result = {};
@@ -143,15 +146,16 @@ namespace BEngineMathsUnitTests
             HMap<int, float>::Create( &map, allocator, capacity, 5, IntHasher, IntComparer );
 
 
-            for ( size_t i = 0; i < size; ++i )
+            for ( int i = 0; i < size; ++i )
             {
-                HMap<int, float>::TryAdd( &map, i, 420.0f + i );
+                size_t out_idx = {};
+                HMap<int, float>::TryAdd( &map,i, 420.0f + i, &out_idx );
             }
 
             float fifty_removed = {};
             float three_removed = {};
             HMap<int, float>::TryRemove( &map, 50, &fifty_removed );
-            HMap<int, float>::TryRemove( &map, 3 ,&three_removed );
+            HMap<int, float>::TryRemove( &map, 3, &three_removed );
 
             DArray<Pair<int, float>> result = {};
             DArray<Pair<int, float>>::Create( map.count, &result, allocator );

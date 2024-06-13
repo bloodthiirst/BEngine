@@ -42,8 +42,8 @@ public:
             functionPtr(eventData);
         }
 
-        heap_alloc.free(heap_alloc, logText.buffer);
-        heap_alloc.free(heap_alloc, c_str);
+        heap_alloc.free(&heap_alloc, logText.buffer);
+        heap_alloc.free(&heap_alloc, c_str);
     }
 
     template<typename TEvent>

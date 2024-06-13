@@ -150,7 +150,7 @@ bool CreateLogicalDevice( VkInstance vkInstance, VkSurfaceKHR surface, PhysicalD
     vkGetPhysicalDeviceQueueFamilyProperties( physicalDeviceinfo->handle, &queueFamilyCount, nullptr );
 
     Allocator alloc = STACK_ALLOC_ARRAY( int, queueFamilyCount );
-    int* queuesNeededPerFamily = (int*) alloc.alloc( alloc, queueFamilyCount * sizeof( int ) );
+    int* queuesNeededPerFamily = (int*) ALLOC( alloc, queueFamilyCount * sizeof( int ) );
 
     // for now , if multiple requirement share a queue index , only one queue will used for them
     queuesNeededPerFamily[physicalDeviceinfo->queuesInfo.computeQueueFamilyIndex]++;
@@ -262,10 +262,14 @@ bool CreatePhysicalDevice( Platform* platform, VkInstance vkInstance, VkSurfaceK
     vkEnumeratePhysicalDevices( vkInstance, &physicalDeviceCount, nullptr );
 
     Allocator alloc_info = STACK_ALLOC_ARRAY( PhysicalDeviceRequirements, physicalDeviceCount );
-    PhysicalDeviceRequirements* infos = (PhysicalDeviceRequirements*) alloc_info.alloc( alloc_info, physicalDeviceCount * sizeof( PhysicalDeviceRequirements ) );
+
+
+    PhysicalDeviceRequirements* infos = (PhysicalDeviceRequirements*) ALLOC( alloc_info, physicalDeviceCount * sizeof( PhysicalDeviceRequirements ) );
 
     Allocator alloc_devices = STACK_ALLOC_ARRAY( VkPhysicalDevice, physicalDeviceCount );
-    VkPhysicalDevice* physicalDevices = (VkPhysicalDevice*) alloc_devices.alloc( alloc_devices, physicalDeviceCount * sizeof( VkPhysicalDevice ) );
+
+
+    VkPhysicalDevice* physicalDevices = (VkPhysicalDevice*) ALLOC( alloc_devices, physicalDeviceCount * sizeof( VkPhysicalDevice ) );
 
     vkEnumeratePhysicalDevices( vkInstance, &physicalDeviceCount, physicalDevices );
 
@@ -312,7 +316,8 @@ bool CreatePhysicalDevice( Platform* platform, VkInstance vkInstance, VkSurfaceK
         vkGetPhysicalDeviceQueueFamilyProperties( currPhysicalDevice, &queueFamilyCount, nullptr );
 
         Allocator alloc_queue = STACK_ALLOC_ARRAY( VkQueueFamilyProperties, queueFamilyCount );
-        VkQueueFamilyProperties* queueProps = (VkQueueFamilyProperties*) alloc_queue.alloc( alloc_queue, queueFamilyCount * sizeof( VkQueueFamilyProperties ) );
+
+        VkQueueFamilyProperties* queueProps = (VkQueueFamilyProperties*) ALLOC( alloc_queue, queueFamilyCount * sizeof( VkQueueFamilyProperties ) );
 
         vkGetPhysicalDeviceQueueFamilyProperties( currPhysicalDevice, &queueFamilyCount, queueProps );
 
@@ -323,10 +328,10 @@ bool CreatePhysicalDevice( Platform* platform, VkInstance vkInstance, VkSurfaceK
         Allocator alloc_transfer = STACK_ALLOC( mem_size );
         Allocator alloc_compute = STACK_ALLOC( mem_size );
 
-        float* presentScore = (float*) alloc_score.alloc( alloc_score, mem_size );
-        float* graphicsScore = (float*) alloc_graph.alloc( alloc_graph, mem_size );
-        float* transferScore = (float*) alloc_transfer.alloc( alloc_transfer, mem_size );
-        float* computeScore = (float*) alloc_compute.alloc( alloc_compute, mem_size );
+        float* presentScore = (float*) ALLOC( alloc_score, mem_size );
+        float* graphicsScore = (float*) ALLOC( alloc_graph, mem_size );
+        float* transferScore = (float*) ALLOC( alloc_transfer, mem_size );
+        float* computeScore = (float*) ALLOC( alloc_compute, mem_size );
 
         Global::platform.memory.mem_init( presentScore, mem_size );
         Global::platform.memory.mem_init( graphicsScore, mem_size );
@@ -381,7 +386,7 @@ bool CreatePhysicalDevice( Platform* platform, VkInstance vkInstance, VkSurfaceK
         }
 
         Allocator alloc_empty = STACK_ALLOC( mem_size );
-        float* emptyScore = (float*) alloc_empty.alloc( alloc_empty, mem_size );
+        float* emptyScore = (float*) ALLOC( alloc_empty, mem_size );
         Global::platform.memory.mem_init( emptyScore, mem_size );
 
 
@@ -759,13 +764,13 @@ bool Startup( BackendRenderer* in_renderer, ApplicationStartup startup )
         FileHandle vert_handle = {};
         FileHandle frag_handle = {};
 
-        if ( !Global::platform.filesystem.open( vert_path, FileMode::Read, true, &vert_handle ) )
+        if ( !Global::platform.filesystem.open( vert_path, FileModeFlag::Read, true, &vert_handle ) )
         {
             Global::logger.Error( "Can't find vertex shader" );
             return false;
         }
 
-        if ( !Global::platform.filesystem.open( frag_path, FileMode::Read, true, &frag_handle ) )
+        if ( !Global::platform.filesystem.open( frag_path, FileModeFlag::Read, true, &frag_handle ) )
         {
             Global::logger.Error( "Can't find frag shader" );
             return false;
@@ -1058,7 +1063,7 @@ bool DrawFrame( BackendRenderer* in_backend, RendererContext* rendererContext )
     VulkanContext* ctx = (VulkanContext*) in_backend->user_data;
     uint32_t current_index = ctx->current_image_index;
     CommandBuffer cmd = ctx->swapchain_info.graphics_cmd_buffers_per_image.data[current_index];
-    ctx->renderPass.draw( &ctx->renderPass, &cmd , rendererContext );
+    ctx->renderPass.draw( &ctx->renderPass, &cmd, rendererContext );
 
     return true;
 }

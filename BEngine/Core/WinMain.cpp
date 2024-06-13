@@ -20,6 +20,7 @@
 #include "Renderer/Backend/BackendRenderer.h"
 #include "Renderer/VulkanBackend/VulkanBackendRenderer.h"
 
+
 #ifdef _WIN32
 #include "Platform/Types/Win32/Win32Platform.h"
 #endif
@@ -36,11 +37,12 @@ int main( int argc, char** argv )
 {
     ApplicationStartup startup = {};
 
-    // get startup params from args 
-    {
 #ifdef WIN32
+
+    // win32 platform specific init
+    {
         Win32Platform::Create( &Global::platform );
-        
+
         // init the memory func pointers that will be used by the core lib
         {
             CoreContext::free = Global::platform.memory.free;
@@ -50,12 +52,14 @@ int main( int argc, char** argv )
             CoreContext::mem_copy = Global::platform.memory.mem_copy;
             CoreContext::mem_init = Global::platform.memory.mem_init;
             CoreContext::mem_set = Global::platform.memory.mem_set;
+            CoreContext::mem_move = Global::platform.memory.mem_move;
             CoreContext::core_arena = Arena::Create( INITIAL_LIB_ARENA_CAPACITY );
         }
 
+        // get startup params from args 
         Win32Platform::GetStartupArgs( argv, argc, &startup );
-#endif
     }
+#endif
 
     // main allocators
     {
@@ -123,13 +127,13 @@ cleanup:
     Global::logger.Destroy();
     Global::backend_renderer.destroy( &Global::backend_renderer );
     Global::event_system.Destroy();
+    Global::platform.window.destroy();
 
     return 0;
 }
 
 bool TryGetGameDll( ApplicationStartup startup, GameApp* out_game, HMODULE* out_module )
 {
-
     GameApp clientGame = {};
 
     StringBuffer shader_builder_path = StringUtils::Concat( Global::alloc_toolbox.heap_allocator, startup.executable_folder, "\\Assets\\build_shader.bat" );

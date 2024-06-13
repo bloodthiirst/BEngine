@@ -23,7 +23,7 @@ namespace BEngineMathsUnitTests
             size_t size = 5;
 
             Allocator allocator = HeapAllocator::Create();
-            size_t* nums = (size_t*) allocator.alloc( allocator, sizeof( size_t ) * size );
+            size_t* nums = (size_t*) allocator.alloc( &allocator, sizeof( size_t ) * size );
 
             for ( size_t i = 0; i < size; ++i )
             {

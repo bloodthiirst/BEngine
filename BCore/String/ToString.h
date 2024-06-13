@@ -60,7 +60,7 @@ static StringBuffer ToString( char* value, Allocator alloc )
 
 static StringBuffer ToString( float value, Allocator alloc )
 {
-    char* buf = (char*) alloc.alloc( alloc, 50);
+    char* buf = (char*) alloc.alloc( &alloc, 50);
     sprintf_s( buf, 50 , "%g", value );
 
     return StringBuffer::Create( buf, alloc );

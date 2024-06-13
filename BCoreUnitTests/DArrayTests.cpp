@@ -113,7 +113,7 @@ namespace BEngineMathsUnitTests
             DArray<int>::Add(&arr, 4);
 
             size_t index = 0;
-            bool has_found = DArray<int>::TryIndexOf(&arr, 0 , arr.size , 4 , &index);
+            bool has_found = DArray<int>::TryIndexOf(&arr, 0 , arr.size - 1 , 4 , &index);
 
             Assert::IsTrue(has_found);
             Assert::IsTrue(index == 2);

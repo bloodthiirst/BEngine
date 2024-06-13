@@ -54,7 +54,7 @@ private:
         FlushConsoleInputBuffer( data->hConsole );
         SetConsoleTextAttribute( data->hConsole, text_col );
 
-        std::cout.write(message, message.length);
+        std::cout.write(message.buffer, message.length);
         std::cout << "\n";
 
         SetConsoleTextAttribute( data->hConsole, ConsoleLogger::DEFAULT_COLOR );

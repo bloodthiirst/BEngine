@@ -3,14 +3,37 @@
 #include <cstdint>
 #include <crtdbg.h>
 #include "../Context/CoreContext.h"
+#include "../String/StringView.h"
 struct Allocator;
 
-typedef void* (*Alloc)(Allocator, size_t);
-typedef void* (*Realloc)(Allocator, void*, size_t);
-typedef void (*Free)(Allocator, void*);
+struct CORE_API AllocationData
+{
+    StringView filepath;
+    size_t line_number;
+    void* user_data;
+};
+
+typedef void* (*Alloc)(Allocator*, size_t);
+typedef void* (*Realloc)(Allocator*, void*, size_t);
+typedef void (*Free)(Allocator*, void*);
+
+typedef void* (*AllocCallback)(Allocator*, size_t , AllocationData);
+typedef void* (*ReallocCallback)(Allocator*, void*, size_t, AllocationData);
+typedef void (*FreeCallback)(Allocator*, void*, AllocationData);
+
+struct CORE_API AllocatorCallback
+{
+    AllocCallback alloc_callback;
+    ReallocCallback realloc_callback;
+    FreeCallback free_callback;
+};
 
 struct CORE_API Allocator
 {
+#if _DEBUG
+    AllocatorCallback callbacks;
+#endif
+
     void* user_data;
     Alloc alloc;
     Realloc realloc;
@@ -87,9 +110,9 @@ private:
     }
 
 
-    static void* Allocate( Allocator alloc, size_t size )
+    static void* Allocate( Allocator* alloc, size_t size )
     {
-        Arena* arena = (Arena*) alloc.user_data;
+        Arena* arena = (Arena*) alloc->user_data;
 
         _ASSERT( (arena->offset + size) < arena->capacity );
 
@@ -123,9 +146,9 @@ public:
     }
 private:
 
-    static void* Allocate( Allocator alloc, size_t size )
+    static void* Allocate( Allocator* alloc, size_t size )
     {
-        return alloc.user_data;
+        return alloc->user_data;
     }
 };
 
@@ -143,17 +166,17 @@ public:
         return alloc;
     }
 private:
-    static void* Reallocate( Allocator alloc, void* ptr, size_t size )
+    static void* Reallocate( Allocator* alloc, void* ptr, size_t size )
     {
         return CoreContext::realloc( ptr, size );
     }
 
-    static void* Allocate( Allocator alloc, size_t size )
+    static void* Allocate( Allocator* alloc, size_t size )
     {
         return CoreContext::malloc( size );
     }
 
-    static void Free( Allocator alloc, void* ptr )
+    static void Free( Allocator* alloc, void* ptr )
     {
         CoreContext::free( ptr );
     }

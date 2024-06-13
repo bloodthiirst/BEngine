@@ -39,9 +39,16 @@ struct CORE_API CoreContext
     static ActionParams<void*, int32_t, size_t> mem_set;
 
     /// <summary>
-    /// Copy a specified amount of data from "src" pointer to "dst" pointer
+    /// <para>Copy a specified amount of data from "src" pointer to "dst" pointer</para>
+    /// <para>NOTE : avoid using in case of overlap between the src and dst memory</para>
     /// </summary>
     static ActionParams<void*, void*, size_t> mem_copy;
+
+    /// <summary>
+    /// <para>Move a specified amount of data from "src" pointer to "dst" pointer</para>   
+    /// <para>NOTE : Use in case of overlap between the src and dst memory</para>
+    /// </summary>
+    static ActionParams<void*, void*, size_t> mem_move;
 
     static Arena core_arena;
 
@@ -66,5 +73,10 @@ private:
     static void Win32MemSet( void* dst, int32_t value, size_t size )
     {
         memset( dst, value, size );
+    }
+
+    static void Win32MemMove( void* src, void* dst, size_t size )
+    {
+        memmove( dst, src, size );
     }
 };
