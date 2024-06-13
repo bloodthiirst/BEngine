@@ -13,5 +13,5 @@ The engine uses Win32 API and Vulkan as a rendering backend.
 - Support for custom allocators for all allocation related operations
 - Custom Math library (with plans to support SIMD)
 - 
-# First Triangle
-![alt text](https://github.com/bloodthiirst/BEngine/blob/master/Screenshot.PNG?raw=true)
+# Basic Client DLL with FPS camera and shaded mesh
+![alt text](https://github.com/bloodthiirst/BEngine/blob/master/Screenshot.png?raw=true)
