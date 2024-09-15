@@ -2,9 +2,14 @@
 /[Dd]ebug
 
 # Visual Studio cache directory
-.vs/
 */x64/
 *.idb
 *.tlog
 *.pdb
 *.log
+**/Build
+**/CMakeGenerated
+**/.git
+**/.vs
+**/.vscode
+.editorconfig

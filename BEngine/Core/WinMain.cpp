@@ -157,6 +157,7 @@ bool TryGetGameDll( ApplicationStartup startup, GameApp* out_game, HMODULE* out_
         *out_module = {};
         return false;
     }
+    
     *out_game = load_game_proc();
     return true;
 

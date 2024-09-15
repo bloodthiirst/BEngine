@@ -5,23 +5,23 @@
 #include "../Application/Application.h"
 #include "../Renderer/Backend/BackendRenderer.h"
 
-struct AllocationToolbox;
-class Logger;
+struct BAPI AllocationToolbox;
+class BAPI Logger;
 
-struct Global
+struct BAPI Global
 {
 public:
-    static BAPI Application app;
+    static Application app;
 
-    static BAPI Platform platform;
+    static Platform platform;
 
-    static BAPI BackendRenderer backend_renderer;
+    static BackendRenderer backend_renderer;
 
-    static BAPI Logger logger;
+    static Logger logger;
 
-    static BAPI GameEventSystem event_system;
+    static GameEventSystem event_system;
 
-    static BAPI AllocationToolbox alloc_toolbox;
+    static AllocationToolbox alloc_toolbox;
 };
 
 #define VK_CHECK(X , RESULT) \
@@ -31,7 +31,7 @@ public:
             Global::logger.Error( #X );\
         }\
 
-struct ArenaCheckpoint
+struct BAPI ArenaCheckpoint
 {
     Arena* arena;
     size_t start_offset;

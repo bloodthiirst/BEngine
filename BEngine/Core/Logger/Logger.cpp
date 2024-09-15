@@ -23,7 +23,7 @@ void Logger::Destroy()
 };
 
 
-BAPI void Logger::NewLine( size_t repeat )
+void Logger::NewLine( size_t repeat )
 {
     ArenaCheckpoint c = Global::alloc_toolbox.GetArenaCheckpoint();
     {
@@ -58,27 +58,27 @@ BAPI void Logger::NewLine( size_t repeat )
     Global::alloc_toolbox.ResetArenaOffset( &c );\
 }\
 
-BAPI void Logger::Log( StringView message )
+void Logger::Log( StringView message )
 {
     LOG( log )
 };
 
-BAPI void Logger::Info( StringView message )
+void Logger::Info( StringView message )
 {
     LOG( info )
 };
 
-BAPI void Logger::Warning( StringView message )
+void Logger::Warning( StringView message )
 {
     LOG( warning )
 };
 
-BAPI void Logger::Error( StringView message )
+void Logger::Error( StringView message )
 {
     LOG( error )
 };
 
-BAPI void Logger::Fatal( StringView message )
+void Logger::Fatal( StringView message )
 {
     LOG( fatal )
 };

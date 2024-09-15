@@ -6,7 +6,7 @@
 #include "../String/StringView.h"
 struct Allocator;
 
-struct CORE_API AllocationData
+struct AllocationData
 {
     StringView filepath;
     size_t line_number;
@@ -21,14 +21,14 @@ typedef void* (*AllocCallback)(Allocator*, size_t , AllocationData);
 typedef void* (*ReallocCallback)(Allocator*, void*, size_t, AllocationData);
 typedef void (*FreeCallback)(Allocator*, void*, AllocationData);
 
-struct CORE_API AllocatorCallback
+struct AllocatorCallback
 {
     AllocCallback alloc_callback;
     ReallocCallback realloc_callback;
     FreeCallback free_callback;
 };
 
-struct CORE_API Allocator
+struct Allocator
 {
 #if _DEBUG
     AllocatorCallback callbacks;
@@ -40,7 +40,7 @@ struct CORE_API Allocator
     Free free;
 };
 
-struct CORE_API Arena
+struct Arena
 {
     void* data;
     size_t capacity;
@@ -81,7 +81,7 @@ struct ArenaAllocator
 public:
     static Allocator Create( Arena* arena )
     {
-        Allocator alloc;
+        Allocator alloc = {};
         alloc.user_data = arena;
         alloc.alloc = Allocate;
         alloc.realloc = nullptr;
@@ -136,7 +136,7 @@ struct EmplaceAllocator
 public:
     static Allocator Create( void* ptr )
     {
-        Allocator alloc;
+        Allocator alloc = {};
         alloc.user_data = ptr;
         alloc.alloc = Allocate;
         alloc.realloc = nullptr;
@@ -157,7 +157,7 @@ struct HeapAllocator
 public:
     static Allocator Create()
     {
-        Allocator alloc;
+        Allocator alloc = {};
         alloc.user_data = nullptr;
         alloc.alloc = Allocate;
         alloc.realloc = Reallocate;
@@ -185,9 +185,9 @@ private:
 /// <summary>
 /// Returns stack allocated memory of size (size)
 /// </summary>
-#define STACK_ALLOC(size)  EmplaceAllocator::Create(alloca(size))
+#define STACK_ALLOC(size)  EmplaceAllocator::Create(_alloca(size))
 
 /// <summary>
 /// Returns stack allocated memory of size (size) and of type (type)
 /// </summary>
-#define STACK_ALLOC_ARRAY(type , count) EmplaceAllocator::Create(alloca(sizeof(type) * count))
+#define STACK_ALLOC_ARRAY(type , count) EmplaceAllocator::Create(_alloca(sizeof(type) * count))

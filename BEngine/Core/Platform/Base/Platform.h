@@ -6,7 +6,7 @@
 #include "Window.h"
 #include "Input.h"
 
-struct Platform
+struct BAPI Platform
 {
     void* user_data;
 

@@ -261,16 +261,15 @@ bool CreatePhysicalDevice( Platform* platform, VkInstance vkInstance, VkSurfaceK
     uint32_t physicalDeviceCount = 0;
     vkEnumeratePhysicalDevices( vkInstance, &physicalDeviceCount, nullptr );
 
-    Allocator alloc_info = STACK_ALLOC_ARRAY( PhysicalDeviceRequirements, physicalDeviceCount );
-
-
+    ArenaCheckpoint checkpoint = Global::alloc_toolbox.GetArenaCheckpoint();
+    //Allocator alloc_info = STACK_ALLOC_ARRAY( PhysicalDeviceRequirements, physicalDeviceCount );
+    Allocator alloc_info = Global::alloc_toolbox.frame_allocator;
     PhysicalDeviceRequirements* infos = (PhysicalDeviceRequirements*) ALLOC( alloc_info, physicalDeviceCount * sizeof( PhysicalDeviceRequirements ) );
 
-    Allocator alloc_devices = STACK_ALLOC_ARRAY( VkPhysicalDevice, physicalDeviceCount );
-
-
+    //Allocator alloc_devices = STACK_ALLOC_ARRAY( VkPhysicalDevice, physicalDeviceCount );
+    Allocator alloc_devices = Global::alloc_toolbox.frame_allocator;
     VkPhysicalDevice* physicalDevices = (VkPhysicalDevice*) ALLOC( alloc_devices, physicalDeviceCount * sizeof( VkPhysicalDevice ) );
-
+    
     vkEnumeratePhysicalDevices( vkInstance, &physicalDeviceCount, physicalDevices );
 
     PhysicalDeviceRequirements requirements = {};
@@ -465,11 +464,14 @@ bool CreatePhysicalDevice( Platform* platform, VkInstance vkInstance, VkSurfaceK
         outDeviceInfo->queuesInfo.graphicsQueueIndex = graphicsQueueFamilyIndex;
         outDeviceInfo->queuesInfo.transferQueueIndex = transferQueueFamilyIndex;
 
+
+       Global::alloc_toolbox.ResetArenaOffset(&checkpoint);
         return true;
     }
 
     // if we get here , no physical device satisfies the requirements
 
+    Global::alloc_toolbox.ResetArenaOffset(&checkpoint);
     return false;
 }
 

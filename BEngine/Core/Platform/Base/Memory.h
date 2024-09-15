@@ -38,11 +38,11 @@ struct Memory
     /// <para>Copy a specified amount of data from "src" pointer to "dst" pointer</para>
     /// <para>NOTE : avoid using in case of overlap between the src and dst memory</para>
     /// </summary>
-    static ActionParams<void*, void*, size_t> mem_copy;
+    ActionParams<void*, void*, size_t> mem_copy;
 
     /// <summary>
     /// <para>Move a specified amount of data from "src" pointer to "dst" pointer</para>   
     /// <para>NOTE : Use in case of overlap between the src and dst memory</para>
     /// </summary>
-    static ActionParams<void*, void*, size_t> mem_move;
+    ActionParams<void*, void*, size_t> mem_move;
 };

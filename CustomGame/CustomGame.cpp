@@ -2,12 +2,12 @@
 #include <String/StringView.h>
 #include <String/StringBuffer.h>
 #include <Typedefs/Typedefs.h>
-#include "Core/Global/Global.h"
-#include "Core/Logger/Logger.h"
+#include <Core/Defines/Defines.h>
+#include <Core/Global/Global.h>
+#include <Core/Logger/Logger.h>
 #include <Context/CoreContext.h>
 #include <Maths/Maths.h>
 #include "SceneCameraController.h"
-
 static const char* game_name = "Custom game title";
 
 struct CustomGameState

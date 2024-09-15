@@ -1,0 +1,31 @@
+# Main
+Core/WinMain.cpp
+
+# Application
+Core/Application/Application.cpp
+Core/Defines/Defines.cpp
+Core/Global/Global.cpp
+Core/EntityManager/EntityManager.cpp
+Core/EventSystem/GameEventSystem.cpp
+Core/Logger/Logger.cpp
+
+# Platform
+Core/Platform/Base/InputUtils.cpp
+
+# Platform/Win32
+Core/Platform/Types/Win32/Win32Utils.cpp
+
+# Renderer
+Core/Renderer/Buffer/Buffer.cpp
+Core/Renderer/CommandBuffer/CommandBuffer.cpp
+Core/Renderer/Context/PhysicalDeviceInfo.cpp
+Core/Renderer/Context/SwapchainInfo.cpp
+Core/Renderer/DescriptorManager/DescriptorManager.cpp
+Core/Renderer/Fence/Fence.cpp
+Core/Renderer/FrameBuffer/FrameBuffer.cpp
+Core/Renderer/Pipeline/Pipeline.cpp
+Core/Renderer/Shader/Shader.cpp
+Core/Renderer/Shader/ShaderBuilder.cpp
+Core/Renderer/Shader/ShaderUtils.cpp
+Core/Renderer/Texture/Texture.cpp
+Core/Renderer/VulkanBackend/VulkanBackendRenderer.cpp

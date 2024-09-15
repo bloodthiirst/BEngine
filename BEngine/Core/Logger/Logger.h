@@ -36,17 +36,17 @@ public:
         return HMap<size_t, ILogger>::TryRemove( &loggers, id, &removed );
     };
 
-    BAPI void Log( StringView message );
+    void Log( StringView message );
 
-    BAPI void Info( StringView message );
+    void Info( StringView message );
 
-    BAPI void Warning( StringView message );
+    void Warning( StringView message );
 
-    BAPI void Error( StringView message );
+    void Error( StringView message );
 
-    BAPI void Fatal( StringView message );
+    void Fatal( StringView message );
 
-    BAPI void NewLine( size_t repeat = 1 );
+    void NewLine( size_t repeat = 1 );
 
 #define LOG(callback)\
 {\

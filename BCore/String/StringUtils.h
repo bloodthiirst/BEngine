@@ -9,7 +9,7 @@
 #include "ToString.h"
 #include "../Context/CoreContext.h"
 
-class CORE_API StringUtils
+class StringUtils
 {
 private:
 

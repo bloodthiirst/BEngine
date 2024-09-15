@@ -48,16 +48,16 @@ struct Win32Window
         Allocator heap_alloc = Global::alloc_toolbox.heap_allocator;
 
         // note : includes the termination char
-        size_t string_length = name.length + 1;
-        wchar_t* appName = (wchar_t*) ALLOC( heap_alloc , sizeof( wchar_t ) * string_length , nullptr );
+        //size_t string_length = name.length + 1;
+        //wchar_t* appName = (wchar_t*) ALLOC( heap_alloc , sizeof( wchar_t ) * string_length , nullptr );
 
-        size_t converted_chars;
-        size_t size = mbstowcs_s( &converted_chars, appName, string_length, name.buffer, name.length );
+        //size_t converted_chars;
+        //size_t size = mbstowcs_s( &converted_chars, appName, string_length, name.buffer, name.length );
 
         windowClass.lpfnWndProc = HandleMessage;
         windowClass.style = CS_VREDRAW | CS_HREDRAW | CS_DBLCLKS;
         windowClass.hInstance = state->process_handle;
-        windowClass.lpszClassName = appName;
+        windowClass.lpszClassName = name.buffer;
         windowClass.hbrBackground = CreateSolidBrush( RGB( 255, 0, 255 ) );
         windowClass.hCursor = LoadCursor( NULL, IDC_ARROW );
         RegisterClass( &windowClass );
@@ -90,8 +90,8 @@ struct Win32Window
 
         state->window_handle = CreateWindowEx(
             windowExStyle, // optional style
-            appName, // class name
-            appName, // window text
+            name.buffer, // class name
+            name.buffer, // window text
             (DWORD) windowStyle, // window style
             windowX, windowY, windowWidth, windowHeight,//position and size
             nullptr,// parent wnd
