@@ -96,7 +96,7 @@ public:
         Allocator temp_alloc = ArenaAllocator::Create( &CoreContext::core_arena );
 
         size_t max_slots = sizeof( size_t ) * (str.length / 2);
-        size_t* formatSlots = (size_t*) temp_alloc.alloc( &temp_alloc, max_slots );
+        size_t* formatSlots = (size_t*) ALLOC( temp_alloc, max_slots );
         size_t formatSlotCount = 0;
 
         for ( size_t i = 0; i < str.length - 1; ++i )
@@ -231,7 +231,7 @@ public:
 
         size_t length_needed = len * sizeof( size_t );
         Allocator temp_alloc = STACK_ALLOC( length_needed );
-        size_t* and_indicies = (size_t*) temp_alloc.alloc( &temp_alloc, length_needed );
+        size_t* and_indicies = (size_t*) ALLOC( temp_alloc, length_needed );
         size_t and_count = 0;
         for ( size_t i = 0; i < len; ++i )
         {

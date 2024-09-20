@@ -180,69 +180,62 @@ bool AllocateResource( VulkanContext* context, SwapchainInfo* outSwapchain )
     return true;
 }
 
-void FreeResources( VulkanContext* context, SwapchainInfo* outSwapchain )
+void FreeResources( VulkanContext* context, SwapchainInfo* out_swapchain )
 {
-    for ( uint32_t i = 0; i < outSwapchain->graphics_cmd_buffers_per_image.size; ++i )
+    for ( uint32_t i = 0; i < out_swapchain->graphics_cmd_buffers_per_image.size; ++i )
     {
-        CommandBuffer* curr = &outSwapchain->graphics_cmd_buffers_per_image.data[i];
+        CommandBuffer* curr = &out_swapchain->graphics_cmd_buffers_per_image.data[i];
 
         CommandBuffer::Free( context, context->physicalDeviceInfo.commandPoolsInfo.graphicsCommandPool, curr );
     }
 
-    DArray<CommandBuffer>::Clear( &outSwapchain->graphics_cmd_buffers_per_image );
+    DArray<CommandBuffer>::Clear( &out_swapchain->graphics_cmd_buffers_per_image );
 
 
-    for ( uint32_t i = 0; i < outSwapchain->in_flight_fence_per_image.size; ++i )
+    for ( uint32_t i = 0; i < out_swapchain->in_flight_fence_per_image.size; ++i )
     {
-        outSwapchain->in_flight_fence_per_image.data[i] = nullptr;
+        out_swapchain->in_flight_fence_per_image.data[i] = nullptr;
     }
 
-    DArray<Fence*>::Clear( &outSwapchain->in_flight_fence_per_image );
+    DArray<Fence*>::Clear( &out_swapchain->in_flight_fence_per_image );
 
     for ( uint32_t i = 0; i < context->swapchain_info.imagesCount; ++i )
     {
-        if ( outSwapchain->image_presentation_complete_semaphores.data[i] )
+        if ( out_swapchain->image_presentation_complete_semaphores.data[i] )
         {
-            vkDestroySemaphore( context->logicalDeviceInfo.handle, outSwapchain->image_presentation_complete_semaphores.data[i], context->allocator );
-            outSwapchain->image_presentation_complete_semaphores.data[i] = nullptr;
+            vkDestroySemaphore( context->logicalDeviceInfo.handle, out_swapchain->image_presentation_complete_semaphores.data[i], context->allocator );
+            out_swapchain->image_presentation_complete_semaphores.data[i] = nullptr;
         }
 
-        if ( outSwapchain->finished_rendering_semaphores.data[i] )
+        if ( out_swapchain->finished_rendering_semaphores.data[i] )
         {
-            vkDestroySemaphore( context->logicalDeviceInfo.handle, outSwapchain->finished_rendering_semaphores.data[i], context->allocator );
-            outSwapchain->finished_rendering_semaphores.data[i] = nullptr;
+            vkDestroySemaphore( context->logicalDeviceInfo.handle, out_swapchain->finished_rendering_semaphores.data[i], context->allocator );
+            out_swapchain->finished_rendering_semaphores.data[i] = nullptr;
         }
 
-        Fence::Destroy( context, &outSwapchain->cmd_buffer_done_execution_per_frame.data[i] );
+        Fence::Destroy( context, &out_swapchain->cmd_buffer_done_execution_per_frame.data[i] );
     }
 
     // destroy imageViews
     {
-        for ( uint32_t i = 0; i < outSwapchain->imageViews.size; ++i )
+        for ( uint32_t i = 0; i < out_swapchain->imageViews.size; ++i )
         {
-            vkDestroyImageView( context->logicalDeviceInfo.handle, outSwapchain->imageViews.data[i], context->allocator );
+            vkDestroyImageView( context->logicalDeviceInfo.handle, out_swapchain->imageViews.data[i], context->allocator );
         }
 
         DArray<VkImageView>::Clear( &context->swapchain_info.imageViews );
     }
-    DArray<VkSemaphore>::Clear( &outSwapchain->image_presentation_complete_semaphores );
-    DArray<VkSemaphore>::Clear( &outSwapchain->finished_rendering_semaphores );
-    DArray<Fence>::Clear( &outSwapchain->cmd_buffer_done_execution_per_frame );
+    DArray<VkSemaphore>::Clear( &out_swapchain->image_presentation_complete_semaphores );
+    DArray<VkSemaphore>::Clear( &out_swapchain->finished_rendering_semaphores );
+    DArray<Fence>::Clear( &out_swapchain->cmd_buffer_done_execution_per_frame );
+    Texture::Destroy( context, &out_swapchain->depthAttachement );
+
 }
 
-bool SwapchainInfo::Destroy( VulkanContext* context, SwapchainInfo* outSwapchain )
+bool SwapchainInfo::Destroy( VulkanContext* ctx, SwapchainInfo* out_swapchain )
 {
-    Texture::Destroy( context, &outSwapchain->depthAttachement );
-
-    for ( uint32_t i = 0; i < outSwapchain->imageViews.size; ++i )
-    {
-        vkDestroyImageView( context->logicalDeviceInfo.handle, outSwapchain->imageViews.data[i], context->allocator );
-    }
-
-    DArray<VkImageView>::Destroy( &context->swapchain_info.imageViews );
-
-    vkDestroySwapchainKHR( context->logicalDeviceInfo.handle, outSwapchain->handle, context->allocator );
-
+    FreeResources(ctx , out_swapchain);
+    vkDestroySwapchainKHR(ctx->logicalDeviceInfo.handle , out_swapchain->handle , ctx->allocator);
     return true;
 }
 
@@ -399,7 +392,11 @@ bool SwapchainInfo::Recreate( VulkanContext* context, SwapchainCreateDescription
 
     context->frameBufferSizeLastGeneration = context->frameBufferSizeCurrentGeneration;
 
-    context->renderPass.on_resize(&context->renderPass);
+    for(size_t i = 0; i < context->renderPasses.size; ++i)
+    {
+        Renderpass* curr = &context->renderPasses.data[i];
+        curr->on_resize(curr);
+    }
 
     context->recreateSwapchain = false;
 

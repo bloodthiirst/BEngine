@@ -1,13 +1,15 @@
 #include "Global.h"
 
-    Application Global::app;
+Application Global::app;
 
-    Platform Global::platform;
+Platform Global::platform;
 
-    BackendRenderer Global::backend_renderer;
+BackendRenderer Global::backend_renderer;
 
-    Logger Global::logger;
+Logger Global::logger;
 
-    GameEventSystem Global::event_system;
+GameEventSystem Global::event_system;
 
-    AllocationToolbox Global::alloc_toolbox;
+AllocationToolbox Global::alloc_toolbox;
+
+GlobalAssetManager Global::asset_manager;

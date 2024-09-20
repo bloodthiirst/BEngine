@@ -16,9 +16,13 @@ struct BasicRenderpassParams
 
 struct BasicRenderpass
 {
+    static inline const char* BASIC_RENDERPASS_ID = "BasicRenderPass - ID";
+
     static bool Create( VulkanContext* ctx, BasicRenderpassParams params, Renderpass* out_renderpass )
     {
         *out_renderpass = {};
+
+        out_renderpass->id = StringView::Create(BASIC_RENDERPASS_ID);
 
         // main subpass
         VkSubpassDescription subpassDesc = {};
@@ -55,11 +59,11 @@ struct BasicRenderpass
             colorAttachmentDesc.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR; // what we're gonna transition to after the renderpass , it's a layout format in memory
             colorAttachmentDesc.flags = 0;
 
-            // specifies the
+            // specifies the :
             colorReference.attachment = 0; // attachement index
             colorReference.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL; // layout
 
-            DArray< VkAttachmentDescription>::Add( &attachementDescs, colorAttachmentDesc );
+            DArray<VkAttachmentDescription>::Add( &attachementDescs, colorAttachmentDesc );
         }
 
         VkAttachmentDescription depthAttachmentDesc = {};
@@ -93,7 +97,7 @@ struct BasicRenderpass
             depthReference.attachment = 1; // attachement index
             depthReference.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL; // layout
 
-            DArray< VkAttachmentDescription>::Add( &attachementDescs, depthAttachmentDesc );
+            DArray<VkAttachmentDescription>::Add( &attachementDescs, depthAttachmentDesc );
         }
 
         // todo : we could have other attachement (input , resolve , preserve)
@@ -107,7 +111,7 @@ struct BasicRenderpass
         subpassDesc.pInputAttachments = nullptr;
 
         // use for multip sampling color attachment (???? look it up)
-        subpassDesc.pResolveAttachments = 0;
+        subpassDesc.pResolveAttachments = nullptr;
 
         subpassDesc.preserveAttachmentCount = 0;
         subpassDesc.pPreserveAttachments = nullptr;
@@ -135,8 +139,10 @@ struct BasicRenderpass
         VK_CHECK( vkCreateRenderPass( ctx->logicalDeviceInfo.handle, &createInfo, ctx->allocator, &vkRenderpass ), result );
 
         if ( result != VK_SUCCESS )
+        {
             return false;
-
+        }
+        
         BasicRenderpassParams* data = Global::alloc_toolbox.HeapAlloc<BasicRenderpassParams>();
         data->area = params.area;
         data->clearColor = params.clearColor;
@@ -153,15 +159,23 @@ struct BasicRenderpass
 
         Allocator alloc = Global::alloc_toolbox.heap_allocator;
         DArray<RenderTarget>::Create( ctx->swapchain_info.imagesCount, &out_renderpass->render_targets, alloc );
+        
+        // we start creating a renderTarget for each swapchain image
         for ( size_t i = 0; i < ctx->swapchain_info.imagesCount; ++i )
         {
             RenderTarget rt = {};
 
+            // the framebuffer at index [N] has the purpose of providing the needed images for rendering the Nth swapchain image
+            // in this simple case , we need two images (aka attachements) (the color , and the depth)
             DArray<VkImageView> attachements = {};
             DArray<VkImageView>::Create( 2, &attachements, alloc );
             DArray<VkImageView>::Add( &attachements, ctx->swapchain_info.imageViews.data[i] );
             DArray<VkImageView>::Add( &attachements, ctx->swapchain_info.depthAttachement.view );
 
+            // now we just create the framebuffer with the corresponding attachments
+            // those attachement are refered to by index in the renderpass
+            // [as specified at the start of this method with the line]
+            // "createInfo.pAttachments = attachementDescs.data;"
             FrameBuffer framebuffer = {};
             FrameBuffer::Create( ctx, out_renderpass, ctx->frameBufferSize, attachements, &framebuffer );
 
@@ -197,7 +211,7 @@ struct BasicRenderpass
 
         return true;
     }
-
+            
     static bool UpdateGlobalState( BackendRenderer* in_backend, Matrix4x4 projection, Matrix4x4 view, float ambiant, uint32_t mode )
     {
         VulkanContext* ctx = (VulkanContext*) in_backend->user_data;

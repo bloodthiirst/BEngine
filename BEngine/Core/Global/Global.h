@@ -4,13 +4,14 @@
 #include "../EventSystem/GameEventSystem.h"
 #include "../Application/Application.h"
 #include "../Renderer/Backend/BackendRenderer.h"
+#include "../AssetManager/GlobalAssetManager.h"
 
+struct BAPI GlobalAssetManager;
 struct BAPI AllocationToolbox;
-class BAPI Logger;
+struct BAPI Logger;
 
 struct BAPI Global
 {
-public:
     static Application app;
 
     static Platform platform;
@@ -22,18 +23,21 @@ public:
     static GameEventSystem event_system;
 
     static AllocationToolbox alloc_toolbox;
+
+    static GlobalAssetManager asset_manager;
 };
 
-#define VK_CHECK(X , RESULT) \
-        VkResult RESULT = X;\
-        if(RESULT != VK_SUCCESS) {\
-            Global::logger.Error( "Vulkan Error !" );\
-            Global::logger.Error( #X );\
-        }\
+#define VK_CHECK(X, RESULT)                     \
+    VkResult RESULT = X;                        \
+    if (RESULT != VK_SUCCESS)                   \
+    {                                           \
+        Global::logger.Error("Vulkan Error !"); \
+        Global::logger.Error(#X);               \
+    }
 
 struct BAPI ArenaCheckpoint
 {
-    Arena* arena;
+    Arena *arena;
     size_t start_offset;
 };
 
@@ -43,67 +47,66 @@ struct BAPI AllocationToolbox
     Allocator heap_allocator;
     Allocator frame_allocator;
 
-    template<typename T>
-    T* HeapAlloc( bool init = true )
+    template <typename T>
+    T *HeapAlloc(bool init = true)
     {
-        size_t size = sizeof( T );
-        T* ptr = (T*) Global::platform.memory.malloc( size );
+        size_t size = sizeof(T);
+        T *ptr = (T *) ALLOC(heap_allocator, size);
 
-        if ( init )
+        if (init)
         {
-            Global::platform.memory.mem_init( ptr, size );
+            Global::platform.memory.mem_init(ptr, size);
         }
 
         return ptr;
     }
-    template<typename T>
-    T* HeapAlloc( size_t count, bool init = true )
+    template <typename T>
+    T *HeapAlloc(size_t count, bool init = true)
     {
-        size_t size = sizeof( T ) * count;
-        T* ptr = (T*) Global::platform.memory.malloc( size );
+        size_t size = sizeof(T) * count;
+        T *ptr = (T *) ALLOC(heap_allocator, size);
 
-        if ( init )
+        if (init)
         {
-            Global::platform.memory.mem_init( ptr, size );
-        }
-
-        return ptr;
-    }
-
-    template<typename T>
-    void HeapFree( T* ptr )
-    {
-        Global::platform.memory.free( (void*) ptr );
-    }
-
-    template<typename T>
-    T* ArenaAlloc( bool init = true )
-    {
-        size_t size = sizeof( T );
-        T* ptr = (T*) frame_allocator.alloc( frame_allocator, size );
-
-        if ( init )
-        {
-            Global::platform.memory.mem_init( ptr, size );
+            Global::platform.memory.mem_init(ptr, size);
         }
 
         return ptr;
     }
 
-    template<typename T>
-    T* ArenaAlloc( size_t count, bool init = true )
+    template <typename T>
+    void HeapFree(T *ptr)
     {
-        size_t size = sizeof( T ) * count;
-        T* ptr = (T*) frame_allocator.alloc( frame_allocator, size );
+        FREE(heap_allocator , (void *)ptr);
+    }
 
-        if ( init )
+    template <typename T>
+    T *ArenaAlloc(bool init = true)
+    {
+        size_t size = sizeof(T);
+        T *ptr = (T *)ALLOC(frame_allocator, size);
+
+        if (init)
         {
-            Global::platform.memory.mem_init( ptr, size );
+            Global::platform.memory.mem_init(ptr, size);
         }
 
         return ptr;
     }
 
+    template <typename T>
+    T *ArenaAlloc(size_t count, bool init = true)
+    {
+        size_t size = sizeof(T) * count;
+        T *ptr = (T *)ALLOC(frame_allocator, size);
+
+        if (init)
+        {
+            Global::platform.memory.mem_init(ptr, size);
+        }
+
+        return ptr;
+    }
 
     ArenaCheckpoint GetArenaCheckpoint()
     {
@@ -113,9 +116,8 @@ struct BAPI AllocationToolbox
         return res;
     }
 
-    void ResetArenaOffset( ArenaCheckpoint* in_checkpoint )
+    void ResetArenaOffset(ArenaCheckpoint *in_checkpoint)
     {
         in_checkpoint->arena->offset = in_checkpoint->start_offset;
     }
 };
-

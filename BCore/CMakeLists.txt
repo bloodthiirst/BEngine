@@ -20,6 +20,7 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${BUILD_PATH})
 
 SET(BUILD_MODE Debug)
 add_compile_definitions("_CORE_EXPORT")
+add_compile_definitions("_DEBUG")
 add_compile_options("/Zc:preprocessor")
 # enable exporting all symbols , important for exporting dllexport members/classes
 set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)

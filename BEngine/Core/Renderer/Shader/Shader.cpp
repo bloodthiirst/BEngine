@@ -15,15 +15,13 @@ bool Shader::Destroy( VulkanContext* context, Shader* in_shader )
     Buffer::Destroy( context, &in_shader->globalUBOBuffer );
 
     Pipeline::Destroy( context, &in_shader->pipeline );
-
-
+    
     for ( size_t i = 0; i < in_shader->descriptor_set_layouts.size; ++i )
     {
         vkDestroyDescriptorSetLayout( context->logicalDeviceInfo.handle, in_shader->descriptor_set_layouts.data[i], context->allocator);
     }
 
     DArray<VkDescriptorSetLayout>::Destroy( &in_shader->descriptor_set_layouts );
-    in_shader->descriptor_set_layouts = {};
 
     for ( uint32_t i = 0; i < ShaderStageType::EnumLength; ++i )
     {
@@ -75,9 +73,9 @@ bool Shader::UpdateGlobalBuffer( VulkanContext* context , GlobalUniformObject gl
     return true;
 }
 
-bool Shader::Bind( VulkanContext* context, Shader* inShader )
+bool Shader::Bind( VulkanContext* context, Shader* in_shader )
 {
     uint32_t currImage = context->current_image_index;
-    Pipeline::Bind( &context->swapchain_info.graphics_cmd_buffers_per_image.data[currImage], VK_PIPELINE_BIND_POINT_GRAPHICS, &inShader->pipeline );
+    Pipeline::Bind( &context->swapchain_info.graphics_cmd_buffers_per_image.data[currImage], VK_PIPELINE_BIND_POINT_GRAPHICS, &in_shader->pipeline );
     return true;
 }

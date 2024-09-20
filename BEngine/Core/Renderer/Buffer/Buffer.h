@@ -12,7 +12,7 @@ struct BufferDescriptor
     VkMemoryPropertyFlagBits memoryPropertyFlags;
 };
 
-class Buffer
+struct Buffer
 {
 public:
     VkBuffer handle;

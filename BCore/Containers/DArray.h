@@ -1,7 +1,9 @@
 #pragma once
 #include <assert.h>
+#include "../Defines/Defines.h"
 #include "../Allocators/Allocator.h"
 #include "../Context/CoreContext.h"
+
 
 /// <summary>
 /// Stands for Dynamic Array , pretty much an auto-resizing array so you can consider it the equivalent of std::vector
@@ -29,7 +31,7 @@ public:
     static void Create( size_t capacity, DArray* out_arr, Allocator alloc, bool mem_init = true )
     {
         out_arr->alloc = alloc;
-        out_arr->data = (T*) alloc.alloc( &alloc, capacity * sizeof( T ) );
+        out_arr->data = (T*) ALLOC( alloc, capacity * sizeof( T ) );
         out_arr->capacity = capacity;
         out_arr->size = 0;
 
@@ -68,7 +70,7 @@ public:
         }
 
 
-        T* new_data = (T*) in_arr->alloc.alloc( &in_arr->alloc, new_size * sizeof( T ) );
+        T* new_data = (T*) ALLOC(in_arr->alloc , new_size * sizeof( T ) );
 
         CoreContext::mem_copy( in_arr->data, new_data, in_arr->size * sizeof( T ) );
 
@@ -150,7 +152,7 @@ public:
         size_t start_offset = CoreContext::core_arena.offset;
 
         // contains the deleted elements going from last to first
-        size_t* indicies = (size_t*) temp_alloc.alloc( &temp_alloc, sizeof( size_t ) * in_arr->size );
+        size_t* indicies = (size_t*) ALLOC( temp_alloc, sizeof( size_t ) * in_arr->size );
         size_t indicies_count = 0;
 
         for ( size_t i = 0; i < in_arr->size; ++i )

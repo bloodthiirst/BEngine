@@ -19,8 +19,8 @@
 #include "Logger/Types/ConsoleLogger.h"
 #include "Renderer/Backend/BackendRenderer.h"
 #include "Renderer/VulkanBackend/VulkanBackendRenderer.h"
-
-
+#include "AssetManager/GlobalAssetManager.h"
+#include "AssetManager/MeshAssetManger.h"
 #ifdef _WIN32
 #include "Platform/Types/Win32/Win32Platform.h"
 #endif
@@ -91,6 +91,15 @@ int main( int argc, char** argv )
         Global::event_system.Startup();
         Global::platform.window.startup_callback( &Global::platform.window, startup );
         Global::backend_renderer.startup( &Global::backend_renderer, startup );
+        Global::asset_manager.Startup();
+
+        // mesh asset
+        {
+            AssetManager manager = {};
+            MeshAssetManager::Create(&manager);
+
+            DArray<AssetManager>::Add(&Global::asset_manager.asset_managers , manager);
+        }
     }
 
     GameApp client_game = {};
@@ -124,9 +133,10 @@ cleanup:
         hmodule = nullptr;
     }
 
-    Global::logger.Destroy();
     Global::backend_renderer.destroy( &Global::backend_renderer );
+    Global::asset_manager.Destroy();
     Global::event_system.Destroy();
+    Global::logger.Destroy();
     Global::platform.window.destroy();
 
     return 0;

@@ -72,6 +72,7 @@ bool Buffer::Destroy( VulkanContext* context, Buffer* out_buffer )
 bool Buffer::Load( VulkanContext* context, uint32_t offset, uint32_t size, void* in_data_ptr, uint32_t flags, Buffer* in_buffer )
 {
     void* mapped_memory_ptr = nullptr;
+    
     Buffer::Lock( context, offset, size, flags, in_buffer, &mapped_memory_ptr );
 
     Global::platform.memory.mem_copy( in_data_ptr, mapped_memory_ptr, size );

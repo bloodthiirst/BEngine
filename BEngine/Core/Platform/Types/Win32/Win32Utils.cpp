@@ -4,7 +4,6 @@
 KeydownFuncPtr* Win32Utils::keydownFuncLookup[2];
 ScrollWheelFuncPtr* Win32Utils::scrollWheelLookup[2];
 
-
 void Win32Utils::NoOp ( HWND windowHandle, WPARAM wParam )
 {}
 

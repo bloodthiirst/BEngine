@@ -28,7 +28,7 @@ public:
 	LogicalDeviceInfo logicalDeviceInfo;
 	PhysicalDeviceInfo physicalDeviceInfo;
 	SwapchainInfo swapchain_info;
-    Renderpass renderPass;
+    DArray<Renderpass> renderPasses;
     
     DescriptorManager descriptor_manager;
 

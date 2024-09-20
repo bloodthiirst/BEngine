@@ -8,32 +8,47 @@
 
 #ifdef _DEBUG
 
+    #define FREE(allocator , ptr)\
+        allocator.free( &allocator, ptr ); \
+        {\
+            const char filename[] = __FILE__; \
+            const int line = __LINE__;\
+            AllocationData data = {};\
+            data.line_number = line;\
+            data.filepath = filename;\
+            data.user_data = nullptr;\
+            if(allocator.callbacks.free_callback){\
+                allocator.callbacks.free_callback(&allocator , ptr , data);\
+            }\
+        }\
+
     #define ALLOC_WITH_INFO(allocator , size , metadata) \
         allocator.alloc( &allocator, size ); \
         {\
-        const char filename[] = __FILE__; \
-        const int line = __LINE__;\
-        AllocationData data = {};\
-        data.line_number = line;\
-        data.filepath = filename;\
-        data.user_data = metadata;\
-        if(allocator.callbacks.alloc_callback){\
-            allocator.callbacks.alloc_callback(&allocator , size , data);\
+            const char filename[] = __FILE__; \
+            const int line = __LINE__;\
+            AllocationData data = {};\
+            data.line_number = line;\
+            data.filepath = filename;\
+            data.user_data = metadata;\
+            if(allocator.callbacks.alloc_callback){\
+                allocator.callbacks.alloc_callback(&allocator , size , data);\
+            }\
         }\
 
 
     #define ALLOC_NO_INFO(allocator , size) \
         allocator.alloc( &allocator, size ); \
         {\
-        const char filename[] = __FILE__; \
-        const int line = __LINE__;\
-        AllocationData data = {};\
-        data.line_number = line;\
-        data.filepath = filename;\
-        data.user_data = nullptr;\
-        if(allocator.callbacks.alloc_callback){\
-            allocator.callbacks.alloc_callback(&allocator , size , data);\
-        }\
+            const char filename[] = __FILE__; \
+            const int line = __LINE__;\
+            AllocationData data = {};\
+            data.line_number = line;\
+            data.filepath = filename;\
+            data.user_data = nullptr;\
+            if(allocator.callbacks.alloc_callback){\
+                allocator.callbacks.alloc_callback(&allocator , size , data);\
+            }\
         }\
 
     #define GET_MACRO(_1,_2,_3,NAME,...) NAME

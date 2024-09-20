@@ -72,8 +72,14 @@ message("\r")
 # TODO 3: Add an executable called Tutorial to the project
 # Hint: Be sure to specify the source file as tutorial.cxx
 
-add_library(BEngineDLL SHARED ${sources} ${headers})
-add_executable(BEngineExe ${sources} ${headers})
+# this is the "object library" target: compiles the sources only once
+add_library(BEngineCommon OBJECT ${sources})
+
+# shared libraries need PIC
+set_property(TARGET BEngineCommon PROPERTY POSITION_INDEPENDENT_CODE 1)
+
+add_library(BEngineDLL SHARED $<TARGET_OBJECTS:BEngineCommon>)
+add_executable(BEngineExe $<TARGET_OBJECTS:BEngineCommon>)
 
 add_custom_command(TARGET BEngineExe POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy ${BCoreDLL} 
@@ -81,25 +87,21 @@ add_custom_command(TARGET BEngineExe POST_BUILD
     COMMAND_EXPAND_LISTS
 )
 
-target_link_libraries(BEngineExe "${VulkanLib}")
-target_link_libraries(BEngineExe "${BCoreLib}")
+set(All_Libs ${VulkanLib} ${BCoreLib})
 
-target_link_libraries(BEngineDLL "${VulkanLib}")
-target_link_libraries(BEngineDLL "${BCoreLib}")
+target_link_libraries(BEngineCommon ${All_Libs})
+target_link_libraries(BEngineExe ${All_Libs})
+target_link_libraries(BEngineDLL ${All_Libs})
 
 # Make both the .dll and .exe have the same name "BEngine"
 set_property(TARGET BEngineExe PROPERTY OUTPUT_NAME BEngine)
 set_property(TARGET BEngineDLL PROPERTY OUTPUT_NAME BEngine)
 
-target_include_directories(BEngineExe PUBLIC ${mathHeaders})
-target_include_directories(BEngineExe PUBLIC ${bcoreHeaders})
-target_include_directories(BEngineExe PUBLIC ${gameHeaders})
-target_include_directories(BEngineExe PUBLIC ${vulkanHeaders})
+set(All_Headers ${mathHeaders} ${bcoreHeaders} ${gameHeaders} ${vulkanHeaders})
 
-target_include_directories(BEngineDLL PUBLIC ${mathHeaders})
-target_include_directories(BEngineDLL PUBLIC ${bcoreHeaders})
-target_include_directories(BEngineDLL PUBLIC ${gameHeaders})
-target_include_directories(BEngineDLL PUBLIC ${vulkanHeaders})
+target_include_directories(BEngineCommon PUBLIC ${All_Headers})
+target_include_directories(BEngineExe PUBLIC ${All_Headers})
+target_include_directories(BEngineDLL PUBLIC ${All_Headers})
 
 # TODO 9: Use target_include_directories to include ${PROJECT_BINARY_DIR}
 # target_include_directories(ExecutableTarget PUBLIC "${PROJECT_BINARY_DIR}")

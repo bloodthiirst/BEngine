@@ -4,4 +4,3 @@ CALL rmdir /s /q "lib"
 CALL vcvarsall x64
 CALL cmake -B ./CMakeGenerated
 CALL cmake --build ./CMakeGenerated
-pause

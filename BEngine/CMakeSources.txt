@@ -29,3 +29,6 @@ Core/Renderer/Shader/ShaderBuilder.cpp
 Core/Renderer/Shader/ShaderUtils.cpp
 Core/Renderer/Texture/Texture.cpp
 Core/Renderer/VulkanBackend/VulkanBackendRenderer.cpp
+
+# Asset EntityManager
+Core/AssetManager/GlobalAssetManager.cpp

@@ -26,7 +26,7 @@ struct RenderTarget
 
 struct Renderpass
 {
-public:
+    StringView id;
     VkRenderPass handle;
     void* internal_data;
     RenderpassState state;

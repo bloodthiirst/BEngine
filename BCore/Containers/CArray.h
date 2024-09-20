@@ -18,7 +18,7 @@ public:
     {
         size_t total_size = (count * sizeof( T ));
 
-        out_arr->data = alloc.alloc( alloc, total_size );
+        out_arr->data = ALLOC(alloc , alloc, total_size );
         out_arr->count = count;
         out_arr->alloc = alloc;
 

@@ -13,7 +13,7 @@ struct Win32Time
 
     static void Create(Time* out_time)
     {
-        Win32Time* time = Global::alloc_toolbox.HeapAlloc<Win32Time>();
+        Win32Time* time = (Win32Time*) Global::platform.memory.malloc(sizeof(Win32Time));
 
         LARGE_INTEGER frequency;
         LARGE_INTEGER start_time;

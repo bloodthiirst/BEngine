@@ -25,6 +25,7 @@ struct Win32Window
     {
         window->handle_messages = HandleMessages;
         window->startup_callback = Startup;
+        window->destroy = Destroy;
     }
 
     static void Startup( Window* window, ApplicationStartup startup )
@@ -46,13 +47,6 @@ struct Win32Window
         StringView name = Defines::engine_name;
 
         Allocator heap_alloc = Global::alloc_toolbox.heap_allocator;
-
-        // note : includes the termination char
-        //size_t string_length = name.length + 1;
-        //wchar_t* appName = (wchar_t*) ALLOC( heap_alloc , sizeof( wchar_t ) * string_length , nullptr );
-
-        //size_t converted_chars;
-        //size_t size = mbstowcs_s( &converted_chars, appName, string_length, name.buffer, name.length );
 
         windowClass.lpfnWndProc = HandleMessage;
         windowClass.style = CS_VREDRAW | CS_HREDRAW | CS_DBLCLKS;
@@ -318,7 +312,7 @@ struct Win32Window
         }
         }
     }
-
+private :
     static void Destroy()
     {
         Global::event_system.Unlisten<EngineCloseEvent>( HandleEngineClose );
