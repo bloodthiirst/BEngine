@@ -1,5 +1,6 @@
 #pragma once
 #include "../String/StringBuffer.h"
+
 template <typename T>
 static StringBuffer ToString( T value, Allocator alloc );
 
@@ -52,6 +53,13 @@ static StringBuffer ToString( const char* value, Allocator alloc )
 }
 
 static StringBuffer ToString( char* value, Allocator alloc )
+{
+    StringBuffer res = StringBuffer::Create( value, alloc );
+
+    return res;
+}
+
+static StringBuffer ToString( StringView value, Allocator alloc )
 {
     StringBuffer res = StringBuffer::Create( value, alloc );
 

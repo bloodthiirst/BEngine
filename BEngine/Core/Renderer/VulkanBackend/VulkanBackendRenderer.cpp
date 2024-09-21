@@ -24,6 +24,7 @@
 #include "../Shader/Shader.h"
 #include "../Buffer/Buffer.h"
 #include "../Renderpasses/BasicRenderpass.h"
+#include "../../AssetManager/ShaderAssetManager.h"
 #include <Maths/Vector2.h>
 #include "../Mesh/Vertex3D.h"
 
@@ -778,15 +779,23 @@ bool Startup(BackendRenderer *in_renderer, ApplicationStartup startup)
         Global::platform.filesystem.read_all(vert_handle, vert_code.buffer, &bytes_read);
         Global::platform.filesystem.read_all(frag_handle, frag_code.buffer, &bytes_read);
 
-        bool created = ShaderBuilder::Create()
-                           .SetStage(VkShaderStageFlagBits::VK_SHADER_STAGE_VERTEX_BIT, vert_code.view)
-                           .SetStage(VkShaderStageFlagBits::VK_SHADER_STAGE_FRAGMENT_BIT, frag_code.view)
-                           .AddVertexAttribute("position", 0, sizeof(Vector3), VkFormat::VK_FORMAT_R32G32B32_SFLOAT)
-                           .AddVertexAttribute("texcoord", 1, sizeof(Vector2), VkFormat::VK_FORMAT_R32G32_SFLOAT)
-                           .AddDescriptor("global_ubo", 0, 0, VkDescriptorType::VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VkShaderStageFlagBits::VK_SHADER_STAGE_VERTEX_BIT)
-                           //.AddDescriptor( "object_ubo", 1, 0, VkDescriptorType::VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VkShaderStageFlagBits::VK_SHADER_STAGE_FRAGMENT_BIT)
-                           .AddDescriptor("diffuse_sampler", 1, 0, VkDescriptorType::VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VkShaderStageFlagBits::VK_SHADER_STAGE_FRAGMENT_BIT)
-                           .Build(ctx, &ctx->default_shader);
+        ShaderBuilder builder = ShaderBuilder::Create()
+                                    .SetName("Basic_Textured")
+                                    .SetStage(VkShaderStageFlagBits::VK_SHADER_STAGE_VERTEX_BIT, vert_code)
+                                    .SetStage(VkShaderStageFlagBits::VK_SHADER_STAGE_FRAGMENT_BIT, frag_code)
+                                    .AddVertexAttribute("position", 0, sizeof(Vector3), VkFormat::VK_FORMAT_R32G32B32_SFLOAT)
+                                    .AddVertexAttribute("texcoord", 1, sizeof(Vector2), VkFormat::VK_FORMAT_R32G32_SFLOAT)
+                                    .AddDescriptor("global_ubo", 0, 0, VkDescriptorType::VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VkShaderStageFlagBits::VK_SHADER_STAGE_VERTEX_BIT)
+                                    .AddDescriptor("diffuse_sampler", 1, 0, VkDescriptorType::VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VkShaderStageFlagBits::VK_SHADER_STAGE_FRAGMENT_BIT);
+
+        bool created = builder.Build(ctx, &ctx->renderPasses.data[0], &ctx->default_shader);
+
+        AssetManager manager = {};
+        bool found = Global::asset_manager.GetByID(ShaderAssetManager::ASSET_ID, &manager);
+        assert(found);
+
+        AssetHandle handle = {};
+        ShaderAssetManager::Import(&manager, builder, {}, &handle);
 
         if (vert_handle.is_valid)
         {
@@ -880,7 +889,7 @@ bool Startup(BackendRenderer *in_renderer, ApplicationStartup startup)
             Texture::TransitionLayout(ctx, &ctx->default_texture, cmd, VkFormat::VK_FORMAT_R32G32B32A32_SFLOAT, VkImageLayout::VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VkImageLayout::VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
             CommandBuffer::SingleUseEndSubmit(ctx, pool, &cmd, ctx->physicalDeviceInfo.queuesInfo.graphicsQueue);
         }
-        Buffer::Destroy(ctx , &copy_buffer);
+        Buffer::Destroy(ctx, &copy_buffer);
     }
 
     Global::logger.Info("Default texture created");

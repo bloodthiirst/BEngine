@@ -53,6 +53,10 @@ message("\t-- Adding game headers from ${gameHeaders}")
 # add Vulkan headers
 set(vulkanHeaders "C:/Dev/Vulkan/Include")
 message("\t-- Adding Vulkan headers from ${vulkanHeaders}")
+
+# add Spir-V headers
+set(spirVHeaders "C:/Dev/SPIRV-Reflect")
+message("\t-- Adding SPIR-V headers from ${spirVHeaders}")
 message("\r")
 
 message("-- Static libraries included")
@@ -97,7 +101,7 @@ target_link_libraries(BEngineDLL ${All_Libs})
 set_property(TARGET BEngineExe PROPERTY OUTPUT_NAME BEngine)
 set_property(TARGET BEngineDLL PROPERTY OUTPUT_NAME BEngine)
 
-set(All_Headers ${mathHeaders} ${bcoreHeaders} ${gameHeaders} ${vulkanHeaders})
+set(All_Headers ${mathHeaders} ${bcoreHeaders} ${gameHeaders} ${vulkanHeaders} ${spirVHeaders})
 
 target_include_directories(BEngineCommon PUBLIC ${All_Headers})
 target_include_directories(BEngineExe PUBLIC ${All_Headers})

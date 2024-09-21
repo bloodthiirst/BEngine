@@ -2,7 +2,7 @@
 #include "../Context/VulkanContext.h"
 #include "ShaderBuilder.h"
 
-ShaderBuilder ShaderBuilder::SetStage(VkShaderStageFlagBits type, StringView code)
+ShaderBuilder ShaderBuilder::SetStage(VkShaderStageFlagBits type, StringBuffer code)
 {
     ShaderStage info = {};
     info.code = code;
@@ -83,7 +83,7 @@ bool SortDescriptorSetBinding(DescriptorBindingInfo a, DescriptorBindingInfo b)
     return a.binding_index > b.binding_index;
 }
 
-bool ShaderBuilder::Build(VulkanContext *context, Shader *out_shader)
+bool ShaderBuilder::Build(VulkanContext *context, Renderpass* in_renderpass, Shader *out_shader)
 {
     *out_shader = {};
 
@@ -193,7 +193,7 @@ bool ShaderBuilder::Build(VulkanContext *context, Shader *out_shader)
     }
 
     // create the pipeline
-    if (!Pipeline::Create(context, &context->renderPasses.data[0], &dependencies, this, &out_shader->pipeline))
+    if (!Pipeline::Create(context, in_renderpass, &dependencies, this, &out_shader->pipeline))
     {
         Global::alloc_toolbox.ResetArenaOffset(&checkpoint);
         return false;

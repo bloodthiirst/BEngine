@@ -11,6 +11,7 @@
 #include <String/StringView.h>
 #include <String/StringUtils.h>
 #include <GameApp.h>
+#include <Serialization/JSONSerializer.h>
 #include "Defines/Defines.h"
 #include "Global/Global.h"
 #include "Application/Application.h"
@@ -21,6 +22,7 @@
 #include "Renderer/VulkanBackend/VulkanBackendRenderer.h"
 #include "AssetManager/GlobalAssetManager.h"
 #include "AssetManager/MeshAssetManger.h"
+#include "AssetManager/ShaderAssetManager.h"
 #ifdef _WIN32
 #include "Platform/Types/Win32/Win32Platform.h"
 #endif
@@ -90,16 +92,43 @@ int main( int argc, char** argv )
     {
         Global::event_system.Startup();
         Global::platform.window.startup_callback( &Global::platform.window, startup );
-        Global::backend_renderer.startup( &Global::backend_renderer, startup );
         Global::asset_manager.Startup();
 
         // mesh asset
         {
             AssetManager manager = {};
             MeshAssetManager::Create(&manager);
-
             DArray<AssetManager>::Add(&Global::asset_manager.asset_managers , manager);
         }
+
+        // shader asset
+        {
+            AssetManager manager = {};
+            ShaderAssetManager::Create(&manager);
+            DArray<AssetManager>::Add(&Global::asset_manager.asset_managers , manager);
+        }
+        
+        Global::backend_renderer.startup( &Global::backend_renderer, startup );
+    }
+
+    // json test
+    {
+        StringView json = "{  Hello : 1  , Child : { LastName : 5 } }";
+
+        JSONSerializerState state = {};
+        JSONNode result = {};
+        JSONSerializer::Serialize(json , &state , &result, Global::alloc_toolbox.heap_allocator );
+
+        StringBuilder builder = {};
+        StringBuilder::Create(&builder , Global::alloc_toolbox.frame_allocator);
+        JSONSerializer::Log(&result , &builder , 0);
+
+        StringBuffer buff = {};
+
+        StringBuilder::ToString(&builder , &buff , Global::alloc_toolbox.frame_allocator );
+        Global::logger.Log(buff.view);
+
+        assert(result.node_type == JSONNodeType::Object);
     }
 
     GameApp client_game = {};

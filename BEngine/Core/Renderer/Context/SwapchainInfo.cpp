@@ -239,10 +239,10 @@ bool SwapchainInfo::Destroy( VulkanContext* ctx, SwapchainInfo* out_swapchain )
     return true;
 }
 
-bool CreateInternal( VulkanContext* context, SwapchainCreateDescription description , VkSwapchainKHR old_swapchain , SwapchainInfo* out_swapchain )
+bool CreateInternal( VulkanContext* ctx, SwapchainCreateDescription description , VkSwapchainKHR old_swapchain , SwapchainInfo* out_swapchain )
 {
     // query the swapchain support
-    QuerySwapchainSupport( context->physicalDeviceInfo.handle, context->surface, &context->physicalDeviceInfo.swapchainSupportInfo );
+    QuerySwapchainSupport( ctx->physicalDeviceInfo.handle, ctx->surface, &ctx->physicalDeviceInfo.swapchainSupportInfo );
 
     // we select the image format that the swapchain's image will use
     // first we try to get format => R8G8B8A8 and colorSpace =>  VK_COLOR_SPACE_SRGB_NONLINEAR_KHR
@@ -250,9 +250,9 @@ bool CreateInternal( VulkanContext* context, SwapchainCreateDescription descript
     {
         bool found = false;
 
-        for ( uint32_t i = 0; i < context->physicalDeviceInfo.swapchainSupportInfo.surfaceFormats.size; ++i )
+        for ( uint32_t i = 0; i < ctx->physicalDeviceInfo.swapchainSupportInfo.surfaceFormats.size; ++i )
         {
-            VkSurfaceFormatKHR* curr = &context->physicalDeviceInfo.swapchainSupportInfo.surfaceFormats.data[i];
+            VkSurfaceFormatKHR* curr = &ctx->physicalDeviceInfo.swapchainSupportInfo.surfaceFormats.data[i];
 
             if ( curr->format == VK_FORMAT_R8G8B8A8_UNORM && curr->colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR )
             {
@@ -264,7 +264,7 @@ bool CreateInternal( VulkanContext* context, SwapchainCreateDescription descript
 
         if ( !found )
         {
-            out_swapchain->surfaceFormat = context->physicalDeviceInfo.swapchainSupportInfo.surfaceFormats.data[0];
+            out_swapchain->surfaceFormat = ctx->physicalDeviceInfo.swapchainSupportInfo.surfaceFormats.data[0];
         }
     }
 
@@ -273,9 +273,9 @@ bool CreateInternal( VulkanContext* context, SwapchainCreateDescription descript
     // we query the physical devices modes and try to select MAILBOX if it's supported
     VkPresentModeKHR presentMode = VK_PRESENT_MODE_FIFO_KHR;
     {
-        for ( int i = 0; i < context->physicalDeviceInfo.swapchainSupportInfo.presentModes.size; ++i )
+        for ( int i = 0; i < ctx->physicalDeviceInfo.swapchainSupportInfo.presentModes.size; ++i )
         {
-            VkPresentModeKHR mode = context->physicalDeviceInfo.swapchainSupportInfo.presentModes.data[i];
+            VkPresentModeKHR mode = ctx->physicalDeviceInfo.swapchainSupportInfo.presentModes.data[i];
 
             if ( mode == VK_PRESENT_MODE_MAILBOX_KHR )
             {
@@ -285,10 +285,10 @@ bool CreateInternal( VulkanContext* context, SwapchainCreateDescription descript
         }
     }
 
-    VkExtent2D swapchainExtent = context->physicalDeviceInfo.swapchainSupportInfo.capabilities.currentExtent;
+    VkExtent2D swapchainExtent = ctx->physicalDeviceInfo.swapchainSupportInfo.capabilities.currentExtent;
 
-    VkExtent2D gpuMin = context->physicalDeviceInfo.swapchainSupportInfo.capabilities.minImageExtent;
-    VkExtent2D gpuMax = context->physicalDeviceInfo.swapchainSupportInfo.capabilities.maxImageExtent;
+    VkExtent2D gpuMin = ctx->physicalDeviceInfo.swapchainSupportInfo.capabilities.minImageExtent;
+    VkExtent2D gpuMax = ctx->physicalDeviceInfo.swapchainSupportInfo.capabilities.maxImageExtent;
 
     swapchainExtent.width = Maths::Clamp( swapchainExtent.width, gpuMin.width, gpuMax.width );
     swapchainExtent.height = Maths::Clamp( swapchainExtent.height, gpuMin.height, gpuMax.height );
@@ -299,8 +299,8 @@ bool CreateInternal( VulkanContext* context, SwapchainCreateDescription descript
     imagesCount = Maths::Clamp
     (
         imagesCount,
-        context->physicalDeviceInfo.swapchainSupportInfo.capabilities.minImageCount,
-        context->physicalDeviceInfo.swapchainSupportInfo.capabilities.maxImageCount
+        ctx->physicalDeviceInfo.swapchainSupportInfo.capabilities.minImageCount,
+        ctx->physicalDeviceInfo.swapchainSupportInfo.capabilities.maxImageCount
     );
 
     // create swapchain
@@ -309,25 +309,25 @@ bool CreateInternal( VulkanContext* context, SwapchainCreateDescription descript
     swapchainCreateInfo.clipped = true;
     swapchainCreateInfo.minImageCount = imagesCount;
     swapchainCreateInfo.imageExtent = swapchainExtent;
-    swapchainCreateInfo.imageFormat = context->swapchain_info.surfaceFormat.format;
-    swapchainCreateInfo.imageColorSpace = context->swapchain_info.surfaceFormat.colorSpace;
+    swapchainCreateInfo.imageFormat = ctx->swapchain_info.surfaceFormat.format;
+    swapchainCreateInfo.imageColorSpace = ctx->swapchain_info.surfaceFormat.colorSpace;
     swapchainCreateInfo.presentMode = presentMode;
     swapchainCreateInfo.imageArrayLayers = 1;
     swapchainCreateInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
-    swapchainCreateInfo.surface = context->surface;
+    swapchainCreateInfo.surface = ctx->surface;
     swapchainCreateInfo.oldSwapchain = old_swapchain;
     swapchainCreateInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
 
     // this deals with the case where the device can be in portait or horizontal mode
-    swapchainCreateInfo.preTransform = context->physicalDeviceInfo.swapchainSupportInfo.capabilities.currentTransform;
+    swapchainCreateInfo.preTransform = ctx->physicalDeviceInfo.swapchainSupportInfo.capabilities.currentTransform;
 
     uint32_t queueFamilyIndicies[] =
     {
-        context->physicalDeviceInfo.queuesInfo.presentQueueFamilyIndex,
-        context->physicalDeviceInfo.queuesInfo.graphicsQueueIndex,
+        ctx->physicalDeviceInfo.queuesInfo.presentQueueFamilyIndex,
+        ctx->physicalDeviceInfo.queuesInfo.graphicsQueueIndex,
     };
 
-    if ( context->physicalDeviceInfo.queuesInfo.presentQueueFamilyIndex != context->physicalDeviceInfo.queuesInfo.graphicsQueueIndex )
+    if ( ctx->physicalDeviceInfo.queuesInfo.presentQueueFamilyIndex != ctx->physicalDeviceInfo.queuesInfo.graphicsQueueIndex )
     {
         swapchainCreateInfo.queueFamilyIndexCount = 2;
         swapchainCreateInfo.pQueueFamilyIndices = queueFamilyIndicies;
@@ -336,18 +336,23 @@ bool CreateInternal( VulkanContext* context, SwapchainCreateDescription descript
     else
     {
         swapchainCreateInfo.queueFamilyIndexCount = 1;
-        swapchainCreateInfo.pQueueFamilyIndices = &context->physicalDeviceInfo.queuesInfo.presentQueueFamilyIndex;
+        swapchainCreateInfo.pQueueFamilyIndices = &ctx->physicalDeviceInfo.queuesInfo.presentQueueFamilyIndex;
         swapchainCreateInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
     }
 
-    VkResult createSwapchainResult = vkCreateSwapchainKHR( context->logicalDeviceInfo.handle, &swapchainCreateInfo, context->allocator, &out_swapchain->handle );
+    VkResult createSwapchainResult = vkCreateSwapchainKHR( ctx->logicalDeviceInfo.handle, &swapchainCreateInfo, ctx->allocator, &out_swapchain->handle );
 
-    context->current_frame = 0;
+    ctx->current_frame = 0;
     out_swapchain->imagesCount = 0;
 
     // here we take the image count returned by vulkan even though we already specified a wanted count
     // we do this since the number returned can be less than the count we requested (for whatever reason) 
-    VkResult getImagesResult = vkGetSwapchainImagesKHR( context->logicalDeviceInfo.handle, out_swapchain->handle, &out_swapchain->imagesCount, nullptr );
+    VkResult getImagesResult = vkGetSwapchainImagesKHR( ctx->logicalDeviceInfo.handle, out_swapchain->handle, &out_swapchain->imagesCount, nullptr );
+
+    if(old_swapchain != VK_NULL_HANDLE)
+    {
+        vkDestroySwapchainKHR(ctx->logicalDeviceInfo.handle , old_swapchain , ctx->allocator);
+    }
 
     return true;
 }

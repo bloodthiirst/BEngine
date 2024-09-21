@@ -15,7 +15,7 @@ struct BAPI AssetInfo
 
 struct BAPI AssetHandle
 {
-    char metadata[256];
+    const char* type_id;
     AssetInfo info;
     FileHandle file_handle;
     void* data;
@@ -23,11 +23,12 @@ struct BAPI AssetHandle
 
 struct BAPI AssetManager
 {
-    StringBuffer name;
+    StringView name;
+    const char* id;
     DArray<AssetHandle> handles;
-    Func<bool, ArrayView<char>> can_import;
-    Func<bool, ArrayView<char>, FileHandle, AssetHandle*> import;
-    Func<bool, AssetHandle> free; 
+    Func<bool, AssetManager*,ArrayView<char>> can_import;
+    Func<bool, AssetManager*,ArrayView<char>, FileHandle, AssetHandle*> import;
+    Func<bool, AssetManager*,AssetHandle*> free; 
 };
 
 struct BAPI GlobalAssetManager
@@ -35,6 +36,8 @@ struct BAPI GlobalAssetManager
     DArray<AssetManager> asset_managers;
 
     void Startup();
+
+    bool GetByID(const char* id, AssetManager* out_manager) const;
 
     void Destroy();
 };
