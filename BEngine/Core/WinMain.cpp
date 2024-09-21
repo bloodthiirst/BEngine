@@ -113,7 +113,7 @@ int main( int argc, char** argv )
 
     // json test
     {
-        StringView json = "{  Hello : 1  , Child : { LastName : 5 } }";
+        StringView json = "{  ID : 1  , Child : { LastName : \"Houssem\" } , Name : \"SomeString\" , SubIDs : [ 1 , 420 , 69 ] }";
 
         JSONSerializerState state = {};
         JSONNode result = {};
