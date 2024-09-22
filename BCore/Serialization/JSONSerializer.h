@@ -29,7 +29,10 @@ struct JSONSerializerState
 
 struct JSONSerializer
 {
-    static const inline char spaces[] = " \t\n\r";
+    static bool Validate(StringView json)
+    {
+        return false;
+    }
 
     static void Log(JSONNode *in_node, StringBuilder *in_builder, size_t indentation)
     {
@@ -64,6 +67,13 @@ struct JSONSerializer
             StringBuilder::Append(in_builder, "<NodeType : String>");
             break;
         }
+
+        case JSONNodeType::Float:
+        {
+            StringBuilder::Append(in_builder, "<NodeType : Float>");
+            break;
+        }
+
 
         default:
             break;
@@ -129,9 +139,49 @@ struct JSONSerializer
             return;
         }
 
-        if ('0' <= curr_char && curr_char <= '9')
+        bool is_num = ('0' <= curr_char && curr_char <= '9') || (curr_char == '+') || (curr_char == '-');
+        bool is_float = false;
+        {
+            int32_t sign_mul = 1;
+            size_t i = state->current_index;
+            
+            if(curr_char == '-')
+            {
+                sign_mul = -1;
+                i++;
+            }
+
+            if(curr_char == '+')
+            {
+                i++;
+            }
+
+            bool done = false;
+
+            do
+            {
+                char num_test = json.buffer[i];
+                bool is_curr_num = isdigit(num_test);
+                bool is_frac = num_test == '.';
+
+                is_float |= is_frac;
+                done = !is_curr_num && !is_frac;
+                i++;
+            }
+            while(!done && i < json.length);
+        }
+
+        
+        if (is_num && !is_float)
         {
             SerializeInteger(json, state, out_node, alloc);
+            return;
+        }
+
+        
+        if (is_num && is_float)
+        {
+            SerializeFloat(json, state, out_node, alloc);
             return;
         }
     }
@@ -158,9 +208,28 @@ struct JSONSerializer
         inout_node->value = json.buffer + start;
         // we subtract 1 from length to avoid including the last '\"' in the string value
         inout_node->value.length = state->current_index - start - 1;
+    }
 
-        // skip the last '\"'
-        state->current_index++;
+    void static SerializeFloat(StringView json, JSONSerializerState *state, JSONNode *inout_node, Allocator alloc)
+    {
+        bool stop = false;
+
+        size_t start = state->current_index;
+
+        while (!stop && state->current_index < json.length)
+        {
+            char curr_char = json.buffer[state->current_index];
+            bool is_valid = isdigit(curr_char) || (curr_char == '-') || (curr_char == '+') || (curr_char == '.');
+            stop |= !is_valid;
+
+            state->current_index++;
+        }
+
+        state->current_index--;
+
+        inout_node->node_type = JSONNodeType::Float;
+        inout_node->value = json.buffer + start;
+        inout_node->value.length = state->current_index - start;
     }
 
     void static SerializeInteger(StringView json, JSONSerializerState *state, JSONNode *inout_node, Allocator alloc)
@@ -172,15 +241,17 @@ struct JSONSerializer
         while (!stop && state->current_index < json.length)
         {
             char curr_char = json.buffer[state->current_index];
-            bool is_valid = '0' <= curr_char && curr_char <= '9';
+            bool is_valid = isdigit(curr_char) || (curr_char == '-') || (curr_char == '+');
             stop |= !is_valid;
 
             state->current_index++;
         }
 
+        state->current_index--;
+
         inout_node->node_type = JSONNodeType::Integer;
         inout_node->value = json.buffer + start;
-        inout_node->value.length = state->current_index - start - 1;
+        inout_node->value.length = state->current_index - start;
     }
 
     void static SerializeObject(StringView json, JSONSerializerState *state, JSONNode *out_node, Allocator alloc)
@@ -293,7 +364,6 @@ struct JSONSerializer
     void static ContinueWhileAlphanum(StringView json, JSONSerializerState *state)
     {
         bool stop = false;
-        const size_t count = sizeof(spaces) / sizeof(char);
 
         while (!stop && state->current_index < json.length)
         {
@@ -312,18 +382,14 @@ struct JSONSerializer
 
     void static ContinueWhileSpace(StringView json, JSONSerializerState *state)
     {
-        const size_t count = sizeof(spaces) / sizeof(char);
-
         while (state->current_index < json.length)
         {
             char curr_char = json.buffer[state->current_index];
-            bool is_space = false;
-
-            for (size_t i = 0; i < count; ++i)
-            {
-                char space = spaces[i];
-                is_space |= curr_char == space;
-            }
+            bool is_space = 
+                curr_char == ' ' ||
+                curr_char == '\t' ||
+                curr_char == '\r' ||
+                curr_char == '\n';
 
             if (!is_space)
             {
