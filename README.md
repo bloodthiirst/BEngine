@@ -9,9 +9,13 @@ The engine uses Win32 API and Vulkan as a rendering backend.
 - A propriatary implementations of basic containers (with more to come)
   - DArray (dynamic arrays)
   - HMap (Hashmap - Dictionary)
-- StringView an StringBuffer instead of C-style null terminated strings
+  - ArrayView
+  - LinkedList
+  - FreeList
+- StringView , StringBuffer and StringBuilder instead of C-style null terminated strings
 - Support for custom allocators for all allocation related operations
 - Custom Math library (with plans to support SIMD)
-- 
+- Lightweight JSON serializer
+
 # Basic Client DLL with FPS camera and shaded mesh
 ![alt text](https://github.com/bloodthiirst/BEngine/blob/master/Screenshot.png?raw=true)
