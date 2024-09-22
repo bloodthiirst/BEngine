@@ -113,7 +113,13 @@ int main( int argc, char** argv )
 
     // json test
     {
-        StringView json = "{ID:1,Child:{LastName:\"Houssem\"},Name:\"SomeString\",SubIDs:[1,420,69],AnotherID:-3.0,ThirdID : +999}";
+        StringView json = "{ID:1,Child:{LastName:\"Houssem\"},Name:\"SomeString\",SubIDs:[1,420,69],AnotherID:-3.0,ThirdID:+999}";
+
+        {
+            ArenaCheckpoint check = Global::alloc_toolbox.GetArenaCheckpoint();
+            assert(JSONSerializer::Validate(json , Global::alloc_toolbox.frame_allocator ));
+            Global::alloc_toolbox.ResetArenaOffset(&check);
+        }
 
         JSONSerializerState state = {};
         JSONNode result = {};

@@ -2,6 +2,7 @@
 #include "../String/StringView.h"
 #include "../String/StringBuilder.h"
 #include "../Containers/ArrayView.h"
+#include "../Containers/Stack.h"
 #include "../Allocators/Allocator.h"
 #include <ctype.h>
 
@@ -29,9 +30,86 @@ struct JSONSerializerState
 
 struct JSONSerializer
 {
-    static bool Validate(StringView json)
+    static bool Validate(StringView json , Allocator temp_alloc)
     {
-        return false;
+        Stack<char> stack = {};
+        Stack<char>::Create(&stack , 32 , temp_alloc);
+        bool is_in_string = false;
+
+        for (size_t i = 0; i < json.length; ++i)
+        {
+            char curr_char = json.buffer[i];
+
+            switch (curr_char)
+            {
+            case '{':
+            {
+                if (!is_in_string)
+                {
+                    Stack<char>::Push(&stack , '{');
+                }
+                break;
+            }
+            case '}':
+            {
+                if (is_in_string)
+                {
+                    break;
+                }
+
+                char poped = {};
+
+                if(!Stack<char>::TryPop(&stack , &poped))
+                {
+                    return false;
+                }
+
+                if(poped != '{')
+                {
+                    return false;
+                }
+
+                break;
+            }
+            case '[':
+            {
+                if (!is_in_string)
+                {
+                    Stack<char>::Push(&stack , '[');
+                }
+                break;
+            }
+            case ']':
+            {
+                if (is_in_string)
+                {
+                    break;
+                }
+
+                char poped = {};
+                
+                if(!Stack<char>::TryPop(&stack , &poped))
+                {
+                    return false;
+                }
+
+                if(poped != '[')
+                {
+                    return false;
+                }
+
+                break;
+            }
+            case '"':
+            {
+                is_in_string = !is_in_string;
+                break;
+            }
+            }
+        }
+        bool is_valid = !is_in_string && stack.size == 0;
+
+        return is_valid;
     }
 
     static void Log(JSONNode *in_node, StringBuilder *in_builder, size_t indentation)
@@ -74,13 +152,12 @@ struct JSONSerializer
             break;
         }
 
-
         default:
             break;
         }
 
         StringBuilder::Append(in_builder, "\t");
-        
+
         // Log name
         if (in_node->name.buffer != nullptr)
         {
@@ -89,7 +166,7 @@ struct JSONSerializer
         }
 
         // Log value
-        if(in_node->node_type != JSONNodeType::Object && in_node->node_type != JSONNodeType::Array)
+        if (in_node->node_type != JSONNodeType::Object && in_node->node_type != JSONNodeType::Array)
         {
             StringBuffer msg = StringUtils::Format(in_builder->alloc, "<Value : {}>\t", in_node->value);
             StringBuilder::Append(in_builder, msg.view);
@@ -140,48 +217,10 @@ struct JSONSerializer
         }
 
         bool is_num = ('0' <= curr_char && curr_char <= '9') || (curr_char == '+') || (curr_char == '-');
-        bool is_float = false;
+
+        if (is_num)
         {
-            int32_t sign_mul = 1;
-            size_t i = state->current_index;
-            
-            if(curr_char == '-')
-            {
-                sign_mul = -1;
-                i++;
-            }
-
-            if(curr_char == '+')
-            {
-                i++;
-            }
-
-            bool done = false;
-
-            do
-            {
-                char num_test = json.buffer[i];
-                bool is_curr_num = isdigit(num_test);
-                bool is_frac = num_test == '.';
-
-                is_float |= is_frac;
-                done = !is_curr_num && !is_frac;
-                i++;
-            }
-            while(!done && i < json.length);
-        }
-
-        
-        if (is_num && !is_float)
-        {
-            SerializeInteger(json, state, out_node, alloc);
-            return;
-        }
-
-        
-        if (is_num && is_float)
-        {
-            SerializeFloat(json, state, out_node, alloc);
+            SerializeNumber(json, state, out_node, alloc);
             return;
         }
     }
@@ -210,46 +249,48 @@ struct JSONSerializer
         inout_node->value.length = state->current_index - start - 1;
     }
 
-    void static SerializeFloat(StringView json, JSONSerializerState *state, JSONNode *inout_node, Allocator alloc)
+    void static SerializeNumber(StringView json, JSONSerializerState *state, JSONNode *inout_node, Allocator alloc)
     {
-        bool stop = false;
-
+        bool is_float = false;
         size_t start = state->current_index;
 
-        while (!stop && state->current_index < json.length)
-        {
-            char curr_char = json.buffer[state->current_index];
-            bool is_valid = isdigit(curr_char) || (curr_char == '-') || (curr_char == '+') || (curr_char == '.');
-            stop |= !is_valid;
+        int32_t sign_mul = 1;
+        char curr_char = json.buffer[state->current_index];
 
+        if (curr_char == '-')
+        {
+            sign_mul = -1;
             state->current_index++;
+        }
+
+        if (curr_char == '+')
+        {
+            state->current_index++;
+        }
+
+        bool done = false;
+
+        do
+        {
+            curr_char = json.buffer[state->current_index];
+            bool is_curr_num = isdigit(curr_char);
+            bool is_frac = curr_char == '.';
+
+            is_float |= is_frac;
+            done = !is_curr_num && !is_frac;
+            state->current_index++;
+        } while (!done && state->current_index < json.length);
+
+        JSONNodeType node_type = JSONNodeType::Integer;
+
+        if (is_float)
+        {
+            node_type = JSONNodeType::Float;
         }
 
         state->current_index--;
 
-        inout_node->node_type = JSONNodeType::Float;
-        inout_node->value = json.buffer + start;
-        inout_node->value.length = state->current_index - start;
-    }
-
-    void static SerializeInteger(StringView json, JSONSerializerState *state, JSONNode *inout_node, Allocator alloc)
-    {
-        bool stop = false;
-
-        size_t start = state->current_index;
-
-        while (!stop && state->current_index < json.length)
-        {
-            char curr_char = json.buffer[state->current_index];
-            bool is_valid = isdigit(curr_char) || (curr_char == '-') || (curr_char == '+');
-            stop |= !is_valid;
-
-            state->current_index++;
-        }
-
-        state->current_index--;
-
-        inout_node->node_type = JSONNodeType::Integer;
+        inout_node->node_type = node_type;
         inout_node->value = json.buffer + start;
         inout_node->value.length = state->current_index - start;
     }
@@ -385,7 +426,7 @@ struct JSONSerializer
         while (state->current_index < json.length)
         {
             char curr_char = json.buffer[state->current_index];
-            bool is_space = 
+            bool is_space =
                 curr_char == ' ' ||
                 curr_char == '\t' ||
                 curr_char == '\r' ||
