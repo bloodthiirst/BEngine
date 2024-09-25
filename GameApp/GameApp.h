@@ -4,6 +4,9 @@
 #include <Maths/Vector3.h>
 #include <Maths/Quaternion.h>
 
+struct RendererContext;
+struct GameApp;
+
 struct GameStartup
 {
     int width;
@@ -24,7 +27,7 @@ struct GameApp
     Func<StringView, GameApp*> get_name;
     ActionParams<GameApp*> initialize;
     ActionParams<GameApp*, float> on_update;
-    ActionParams<GameApp*, float> on_render;
+    ActionParams<GameApp*,RendererContext*, float> on_render;
     ActionParams<GameApp*> destroy;
 
     GameStartup game_startup = { 0 };

@@ -2,6 +2,36 @@
 #include "../Context/VulkanContext.h"
 #include "ShaderBuilder.h"
 
+ShaderBuilder ShaderBuilder::Create()
+{
+    ShaderBuilder res = {};
+    DArray<DescriptorLayoutInfo>::Create(0, &res.descriptor_layouts, Global::alloc_toolbox.heap_allocator);
+    DArray<VertexAttributeInfo>::Create(0, &res.vertex_attributes, Global::alloc_toolbox.heap_allocator);
+    DArray<ShaderStage>::Create(0, &res.shader_stages, Global::alloc_toolbox.heap_allocator);
+
+    return res;
+}
+
+void ShaderBuilder::Destroy(ShaderBuilder *builder)
+{
+    for (size_t i = 0; i < builder->shader_stages.size; ++i)
+    {
+        ShaderStage curr = builder->shader_stages.data[i];
+        StringBuffer::Destroy(&curr.code);
+    }
+
+    for (size_t i = 0; i < builder->descriptor_layouts.size; ++i)
+    {
+        DescriptorLayoutInfo curr = builder->descriptor_layouts.data[i];
+        DArray<DescriptorBindingInfo>::Destroy(&curr.bindings);
+    }
+
+    DArray<ShaderStage>::Destroy(&builder->shader_stages);
+    DArray<DescriptorLayoutInfo>::Destroy(&builder->descriptor_layouts);
+
+    *builder = {};
+}
+
 ShaderBuilder ShaderBuilder::SetStage(VkShaderStageFlagBits type, StringBuffer code)
 {
     ShaderStage info = {};
@@ -83,7 +113,7 @@ bool SortDescriptorSetBinding(DescriptorBindingInfo a, DescriptorBindingInfo b)
     return a.binding_index > b.binding_index;
 }
 
-bool ShaderBuilder::Build(VulkanContext *context, Renderpass* in_renderpass, Shader *out_shader)
+bool ShaderBuilder::Build(VulkanContext *context, Renderpass *in_renderpass, Shader *out_shader)
 {
     *out_shader = {};
 
@@ -158,7 +188,7 @@ bool ShaderBuilder::Build(VulkanContext *context, Renderpass* in_renderpass, Sha
     Allocator alloc = Global::alloc_toolbox.frame_allocator;
 
     PipelineDependencies dependencies = {};
-    DArray<VkDescriptorSetLayout>::Create(&out_shader->descriptor_set_layouts, &dependencies.descriptor_set_layouts, out_shader->descriptor_set_layouts.size, alloc);
+    DArray<VkDescriptorSetLayout>::Create(out_shader->descriptor_set_layouts.data, &dependencies.descriptor_set_layouts, out_shader->descriptor_set_layouts.size, alloc);
     DArray<PipelineShaderInfo>::Create(0, &dependencies.shader_info, alloc);
 
     // create shader modules
@@ -198,21 +228,7 @@ bool ShaderBuilder::Build(VulkanContext *context, Renderpass* in_renderpass, Sha
         Global::alloc_toolbox.ResetArenaOffset(&checkpoint);
         return false;
     }
-
-    // create the actual global ubo buffer
-    {
-        BufferDescriptor bufferDesc = {};
-        bufferDesc.size = sizeof(GlobalUniformObject);
-        bufferDesc.memoryPropertyFlags = (VkMemoryPropertyFlagBits)(VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT | VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
-        bufferDesc.usage = (VkBufferUsageFlagBits)(VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT);
-
-        if (!Buffer::Create(context, bufferDesc, true, &out_shader->globalUBOBuffer))
-        {
-            Global::alloc_toolbox.ResetArenaOffset(&checkpoint);
-            return false;
-        }
-    }
-
+    
     // allocate descriptor sets
     {
         // we create a descriptor per swapchain image

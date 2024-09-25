@@ -24,11 +24,14 @@ Core/Renderer/DescriptorManager/DescriptorManager.cpp
 Core/Renderer/Fence/Fence.cpp
 Core/Renderer/FrameBuffer/FrameBuffer.cpp
 Core/Renderer/Pipeline/Pipeline.cpp
-Core/Renderer/Shader/Shader.cpp
-Core/Renderer/Shader/ShaderBuilder.cpp
-Core/Renderer/Shader/ShaderUtils.cpp
-Core/Renderer/Texture/Texture.cpp
 Core/Renderer/VulkanBackend/VulkanBackendRenderer.cpp
 
 # Asset EntityManager
 Core/AssetManager/GlobalAssetManager.cpp
+
+#Asset
+Core/Renderer/Mesh/Mesh3D.cpp
+Core/Renderer/Shader/Shader.cpp
+Core/Renderer/Shader/ShaderBuilder.cpp
+Core/Renderer/Shader/ShaderUtils.cpp
+Core/Renderer/Texture/Texture.cpp

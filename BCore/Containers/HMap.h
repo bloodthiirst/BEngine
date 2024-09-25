@@ -127,7 +127,11 @@ public:
         new_bucket.keys_index = keyIndex;
         new_bucket.values_index = valueIndex;
 
-        *out_index = keyIndex;
+        if(out_index != nullptr)
+        {
+            *out_index = keyIndex;
+        }
+        
         DArray<BucketLimits>::Add( buckets, new_bucket );
         in_map->count++;
 

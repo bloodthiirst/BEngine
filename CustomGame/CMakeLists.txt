@@ -11,6 +11,10 @@ DESCRIPTION "Game DLL" )
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED true)
 
+message("-- Path infos")
+message("\t --Project path : ${PROJECT_SOURCE_DIR}")
+message("\t --CMake path : ${CMAKE_SOURCE_DIR}")
+
 # path to build files
 set(BUILD_PATH ${CMAKE_SOURCE_DIR}/Build)
 
@@ -49,6 +53,15 @@ message("\t-- Adding BCore headers from ${bcoreHeaders}")
 set(engineHeaders "${parentPath}/BEngine")
 message("\t-- Adding BEngine headers from ${engineHeaders}")
 
+# add Vulkan headers
+set(vulkanHeaders "C:/Dev/Vulkan/Include")
+message("\t-- Adding Vulkan headers from ${vulkanHeaders}")
+
+# add Spir-V headers
+set(spirVHeaders "C:/Dev/SPIRV-Reflect")
+message("\t-- Adding SPIR-V headers from ${spirVHeaders}")
+message("\r")
+
 # add game headers
 set(gameHeaders "${parentPath}/GameApp")
 message("\t-- Adding game headers from ${gameHeaders}")
@@ -56,16 +69,29 @@ message("\r")
 
 message("-- Static libraries included")
 
-# add BCore static lib
-set(BCoreDLL "${parentPath}/BCore/Build/Debug/BCore.dll")
-set(BCoreLib "${parentPath}/BCore/Build/Debug/BCore.lib")
+# add DLLs and Libs
+if(${PROJECT_SOURCE_DIR} STREQUAL ${CMAKE_SOURCE_DIR})
+    set(BCoreDLL "${parentPath}/BCore/Build/Debug/BCore.dll")
+    set(BCoreLib "${parentPath}/BCore/Build/Debug/BCore.lib")
+
+    set(BEngineDLL "${parentPath}/BEngine/Build/Debug/BEngine.dll")
+    set(BEngineLib "${parentPath}/BEngine/Build/Debug/BEngine.lib")
+
+else()
+    set(BCoreDLL "${BUILD_PATH}/Debug/BCore.dll")
+    set(BCoreLib "${BUILD_PATH}/Debug/BCore.lib")
+
+    set(BEngineDLL "${BUILD_PATH}/Debug/BEngine.dll")
+    set(BEngineLib "${BUILD_PATH}/Debug/BEngine.lib")   
+endif()
+
 message("\t-- Adding BCore DLL from ${BCoreDLL}")
+message("\t-- Adding BEngine DLL from ${BEngineDLL}")
+
 message("\r")
 
 # add BEngine static lib
-set(BEngineDLL "${parentPath}/BEngine/Build/Debug/BEngine.dll")
-set(BEngineLib "${parentPath}/BEngine/Build/Debug/BEngine.lib")
-message("\t-- Adding BEngine DLL from ${BEngineDLL}")
+
 message("\r")
 
 message("-- Build path")
@@ -83,6 +109,8 @@ target_include_directories(CustomGameDLL PUBLIC ${mathHeaders})
 target_include_directories(CustomGameDLL PUBLIC ${bcoreHeaders})
 target_include_directories(CustomGameDLL PUBLIC ${engineHeaders})
 target_include_directories(CustomGameDLL PUBLIC ${gameHeaders})
+target_include_directories(CustomGameDLL PUBLIC ${vulkanHeaders})
+target_include_directories(CustomGameDLL PUBLIC ${spirVHeaders})
 
 # TODO 9: Use target_include_directories to include ${PROJECT_BINARY_DIR}
 # target_include_directories(ExecutableTarget PUBLIC "${PROJECT_BINARY_DIR}")

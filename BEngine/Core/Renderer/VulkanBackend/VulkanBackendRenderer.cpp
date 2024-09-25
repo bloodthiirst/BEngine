@@ -479,7 +479,7 @@ bool CreateGraphicsCommandPools(VulkanContext *context)
     return true;
 }
 
-bool UploadDataRange(VulkanContext *context, VkCommandPool pool, Fence fence, VkQueue queue, Buffer *inBuffer, uint32_t offset, uint32_t size, void *inDataPtr)
+bool UploadDataRange(VulkanContext *context, VkCommandPool pool, Fence fence, VkQueue queue, Buffer *in_buffer, uint32_t offset, uint32_t size, void *inDataPtr)
 {
     // first , we create a host-visible staging buffer to upload the data to in
     // then we mark it as the source of the transfer
@@ -491,13 +491,13 @@ bool UploadDataRange(VulkanContext *context, VkCommandPool pool, Fence fence, Vk
     bufferDesc.memoryPropertyFlags = usage;
     bufferDesc.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
 
-    Buffer::Create(context, bufferDesc, true, &stagingBuffer);
+    Buffer::Create(bufferDesc, true, &stagingBuffer);
 
-    Buffer::Load(context, 0, size, inDataPtr, 0, &stagingBuffer);
+    Buffer::Load(0, size, inDataPtr, 0, &stagingBuffer);
 
-    Buffer::Copy(context, pool, fence, queue, &stagingBuffer, 0, inBuffer, offset, size);
+    Buffer::Copy(pool, fence, queue, &stagingBuffer, 0, in_buffer, offset, size);
 
-    Buffer::Destroy(context, &stagingBuffer);
+    Buffer::Destroy(&stagingBuffer);
 
     return true;
 }
@@ -706,7 +706,6 @@ bool Startup(BackendRenderer *in_renderer, ApplicationStartup startup)
     Global::logger.Info("Swapchain created");
 
     // create renderpass
-
     Rect rect = {};
     rect.x = 0;
     rect.y = 0;
@@ -744,75 +743,6 @@ bool Startup(BackendRenderer *in_renderer, ApplicationStartup startup)
         ctx->descriptor_manager.resize_factor = 2;
     }
 
-    // build shader
-    {
-        Allocator alloc = HeapAllocator::Create();
-
-        StringView vert_path = "C:\\Dev\\BEngine\\BEngine\\Core\\Resources\\SimpleShader.vert.spv";
-        StringView frag_path = "C:\\Dev\\BEngine\\BEngine\\Core\\Resources\\SimpleShader.frag.spv";
-
-        FileHandle vert_handle = {};
-        FileHandle frag_handle = {};
-
-        if (!Global::platform.filesystem.open(vert_path, FileModeFlag::Read, true, &vert_handle))
-        {
-            Global::logger.Error("Can't find vertex shader");
-            return false;
-        }
-
-        if (!Global::platform.filesystem.open(frag_path, FileModeFlag::Read, true, &frag_handle))
-        {
-            Global::logger.Error("Can't find frag shader");
-            return false;
-        }
-
-        size_t vert_size = {};
-        size_t frag_size = {};
-
-        Global::platform.filesystem.get_size(&vert_handle, &vert_size);
-        Global::platform.filesystem.get_size(&frag_handle, &frag_size);
-
-        StringBuffer vert_code = StringBuffer::Create(vert_size, alloc);
-        StringBuffer frag_code = StringBuffer::Create(frag_size, alloc);
-
-        size_t bytes_read = {};
-        Global::platform.filesystem.read_all(vert_handle, vert_code.buffer, &bytes_read);
-        Global::platform.filesystem.read_all(frag_handle, frag_code.buffer, &bytes_read);
-
-        ShaderBuilder builder = ShaderBuilder::Create()
-                                    .SetName("Basic_Textured")
-                                    .SetStage(VkShaderStageFlagBits::VK_SHADER_STAGE_VERTEX_BIT, vert_code)
-                                    .SetStage(VkShaderStageFlagBits::VK_SHADER_STAGE_FRAGMENT_BIT, frag_code)
-                                    .AddVertexAttribute("position", 0, sizeof(Vector3), VkFormat::VK_FORMAT_R32G32B32_SFLOAT)
-                                    .AddVertexAttribute("texcoord", 1, sizeof(Vector2), VkFormat::VK_FORMAT_R32G32_SFLOAT)
-                                    .AddDescriptor("global_ubo", 0, 0, VkDescriptorType::VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VkShaderStageFlagBits::VK_SHADER_STAGE_VERTEX_BIT)
-                                    .AddDescriptor("diffuse_sampler", 1, 0, VkDescriptorType::VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VkShaderStageFlagBits::VK_SHADER_STAGE_FRAGMENT_BIT);
-
-        bool created = builder.Build(ctx, &ctx->renderPasses.data[0], &ctx->default_shader);
-
-        AssetManager manager = {};
-        bool found = Global::asset_manager.GetByID(ShaderAssetManager::ASSET_ID, &manager);
-        assert(found);
-
-        AssetHandle handle = {};
-        ShaderAssetManager::Import(&manager, builder, {}, &handle);
-
-        if (vert_handle.is_valid)
-        {
-            Global::platform.filesystem.close(&vert_handle);
-        }
-
-        if (frag_handle.is_valid)
-        {
-            Global::platform.filesystem.close(&frag_handle);
-        }
-
-        if (!created)
-        {
-            return false;
-        }
-    }
-
     Global::logger.Info("Default shader created");
 
     // create sampler
@@ -831,139 +761,32 @@ bool Startup(BackendRenderer *in_renderer, ApplicationStartup startup)
         vkCreateSampler(ctx->logicalDeviceInfo.handle, &create_sampler, ctx->allocator, &ctx->default_sampler);
     }
 
-    Global::logger.Info("Default sampler created");
-
-    // create texture
-    {
-        size_t width = 64;
-        size_t height = 64;
-        size_t cell_size = 4;
-
-        TextureDescriptor tex_desc = {};
-        tex_desc.create_view = true;
-        tex_desc.format = VkFormat::VK_FORMAT_R32G32B32A32_SFLOAT;
-        tex_desc.height = (uint32_t)height;
-        tex_desc.width = (uint32_t)width;
-        tex_desc.view_aspect_flags = VkImageAspectFlagBits::VK_IMAGE_ASPECT_COLOR_BIT;
-        tex_desc.image_type = VkImageType::VK_IMAGE_TYPE_2D;
-        tex_desc.tiling = VkImageTiling::VK_IMAGE_TILING_OPTIMAL;
-        tex_desc.usage = (VkImageUsageFlagBits)(VkImageUsageFlagBits::VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VkImageUsageFlagBits::VK_IMAGE_USAGE_TRANSFER_DST_BIT | VkImageUsageFlagBits::VK_IMAGE_USAGE_SAMPLED_BIT);
-
-        Texture::Create(ctx, tex_desc, &ctx->default_texture);
-
-        Color *colors = Global::alloc_toolbox.HeapAlloc<Color>(width * height);
-
-        Color dark = {1, 1, 1, 1};
-        Color light = {0, 0, 0, 1};
-
-        for (size_t y = 0; y < width; ++y)
-        {
-            bool is_y_odd = (y / cell_size) % 2;
-
-            for (size_t x = 0; x < width; ++x)
-            {
-                bool is_x_odd = (x / cell_size) % 2;
-
-                bool col = is_x_odd ^ is_y_odd;
-
-                colors[x + (y * width)] = col ? dark : light;
-            }
-        }
-
-        BufferDescriptor desc = {};
-        desc.size = (uint32_t)(width * height * sizeof(Color));
-        desc.memoryPropertyFlags = (VkMemoryPropertyFlagBits)(VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-        desc.usage = VkBufferUsageFlagBits::VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
-
-        Buffer copy_buffer = {};
-        Buffer::Create(ctx, desc, true, &copy_buffer);
-        {
-            Buffer::Load(ctx, 0, (uint32_t)(width * height * sizeof(Color)), colors, 0, &copy_buffer);
-            Global::alloc_toolbox.HeapFree<Color>(colors);
-
-            CommandBuffer cmd = {};
-            VkCommandPool pool = ctx->physicalDeviceInfo.commandPoolsInfo.graphicsCommandPool;
-            CommandBuffer::SingleUseAllocateBegin(ctx, pool, &cmd);
-            Texture::TransitionLayout(ctx, &ctx->default_texture, cmd, VkFormat::VK_FORMAT_R32G32B32A32_SFLOAT, VkImageLayout::VK_IMAGE_LAYOUT_UNDEFINED, VkImageLayout::VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
-            Texture::CopyFromBuffer(ctx, copy_buffer.handle, &ctx->default_texture, cmd);
-            Texture::TransitionLayout(ctx, &ctx->default_texture, cmd, VkFormat::VK_FORMAT_R32G32B32A32_SFLOAT, VkImageLayout::VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VkImageLayout::VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-            CommandBuffer::SingleUseEndSubmit(ctx, pool, &cmd, ctx->physicalDeviceInfo.queuesInfo.graphicsQueue);
-        }
-        Buffer::Destroy(ctx, &copy_buffer);
-    }
-
     Global::logger.Info("Default texture created");
 
-    // vertex buffer
+    // mesh buffer
     {
-        BufferDescriptor bufferDesc = {};
+        uint32_t mesh_alloc_size = 1024 * 1024;
+
+        BufferDescriptor buffer_desc = {};
 
         VkBufferUsageFlagBits usage = (VkBufferUsageFlagBits)(VkBufferUsageFlagBits::VK_BUFFER_USAGE_VERTEX_BUFFER_BIT |
+                                                              VkBufferUsageFlagBits::VK_BUFFER_USAGE_INDEX_BUFFER_BIT |
                                                               VkBufferUsageFlagBits::VK_BUFFER_USAGE_TRANSFER_DST_BIT |
                                                               VkBufferUsageFlagBits::VK_BUFFER_USAGE_TRANSFER_SRC_BIT);
 
-        bufferDesc.memoryPropertyFlags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
-        bufferDesc.size = sizeof(Vertex3D) * 1024 * 1024;
-        bufferDesc.usage = usage;
+        buffer_desc.memoryPropertyFlags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
+        buffer_desc.size = mesh_alloc_size;
+        buffer_desc.usage = usage;
 
-        if (!Buffer::Create(ctx, bufferDesc, true, &ctx->vertexBuffer))
+        if (!Buffer::Create(buffer_desc, true, &ctx->mesh_buffer))
         {
             Global::logger.Error("Couldn't create vertex buffer ....");
             return false;
         }
 
-        ctx->geometryVertexOffset = 0;
+        const uint32_t nodes_capacity = 512;
+        FreeList::Create(&ctx->mesh_freelist , nodes_capacity , mesh_alloc_size , Global::alloc_toolbox.heap_allocator); 
         Global::logger.Info("Vertex buffer created");
-    }
-
-    // index buffer
-    {
-        BufferDescriptor bufferDesc = {};
-
-        VkBufferUsageFlagBits usage = (VkBufferUsageFlagBits)(VkBufferUsageFlagBits::VK_BUFFER_USAGE_INDEX_BUFFER_BIT |
-                                                              VkBufferUsageFlagBits::VK_BUFFER_USAGE_TRANSFER_DST_BIT |
-                                                              VkBufferUsageFlagBits::VK_BUFFER_USAGE_TRANSFER_SRC_BIT);
-
-        bufferDesc.memoryPropertyFlags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
-        bufferDesc.size = sizeof(uint32_t) * 1024 * 1024;
-        bufferDesc.usage = usage;
-
-        if (!Buffer::Create(ctx, bufferDesc, true, &ctx->indexBuffer))
-        {
-            Global::logger.Error("Couldn't create index buffer ....");
-            return false;
-        }
-
-        ctx->indexBufferSize = bufferDesc.size;
-        Global::logger.Info("Index buffer created");
-    }
-
-    // test mesh
-    {
-        const uint32_t vert_count = 4;
-        const uint32_t index_count = 6;
-
-        Vertex3D vertPositions[vert_count] = {
-            {Vector3(+0.5f, +0.5f, 0.0), Vector2(1.0f, 1.0f)},
-            {Vector3(-0.5f, +0.5f, 0.0), Vector2(0.0f, 1.0f)},
-            {Vector3(+0.5f, -0.5f, 0.0), Vector2(1.0f, 0.0f)},
-            {Vector3(-0.5f, -0.5f, 0.0), Vector2(0.0f, 0.0f)}};
-
-        uint32_t vertIndicies[6] = {
-            0,
-            1,
-            2,
-
-            3,
-            1,
-            2,
-        };
-
-        uint32_t vertex_size = sizeof(Vertex3D) * vert_count;
-        uint32_t indicies_size = sizeof(uint32_t) * index_count;
-
-        UploadDataRange(ctx, ctx->physicalDeviceInfo.commandPoolsInfo.graphicsCommandPool, {}, ctx->physicalDeviceInfo.queuesInfo.graphicsQueue, &ctx->vertexBuffer, 0, vertex_size, vertPositions);
-        UploadDataRange(ctx, ctx->physicalDeviceInfo.commandPoolsInfo.graphicsCommandPool, {}, ctx->physicalDeviceInfo.queuesInfo.graphicsQueue, &ctx->indexBuffer, 0, indicies_size, vertIndicies);
     }
 
     return true;
@@ -981,7 +804,7 @@ void Resize(BackendRenderer *in_backend, uint32_t width, uint32_t height)
 // Waits for the last frame's submittion if needed
 // Acquires and updates the new image index from the swapchain
 // current frame is still the same , it gets updated after "Present"
-bool StartFrame(BackendRenderer *in_backend, RendererContext *rendererContext)
+bool StartFrame(BackendRenderer *in_backend, RendererContext *renderer_ctx)
 {
     VulkanContext *ctx = (VulkanContext *)in_backend->user_data;
     LogicalDeviceInfo device = ctx->logicalDeviceInfo;
@@ -1052,7 +875,7 @@ bool StartFrame(BackendRenderer *in_backend, RendererContext *rendererContext)
     return true;
 }
 
-bool DrawFrame(BackendRenderer *in_backend, RendererContext *rendererContext)
+bool DrawFrame(BackendRenderer *in_backend, RendererContext *renderer_ctx)
 {
     VulkanContext *ctx = (VulkanContext *)in_backend->user_data;
     uint32_t current_index = ctx->current_image_index;
@@ -1061,7 +884,7 @@ bool DrawFrame(BackendRenderer *in_backend, RendererContext *rendererContext)
     for (size_t i = 0; i < ctx->renderPasses.size; ++i)
     {
         Renderpass *curr = &ctx->renderPasses.data[i];
-        curr->draw(curr, &cmd, rendererContext);
+        curr->draw(curr, &cmd, renderer_ctx);
     }
 
     return true;
@@ -1160,10 +983,8 @@ bool Destroy(BackendRenderer *in_backend)
 
     vkDeviceWaitIdle(ctx->logicalDeviceInfo.handle);
 
-    Buffer::Destroy(ctx, &ctx->vertexBuffer);
-    Buffer::Destroy(ctx, &ctx->indexBuffer);
-
-    Shader::Destroy(ctx, &ctx->default_shader);
+    Buffer::Destroy(&ctx->mesh_buffer);
+    FreeList::Destroy(&ctx->mesh_freelist);
 
     DescriptorManager::Destroy(&ctx->descriptor_manager);
 
@@ -1176,8 +997,6 @@ bool Destroy(BackendRenderer *in_backend)
     }
 
     DArray<Renderpass>::Destroy(&ctx->renderPasses);
-
-    Texture::Destroy(ctx, &ctx->default_texture);
 
     SwapchainInfo::Destroy(ctx, &ctx->swapchain_info);
 

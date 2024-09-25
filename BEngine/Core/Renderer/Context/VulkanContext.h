@@ -1,11 +1,13 @@
 #pragma once
 #include <vulkan/vulkan.h>
 #include <Maths/Vector2Int.h>
+#include <Containers/FreeList.h>
 #include <Maths/Rect.h>
 #include <Maths/Color.h>
 #include "LogicalDeviceInfo.h"
 #include "PhysicalDeviceInfo.h"
 #include "SwapchainInfo.h"
+#include "../../Defines/Defines.h"
 #include "../CommandBuffer/CommandBuffer.h"
 #include "../Renderpass/Renderpass.h"
 #include "../Fence/Fence.h"
@@ -15,9 +17,8 @@
 #include "../Buffer/Buffer.h"
 
 
-struct VulkanContext
+struct BAPI VulkanContext
 {
-public:
 #if defined(_DEBUG)
 	VkDebugUtilsMessengerEXT debugMessenger;
 #endif
@@ -32,16 +33,9 @@ public:
     
     DescriptorManager descriptor_manager;
 
-    Buffer vertexBuffer;
-    Buffer indexBuffer;
-    uint32_t geometryVertexOffset;
-    uint32_t geometryIndexOffset;
-    uint32_t indexBufferSize;
-    
-    Shader default_shader;
-
-    Texture default_texture;
-
+    Buffer mesh_buffer;
+	FreeList mesh_freelist;
+	
     VkSampler default_sampler;
 
 	/// <summary>

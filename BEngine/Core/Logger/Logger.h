@@ -9,7 +9,7 @@
 struct Global;
 struct ArenaCheckpoint;
 
-class Logger
+class BAPI Logger
 {
 private:
     HMap<size_t, ILogger> loggers;

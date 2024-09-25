@@ -11,6 +11,10 @@ DESCRIPTION "Core library providing Allocators , Containers , custom String ,etc
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED true)
 
+message("-- Path infos")
+message("\t --Project path : ${PROJECT_SOURCE_DIR}")
+message("\t --CMake path : ${CMAKE_SOURCE_DIR}")
+
 # path to build files
 set(BUILD_PATH ${CMAKE_SOURCE_DIR}/Build)
 

@@ -1,5 +1,6 @@
 #pragma once
 #include <vulkan/vulkan.h>
+#include "../../Defines/Defines.h"
 
 enum class CommandBufferState
 {
@@ -11,22 +12,17 @@ enum class CommandBufferState
     NoAllocated
 };
 
-
-struct VulkanContext;
-
-struct CommandBuffer
+struct BAPI CommandBuffer
 {
-public:
     VkCommandBuffer handle;
     CommandBufferState state;
 
-public:
     void Begin ( bool isSingleUse, bool isRenderpassContinue, bool isSimultanious );
     void UpdateSubmitted ();
     void Reset ();
     void End ();
-    static void Allocate ( VulkanContext* context, VkCommandPool pool, bool isPrimary, CommandBuffer* outCommandBuffer );
-    static void Free ( VulkanContext* context, VkCommandPool pool, CommandBuffer* outCommandBuffer );
-    static void SingleUseAllocateBegin ( VulkanContext* context, VkCommandPool pool, CommandBuffer* outCommandBuffer );
-    static void SingleUseEndSubmit ( VulkanContext* context, VkCommandPool pool, CommandBuffer* outCommandBuffer, VkQueue queue );
+    static void Allocate (VkCommandPool pool, bool isPrimary, CommandBuffer* out_command_buffer );
+    static void Free (VkCommandPool pool, CommandBuffer* out_command_buffer );
+    static void SingleUseAllocateBegin (VkCommandPool pool, CommandBuffer* out_command_buffer );
+    static void SingleUseEndSubmit (VkCommandPool pool, CommandBuffer* out_command_buffer, VkQueue queue );
 };

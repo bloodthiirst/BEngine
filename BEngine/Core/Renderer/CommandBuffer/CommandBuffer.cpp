@@ -43,9 +43,11 @@ void CommandBuffer::End ()
 }
 
 
-void CommandBuffer::Allocate( VulkanContext* context, VkCommandPool pool, bool isPrimary, CommandBuffer* outCommandBuffer )
+void CommandBuffer::Allocate(VkCommandPool pool, bool isPrimary, CommandBuffer* out_command_buffer )
 {
-    *outCommandBuffer = {};
+    VulkanContext *context = (VulkanContext *)Global::backend_renderer.user_data;
+
+    *out_command_buffer = {};
     
     VkCommandBufferAllocateInfo allocateInfo = {};
     allocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -56,38 +58,44 @@ void CommandBuffer::Allocate( VulkanContext* context, VkCommandPool pool, bool i
     allocateInfo.commandBufferCount = 1;
     allocateInfo.pNext = nullptr;
 
-    outCommandBuffer->state = CommandBufferState::NoAllocated;
+    out_command_buffer->state = CommandBufferState::NoAllocated;
 
-    vkAllocateCommandBuffers ( context->logicalDeviceInfo.handle, &allocateInfo, &outCommandBuffer->handle );
+    vkAllocateCommandBuffers ( context->logicalDeviceInfo.handle, &allocateInfo, &out_command_buffer->handle );
 
-    outCommandBuffer->state = CommandBufferState::Ready;
+    out_command_buffer->state = CommandBufferState::Ready;
 }
 
-void CommandBuffer::Free ( VulkanContext* context, VkCommandPool pool, CommandBuffer* outCommandBuffer )
+void CommandBuffer::Free (VkCommandPool pool, CommandBuffer* outCommandBuffer )
 {
+    VulkanContext *context = (VulkanContext *)Global::backend_renderer.user_data;
+
     vkFreeCommandBuffers ( context->logicalDeviceInfo.handle, pool, 1, &outCommandBuffer->handle );
     outCommandBuffer->handle = 0;
     outCommandBuffer->state = CommandBufferState::NoAllocated;
 }
 
-void CommandBuffer::SingleUseAllocateBegin ( VulkanContext* context, VkCommandPool pool, CommandBuffer* outCommandBuffer )
+void CommandBuffer::SingleUseAllocateBegin (VkCommandPool pool, CommandBuffer* out_command_buffer )
 {
-    CommandBuffer::Allocate ( context, pool, true, outCommandBuffer );
-    outCommandBuffer->Begin ( true, false, false );
+    VulkanContext *context = (VulkanContext *)Global::backend_renderer.user_data;
+
+    out_command_buffer->Allocate (pool, true, out_command_buffer );
+    out_command_buffer->Begin ( true, false, false );
 }
 
-void CommandBuffer::SingleUseEndSubmit ( VulkanContext* context, VkCommandPool pool, CommandBuffer* outCommandBuffer , VkQueue queue )
+void CommandBuffer::SingleUseEndSubmit (VkCommandPool pool, CommandBuffer* out_command_buffer , VkQueue queue )
 {
-    outCommandBuffer->End ();
+    VulkanContext *context = (VulkanContext *)Global::backend_renderer.user_data;
+    
+    out_command_buffer->End ();
 
     VkSubmitInfo submitInfo = {};
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
     submitInfo.commandBufferCount = 1;
-    submitInfo.pCommandBuffers = &outCommandBuffer->handle;
+    submitInfo.pCommandBuffers = &out_command_buffer->handle;
  
     vkQueueSubmit ( queue, 1, &submitInfo, nullptr );
 
     vkQueueWaitIdle ( queue );
 
-    CommandBuffer::Free ( context, pool, outCommandBuffer );
+    CommandBuffer::Free ( pool, out_command_buffer );
 }

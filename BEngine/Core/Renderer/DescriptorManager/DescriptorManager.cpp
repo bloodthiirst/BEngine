@@ -70,7 +70,7 @@ bool DescriptorManager::Allocate( DescriptorLayoutInfo layout, DescriptorManager
 
             DescriptorLayoutInfo layout_copy = {};
             layout_copy.layout_index = layout.layout_index;
-            DArray<DescriptorBindingInfo>::Create( &layout.bindings, &layout_copy.bindings, layout.bindings.size, Global::alloc_toolbox.heap_allocator );
+            DArray<DescriptorBindingInfo>::Create( layout.bindings.data, &layout_copy.bindings, layout.bindings.size, Global::alloc_toolbox.heap_allocator );
 
             size_t insertion_index = {};
             if ( !HMap<DescriptorLayoutInfo, DescriptorPoolInfo>::TryAdd( &in_manager->pools_map, layout_copy, pool_to_use, &insertion_index ) )

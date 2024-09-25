@@ -125,7 +125,7 @@ bool AllocateResource( VulkanContext* context, SwapchainInfo* outSwapchain )
         descriptor.create_view = true;
         descriptor.view_aspect_flags = VK_IMAGE_ASPECT_DEPTH_BIT;
 
-        Texture::Create( context, descriptor, &outSwapchain->depthAttachement );
+        Texture::Create(descriptor, &outSwapchain->depthAttachement );
     }
 
     // we create a command buffer for each swap chain image
@@ -137,10 +137,10 @@ bool AllocateResource( VulkanContext* context, SwapchainInfo* outSwapchain )
 
             if ( curr->handle != VK_NULL_HANDLE )
             {
-                CommandBuffer::Free( context, context->physicalDeviceInfo.commandPoolsInfo.graphicsCommandPool, curr );
+                CommandBuffer::Free( context->physicalDeviceInfo.commandPoolsInfo.graphicsCommandPool, curr );
             }
 
-            CommandBuffer::Allocate( context, context->physicalDeviceInfo.commandPoolsInfo.graphicsCommandPool, true, curr );
+            CommandBuffer::Allocate( context->physicalDeviceInfo.commandPoolsInfo.graphicsCommandPool, true, curr );
         }
     }
 
@@ -186,7 +186,7 @@ void FreeResources( VulkanContext* context, SwapchainInfo* out_swapchain )
     {
         CommandBuffer* curr = &out_swapchain->graphics_cmd_buffers_per_image.data[i];
 
-        CommandBuffer::Free( context, context->physicalDeviceInfo.commandPoolsInfo.graphicsCommandPool, curr );
+        CommandBuffer::Free( context->physicalDeviceInfo.commandPoolsInfo.graphicsCommandPool, curr );
     }
 
     DArray<CommandBuffer>::Clear( &out_swapchain->graphics_cmd_buffers_per_image );
@@ -228,7 +228,7 @@ void FreeResources( VulkanContext* context, SwapchainInfo* out_swapchain )
     DArray<VkSemaphore>::Clear( &out_swapchain->image_presentation_complete_semaphores );
     DArray<VkSemaphore>::Clear( &out_swapchain->finished_rendering_semaphores );
     DArray<Fence>::Clear( &out_swapchain->cmd_buffer_done_execution_per_frame );
-    Texture::Destroy( context, &out_swapchain->depthAttachement );
+    Texture::Destroy(&out_swapchain->depthAttachement );
 
 }
 

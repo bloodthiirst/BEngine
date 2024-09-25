@@ -23,6 +23,7 @@
 #include "AssetManager/GlobalAssetManager.h"
 #include "AssetManager/MeshAssetManger.h"
 #include "AssetManager/ShaderAssetManager.h"
+#include "AssetManager/TextureAssetManager.h"
 #ifdef _WIN32
 #include "Platform/Types/Win32/Win32Platform.h"
 #endif
@@ -107,6 +108,14 @@ int main( int argc, char** argv )
             ShaderAssetManager::Create(&manager);
             DArray<AssetManager>::Add(&Global::asset_manager.asset_managers , manager);
         }
+
+        // texture asset
+        {
+            AssetManager manager = {};
+            TextureAssetManager::Create(&manager);
+            DArray<AssetManager>::Add(&Global::asset_manager.asset_managers , manager);
+        }
+        
         
         Global::backend_renderer.startup( &Global::backend_renderer, startup );
     }

@@ -11,6 +11,7 @@ The engine uses Win32 API and Vulkan as a rendering backend.
   - HMap (Hashmap - Dictionary)
   - ArrayView
   - LinkedList
+  - Stack
   - FreeList
 - StringView , StringBuffer and StringBuilder instead of C-style null terminated strings
 - Support for custom allocators for all allocation related operations

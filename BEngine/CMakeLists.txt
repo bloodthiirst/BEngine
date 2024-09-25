@@ -11,6 +11,10 @@ DESCRIPTION "Engine layer" )
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED true)
 
+message("-- Path infos")
+message("\t --Project path : ${PROJECT_SOURCE_DIR}")
+message("\t --CMake path : ${CMAKE_SOURCE_DIR}")
+
 # path to build files
 set(BUILD_PATH ${CMAKE_SOURCE_DIR}/Build)
 
@@ -61,8 +65,17 @@ message("\r")
 
 message("-- Static libraries included")
 # add BCore static lib
-set(BCoreDLL "${parentPath}/BCore/Build/Debug/BCore.dll")
-set(BCoreLib "${parentPath}/BCore/Build/Debug/BCore.lib")
+
+# add DLLs and Libs
+if(${PROJECT_SOURCE_DIR} STREQUAL ${CMAKE_SOURCE_DIR})
+    set(BCoreDLL "${parentPath}/BCore/Build/Debug/BCore.dll")
+    set(BCoreLib "${parentPath}/BCore/Build/Debug/BCore.lib")
+
+else()
+    set(BCoreDLL "${BUILD_PATH}/Debug/BCore.dll")
+    set(BCoreLib "${BUILD_PATH}/Debug/BCore.lib")
+endif()
+
 message("\t-- Adding BCore DLL from ${BCoreDLL}")
 
 # add vulkan static lib

@@ -1,9 +1,9 @@
 #pragma once
+#include "../Defines/Defines.h"
 #include <String/StringBuffer.h>
 #include <Typedefs/Typedefs.h>
 #include <Containers/ArrayView.h>
 #include <Containers/DArray.h>
-#include "../Defines/Defines.h"
 #include "../Platform/Base/Filesystem.h"
 
 struct BAPI AssetInfo

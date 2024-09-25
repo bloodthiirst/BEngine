@@ -2,11 +2,11 @@
 #include <vulkan/vulkan.h>
 #include <Containers/DArray.h>
 #include <String/StringView.h>
-#include "../Shader/ShaderBuilder.h"
 
 struct VulkanContext;
 struct Renderpass;
 struct CommandBuffer;
+struct ShaderBuilder;
 
 struct PipelineShaderInfo
 {

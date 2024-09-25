@@ -28,12 +28,14 @@ bool Application::Run()
         // input
         Global::platform.input.OnUpdate( delta );
 
+        RendererContext renderer_ctx = {};
+        DArray<DrawMesh>::Create( 32 ,&renderer_ctx.mesh_draws , Global::alloc_toolbox.frame_allocator);
+
         // update game
         game_app.on_update( &game_app, delta );
 
-        game_app.on_render( &game_app, delta );
+        game_app.on_render( &game_app, &renderer_ctx , delta );
 
-        RendererContext renderer_ctx = RendererContext();
 
         // draw frame
         {
@@ -59,7 +61,8 @@ bool Application::Run()
         }
 
     post_frame:
-        Global::platform.input.OnPostUpdate( delta );;
+        Global::platform.input.OnPostUpdate( delta );
+        Global::alloc_toolbox.frame_arena.offset = 0;
     }
 
     return true;

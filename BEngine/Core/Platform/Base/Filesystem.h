@@ -3,20 +3,20 @@
 #include <String/StringBuffer.h>
 #include <String/StringView.h>
 
-enum FileModeFlag
+enum BAPI FileModeFlag
 {
     Read        = 0b01,
     Write       = 0b10,
     ReadWrite   = 0b11
 };
 
-struct FileHandle
+struct BAPI FileHandle
 {
     void* handle;
     bool is_valid;
 };
 
-struct Filesystem
+struct BAPI Filesystem
 {
     Func<bool, FileHandle*> close;
     Func<bool, const StringView> exists;

@@ -223,6 +223,18 @@ public:
         return occurence;
     }
 
+    static size_t Hash(const StringView in_str)
+    {
+        size_t hash = 5381;
+        
+        for(size_t i = 0 ; i< in_str.length ; ++i)
+        {
+            hash = ((hash << 5) + hash) + in_str.buffer[i]; /* hash * 33 + c */
+        }
+
+        return hash;
+    }
+
     static StringBuffer Replace( const StringView original, StringView to_replace, StringView replace_with, Allocator allocator )
     {
         size_t len = original.length;

@@ -1,5 +1,6 @@
 #pragma once
 #include <vulkan/vulkan.h>
+#include "../../Defines/Defines.h"
 #include "../../Global/Global.h"
 #include "../CommandBuffer/CommandBuffer.h"
 
@@ -37,7 +38,7 @@ struct TextureDescriptor
     VkImageAspectFlags view_aspect_flags;
 };
 
-struct Texture
+struct BAPI Texture
 {
     VkImage handle;
     VkImageView view;
@@ -45,9 +46,9 @@ struct Texture
     uint32_t width;
     uint32_t height;
 
-    static void Destroy( VulkanContext* context, Texture* texture );
-    static void Create( VulkanContext* context, TextureDescriptor descriptor, Texture* texture );
-    static void TransitionLayout( VulkanContext* context, Texture* texture, CommandBuffer cmd, VkFormat format, VkImageLayout old_layout, VkImageLayout new_layout );
-    static void CopyFromBuffer( VulkanContext* context, VkBuffer from_buffer, Texture* to_texture, CommandBuffer copy_cmd );
+    static void Destroy(Texture* texture );
+    static void Create(TextureDescriptor descriptor, Texture* texture );
+    static void TransitionLayout(Texture* texture, CommandBuffer cmd, VkFormat format, VkImageLayout old_layout, VkImageLayout new_layout );
+    static void CopyFromBuffer(VkBuffer from_buffer, Texture* to_texture, CommandBuffer copy_cmd );
 
 };

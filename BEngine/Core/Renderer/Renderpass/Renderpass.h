@@ -16,13 +16,14 @@ enum class RenderpassState
     NoAllocated
 };
 
-struct VulkanContext;
-
 struct RenderTarget
 {
     Texture texture;
     FrameBuffer framebuffer;
 };
+
+struct RendererContext;
+struct CommandBuffer;
 
 struct Renderpass
 {
