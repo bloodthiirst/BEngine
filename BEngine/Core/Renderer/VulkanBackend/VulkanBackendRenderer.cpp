@@ -24,6 +24,7 @@
 #include "../Shader/Shader.h"
 #include "../Buffer/Buffer.h"
 #include "../Renderpasses/BasicRenderpass.h"
+#include "../Renderpasses/UIRenderpass.h"
 #include "../../AssetManager/ShaderAssetManager.h"
 #include <Maths/Vector2.h>
 #include "../Mesh/Vertex3D.h"
@@ -705,36 +706,78 @@ bool Startup(BackendRenderer *in_renderer, ApplicationStartup startup)
 
     Global::logger.Info("Swapchain created");
 
-    // create renderpass
-    Rect rect = {};
-    rect.x = 0;
-    rect.y = 0;
-    rect.width = (float)Global::platform.window.width;
-    rect.height = (float)Global::platform.window.height;
+#define UI_PASS true
+#define BASIC_PASS false
 
-    Color clearColor = {};
-    clearColor.r = 0;
-    clearColor.g = 0;
-    clearColor.b = 0.2f;
-    clearColor.a = 1;
-
-    BasicRenderpassParams renderpass_params = {};
-    renderpass_params.area = rect;
-    renderpass_params.clearColor = clearColor;
-    renderpass_params.depth = 1;
-    renderpass_params.stencil = 0;
-    renderpass_params.sync_window_size = true;
-
-    Renderpass renderpass = {};
-    if (!BasicRenderpass::Create(ctx, renderpass_params, &renderpass))
+#if BASIC_PASS == true
+    // create basic renderpass
     {
-        Global::logger.Error("Couldn't create renderpass ....");
-        return false;
+        Rect rect = {};
+        rect.x = 0;
+        rect.y = 0;
+        rect.width = (float)Global::platform.window.width;
+        rect.height = (float)Global::platform.window.height;
+
+        Color clearColor = {};
+        clearColor.r = 0;
+        clearColor.g = 0;
+        clearColor.b = 0.2f;
+        clearColor.a = 1;
+
+        BasicRenderpassParams renderpass_params = {};
+        renderpass_params.area = rect;
+        renderpass_params.clearColor = clearColor;
+        renderpass_params.depth = 1;
+        renderpass_params.stencil = 0;
+        renderpass_params.sync_window_size = true;
+
+        Renderpass renderpass = {};
+        if (!BasicRenderpass::Create(ctx, renderpass_params, &renderpass))
+        {
+            Global::logger.Error("Couldn't create basic renderpass ....");
+            return false;
+        }
+
+        DArray<Renderpass>::Add(&ctx->renderPasses, renderpass);
+
+        Global::logger.Info("Basic Renderpass created");
     }
+#endif
 
-    DArray<Renderpass>::Add(&ctx->renderPasses, renderpass);
+#if UI_PASS
+    // create ui renderpass
+    {
+        Rect rect = {};
+        rect.x = 0;
+        rect.y = 0;
+        rect.width = (float)Global::platform.window.width;
+        rect.height = (float)Global::platform.window.height;
 
-    Global::logger.Info("Renderpass created");
+        Color clearColor = {};
+        clearColor.r = 0;
+        clearColor.g = 0;
+        clearColor.b = 0.2f;
+        clearColor.a = 1;
+
+        UIRenderpassParams renderpass_params = {};
+        renderpass_params.area = rect;
+        renderpass_params.clearColor = clearColor;
+        renderpass_params.depth = 1;
+        renderpass_params.stencil = 0;
+        renderpass_params.sync_window_size = true;
+
+        Renderpass renderpass = {};
+        if (!UIRenderpass::Create(ctx, renderpass_params, &renderpass))
+        {
+            Global::logger.Error("Couldn't create ui renderpass ....");
+            return false;
+        }
+
+        DArray<Renderpass>::Add(&ctx->renderPasses, renderpass);
+
+        Global::logger.Info("UI Renderpass created");
+    }
+#endif
 
     // create descriptor set pools
     {
@@ -754,9 +797,9 @@ bool Startup(BackendRenderer *in_renderer, ApplicationStartup startup)
         create_sampler.addressModeU = VkSamplerAddressMode::VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
         create_sampler.addressModeV = VkSamplerAddressMode::VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
         create_sampler.addressModeW = VkSamplerAddressMode::VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-        create_sampler.magFilter = VkFilter::VK_FILTER_LINEAR;
+        create_sampler.magFilter = VkFilter::VK_FILTER_NEAREST;
         create_sampler.anisotropyEnable = VK_FALSE;
-        create_sampler.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+        create_sampler.mipmapMode = VkSamplerMipmapMode::VK_SAMPLER_MIPMAP_MODE_NEAREST;
 
         vkCreateSampler(ctx->logicalDeviceInfo.handle, &create_sampler, ctx->allocator, &ctx->default_sampler);
     }

@@ -22,7 +22,7 @@ bool Pipeline::Create( VulkanContext* context, Renderpass* renderpass, PipelineD
     createRasterizationInfo.rasterizerDiscardEnable = VK_FALSE;
     createRasterizationInfo.polygonMode = builder->has_wireframe ? VK_POLYGON_MODE_LINE : VK_POLYGON_MODE_FILL;
     createRasterizationInfo.lineWidth = 1.0f;
-    createRasterizationInfo.cullMode = VK_CULL_MODE_NONE;
+    createRasterizationInfo.cullMode = VK_CULL_MODE_BACK_BIT;
     createRasterizationInfo.frontFace = VK_FRONT_FACE_CLOCKWISE;
     createRasterizationInfo.depthClampEnable = VK_FALSE;
     createRasterizationInfo.depthBiasEnable = VK_FALSE;
@@ -216,8 +216,8 @@ bool Pipeline::Destroy( VulkanContext* context, Pipeline* inPipeline )
     return true;
 }
 
-bool Pipeline::Bind( CommandBuffer* inCmdBuffer, VkPipelineBindPoint bindPoint, Pipeline* inPipeline )
+bool Pipeline::Bind( CommandBuffer* in_cmd_buffer, VkPipelineBindPoint bindpoint, Pipeline* in_pipeline )
 {
-    vkCmdBindPipeline( inCmdBuffer->handle, bindPoint, inPipeline->handle );
+    vkCmdBindPipeline( in_cmd_buffer->handle, bindpoint, in_pipeline->handle );
     return true;
 }

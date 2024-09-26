@@ -1,5 +1,6 @@
 #pragma once
 #include "Maths.h"
+#include "Vector2.h"
 #include <memory>
 
 struct Vector3
@@ -28,6 +29,13 @@ public:
         this->x = x;
         this->y = y;
         this->z = z;
+    }
+
+    Vector3(Vector2 vec2)
+    {
+        this->x = vec2.x;
+        this->y = vec2.y;
+        this->z = 0;
     }
 public:
 

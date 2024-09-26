@@ -7,7 +7,7 @@
 #include "../Buffer/Buffer.h"
 #include "../Context/VulkanContext.h"
 
-struct BasicRenderpassParams
+struct UIRenderpassParams
 {
     bool sync_window_size;
     Rect area;
@@ -20,8 +20,9 @@ struct BasicRenderpassParams
 };
 
 
-struct BasicRenderpass
+struct UIRenderpass
 {
+
     static inline size_t ShaderBuilderHash(ShaderBuilder s)
     {
         return StringUtils::Hash(s.name);
@@ -34,7 +35,7 @@ struct BasicRenderpass
 
     static inline const char *BASIC_RENDERPASS_ID = "BasicRenderPass - ID";
 
-    static bool Create(VulkanContext *ctx, BasicRenderpassParams params, Renderpass *out_renderpass)
+    static bool Create(VulkanContext *ctx, UIRenderpassParams params, Renderpass *out_renderpass)
     {
         *out_renderpass = {};
 
@@ -219,7 +220,7 @@ struct BasicRenderpass
 
     static void Draw(Renderpass *in_renderpass, CommandBuffer *cmd, RendererContext *render_ctx)
     {
-        BasicRenderpassParams *data = (BasicRenderpassParams *)in_renderpass->internal_data;
+        UIRenderpassParams *data = (UIRenderpassParams *)in_renderpass->internal_data;
         BackendRenderer *in_backend = &Global::backend_renderer;
         VulkanContext *ctx = (VulkanContext *)Global::backend_renderer.user_data;
 
@@ -229,16 +230,14 @@ struct BasicRenderpass
         // Render logic
         {
             GameState *state = &Global::app.game_app.game_state;
+            float screen_w = Global::platform.window.width;
+            float screen_h = Global::platform.window.height;
+            float aspect = screen_h/ screen_w;
 
-            float aspect = (float)Global::platform.window.height / Global::platform.window.width;
-            Matrix4x4 proj = Matrix4x4::Perspective(60, 0.1f, 100, aspect);
-
-            Matrix4x4 corrective_mat = Matrix4x4({1, 0, 0, 0}, {0, -1, 0, 0}, {0, 0, 0, 0}, {0, 0, 0, 1});
-            Matrix4x4 tra_mat = Matrix4x4::Translate(state->camera_position);
-            Matrix4x4 rot_mat = Matrix4x4::Rotate(state->camera_rotation);
-            Matrix4x4 scl_mat = Matrix4x4::Scale(Vector3(1, 1, -1));
-            Matrix4x4 nonInvView = tra_mat * rot_mat;
-            Matrix4x4 view = Matrix4x4::Inverse(nonInvView) * scl_mat;
+            Matrix4x4 proj = 
+                Matrix4x4::Translate(Vector3( -1, -1 , 0 )) * Matrix4x4::Scale(Vector3( 1 /screen_w , 1 / screen_h , 1 ));
+            
+            Matrix4x4 view = Matrix4x4::Identity();
 
             // viewport setup
             {
@@ -331,7 +330,7 @@ struct BasicRenderpass
 
     static void Begin(Renderpass *in_renderpass, CommandBuffer *cmd)
     {
-        BasicRenderpassParams *data = (BasicRenderpassParams *)in_renderpass->internal_data;
+        UIRenderpassParams *data = (UIRenderpassParams *)in_renderpass->internal_data;
 
         VulkanContext *ctx = (VulkanContext *)Global::backend_renderer.user_data;
         uint32_t frame_index = ctx->current_image_index;
@@ -366,7 +365,7 @@ struct BasicRenderpass
     static void OnResize(Renderpass *in_renderpass)
     {
         VulkanContext *ctx = (VulkanContext *)Global::backend_renderer.user_data;
-        BasicRenderpassParams *data = (BasicRenderpassParams *)in_renderpass->internal_data;
+        UIRenderpassParams *data = (UIRenderpassParams *)in_renderpass->internal_data;
         Allocator alloc = Global::alloc_toolbox.heap_allocator;
 
         for (size_t i = 0; i < in_renderpass->render_targets.size; ++i)
