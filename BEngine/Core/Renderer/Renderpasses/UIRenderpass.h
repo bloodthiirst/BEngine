@@ -232,10 +232,14 @@ struct UIRenderpass
             GameState *state = &Global::app.game_app.game_state;
             float screen_w = Global::platform.window.width;
             float screen_h = Global::platform.window.height;
-            float aspect = screen_h/ screen_w;
-
-            Matrix4x4 proj = 
-                Matrix4x4::Translate(Vector3( -1, -1 , 0 )) * Matrix4x4::Scale(Vector3( 1 /screen_w , 1 / screen_h , 1 ));
+            float aspect = screen_h / screen_w;
+            
+            Matrix4x4 proj = Matrix4x4(
+                { 1 / screen_w  , 0             , 0 , -1},
+                { 0             , 1 / screen_h  , 0 , -1},                
+                { 0             , 0             , 1 , +0},
+                { 0             , 0             , 0 , +1}
+                );
             
             Matrix4x4 view = Matrix4x4::Identity();
 

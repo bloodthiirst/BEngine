@@ -12,6 +12,7 @@
 #include <String/StringUtils.h>
 #include <GameApp.h>
 #include <Serialization/JSONSerializer.h>
+#include <Serialization/XMLSerializer.h>
 #include "Defines/Defines.h"
 #include "Global/Global.h"
 #include "Application/Application.h"
@@ -136,7 +137,7 @@ int main( int argc, char** argv )
 
         StringBuilder builder = {};
         StringBuilder::Create(&builder , Global::alloc_toolbox.frame_allocator);
-        JSONSerializer::Log(&result , &builder , 0);
+        JSONSerializer::Print(&result , &builder , 0);
 
         StringBuffer buff = {};
 
@@ -144,6 +145,33 @@ int main( int argc, char** argv )
         Global::logger.Log(buff.view);
 
         assert(result.node_type == JSONNodeType::Object);
+    }
+
+    // xml test
+    {
+        StringView xml = "<div isSelected=true isVisible=\"true\">Hello<p>World</p></div>";
+
+        {
+            ArenaCheckpoint check = Global::alloc_toolbox.GetArenaCheckpoint();
+            assert(JSONSerializer::Validate(xml , Global::alloc_toolbox.frame_allocator ));
+            Global::alloc_toolbox.ResetArenaOffset(&check);
+        }
+
+
+        XMLSerializerState state = {};
+        XMLNode result = {};
+        XMLSerializer::Serialize(xml , &state , &result, Global::alloc_toolbox.heap_allocator );
+
+        StringBuilder builder = {};
+        StringBuilder::Create(&builder , Global::alloc_toolbox.frame_allocator);
+        XMLSerializer::Print(&result , &builder , 0);
+
+        StringBuffer buff = {};
+
+        StringBuilder::ToString(&builder , &buff , Global::alloc_toolbox.frame_allocator );
+        Global::logger.Log(buff.view);
+
+        assert(result.node_type == XMLNodeType::Element);
     }
 
     GameApp client_game = {};

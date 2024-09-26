@@ -6,7 +6,7 @@
 #include "../Allocators/Allocator.h"
 #include <ctype.h>
 
-enum JSONNodeType
+enum class JSONNodeType
 {
     Object,
     String,
@@ -112,7 +112,7 @@ struct JSONSerializer
         return is_valid;
     }
 
-    static void Log(JSONNode *in_node, StringBuilder *in_builder, size_t indentation)
+    static void Print(JSONNode *in_node, StringBuilder *in_builder, size_t indentation)
     {
         for (size_t i = 0; i < indentation; ++i)
         {
@@ -178,7 +178,7 @@ struct JSONSerializer
         {
             JSONNode *sub = &in_node->sub_nodes.data[i];
 
-            Log(sub, in_builder, indentation + 1);
+            Print(sub, in_builder, indentation + 1);
         }
     }
 
