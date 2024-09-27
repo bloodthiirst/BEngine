@@ -16,7 +16,7 @@ inline void CreateView(VulkanContext *context, TextureDescriptor descriptor, Tex
     createViewInfo.subresourceRange.layerCount = 1;
     createViewInfo.subresourceRange.baseMipLevel = 0;
 
-    vkCreateImageView(context->logicalDeviceInfo.handle, &createViewInfo, context->allocator, &texture->view);
+    vkCreateImageView(context->logical_device_info.handle, &createViewInfo, context->allocator, &texture->view);
 }
 
 void Texture::Destroy(Texture *texture)
@@ -25,19 +25,19 @@ void Texture::Destroy(Texture *texture)
 
     if (texture->view)
     {
-        vkDestroyImageView(context->logicalDeviceInfo.handle, texture->view, context->allocator);
+        vkDestroyImageView(context->logical_device_info.handle, texture->view, context->allocator);
         texture->view = nullptr;
     }
 
     if (texture->memory)
     {
-        vkFreeMemory(context->logicalDeviceInfo.handle, texture->memory, context->allocator);
+        vkFreeMemory(context->logical_device_info.handle, texture->memory, context->allocator);
         texture->memory = nullptr;
     }
 
     if (texture->handle)
     {
-        vkDestroyImage(context->logicalDeviceInfo.handle, texture->handle, context->allocator);
+        vkDestroyImage(context->logical_device_info.handle, texture->handle, context->allocator);
         texture->handle = nullptr;
     }
 }
@@ -66,14 +66,14 @@ void Texture::Create(TextureDescriptor descriptor, Texture *texture)
     createImageInfo.samples = VK_SAMPLE_COUNT_1_BIT;         // the number of samples per pixel , this can be changed based on if the device supports multisampling
     createImageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE; // implies that the image can only be accessed by a single queue family at a time
 
-    vkCreateImage(context->logicalDeviceInfo.handle, &createImageInfo, context->allocator, &texture->handle);
+    vkCreateImage(context->logical_device_info.handle, &createImageInfo, context->allocator, &texture->handle);
 
     VkMemoryRequirements memoryReqs = {};
 
-    vkGetImageMemoryRequirements(context->logicalDeviceInfo.handle, texture->handle, &memoryReqs);
+    vkGetImageMemoryRequirements(context->logical_device_info.handle, texture->handle, &memoryReqs);
 
     uint32_t memoryTypeIndex = 0;
-    context->physicalDeviceInfo.FindMemoryIndex(memoryReqs.memoryTypeBits, descriptor.memory_flags, &memoryTypeIndex);
+    context->physical_device_info.FindMemoryIndex(memoryReqs.memoryTypeBits, descriptor.memory_flags, &memoryTypeIndex);
 
     VkMemoryAllocateInfo allocateInfo = {};
     allocateInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
@@ -82,10 +82,10 @@ void Texture::Create(TextureDescriptor descriptor, Texture *texture)
 
     // allocate
     VkDeviceMemory gpuImageMemory = {};
-    vkAllocateMemory(context->logicalDeviceInfo.handle, &allocateInfo, context->allocator, &gpuImageMemory);
+    vkAllocateMemory(context->logical_device_info.handle, &allocateInfo, context->allocator, &gpuImageMemory);
 
     // bind
-    vkBindImageMemory(context->logicalDeviceInfo.handle, texture->handle, gpuImageMemory, 0); // todo : make the momery offset able to be non 0
+    vkBindImageMemory(context->logical_device_info.handle, texture->handle, gpuImageMemory, 0); // todo : make the momery offset able to be non 0
 
     texture->memory = gpuImageMemory;
 
@@ -103,8 +103,8 @@ void Texture::TransitionLayout(Texture *texture, CommandBuffer cmd, VkFormat for
     // and whatever comes after use the new content/memory
     VkImageMemoryBarrier barrier = {};
     barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-    barrier.srcQueueFamilyIndex = context->physicalDeviceInfo.queuesInfo.graphicsQueueIndex;
-    barrier.dstQueueFamilyIndex = context->physicalDeviceInfo.queuesInfo.graphicsQueueIndex;
+    barrier.srcQueueFamilyIndex = context->physical_device_info.queuesInfo.graphicsQueueIndex;
+    barrier.dstQueueFamilyIndex = context->physical_device_info.queuesInfo.graphicsQueueIndex;
     barrier.image = texture->handle;
     barrier.oldLayout = old_layout;
     barrier.newLayout = new_layout;

@@ -35,7 +35,7 @@ struct PhysicalDeviceRequirements
     bool present;
     bool compute;
     bool transfer;
-    bool samplerAnisotropy;
+    bool sampler_anisotropy;
     bool discreteGPU;
 };
 
@@ -61,7 +61,8 @@ const char *VK_LAYERS[] = {"VK_LAYER_KHRONOS_validation"};
 const char *DEVICE_EXTENSIONS[] =
     {
         VK_KHR_SWAPCHAIN_EXTENSION_NAME,
-        VK_KHR_MAINTENANCE1_EXTENSION_NAME};
+        VK_KHR_MAINTENANCE1_EXTENSION_NAME
+    };
 
 VKAPI_ATTR VkBool32 DebugCallback(
     VkDebugUtilsMessageSeverityFlagBitsEXT severity,
@@ -135,7 +136,7 @@ bool CreateSurface(VulkanContext *context, VkSurfaceKHR *surface)
     createInfo.hinstance = win32plat->process_handle;
     createInfo.hwnd = win32plat->window_handle;
 
-    VK_CHECK(vkCreateWin32SurfaceKHR(context->vulkanInstance, &createInfo, nullptr, surface), result);
+    VK_CHECK(vkCreateWin32SurfaceKHR(context->vulkan_instance, &createInfo, nullptr, surface), result);
 
     return result == VK_SUCCESS;
 
@@ -276,7 +277,7 @@ bool CreatePhysicalDevice(Platform *platform, VkInstance vkInstance, VkSurfaceKH
     requirements.present = true;
     requirements.compute = true;
     requirements.transfer = true;
-    requirements.samplerAnisotropy = true;
+    requirements.sampler_anisotropy = true;
     requirements.discreteGPU = true;
 
     int maxScore = 0;
@@ -303,7 +304,7 @@ bool CreatePhysicalDevice(Platform *platform, VkInstance vkInstance, VkSurfaceKH
             continue;
         }
 
-        if ((requirements.samplerAnisotropy) && (features.samplerAnisotropy == VK_FALSE))
+        if ((requirements.sampler_anisotropy) && (features.samplerAnisotropy == VK_FALSE))
         {
             Global::logger.Error("This device does not support sampler anisotropy , skippping ...");
             continue;
@@ -473,10 +474,10 @@ bool CreateGraphicsCommandPools(VulkanContext *context)
 {
     VkCommandPoolCreateInfo graphicsPoolCreate = {};
     graphicsPoolCreate.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-    graphicsPoolCreate.queueFamilyIndex = context->physicalDeviceInfo.queuesInfo.graphicsQueueIndex;
+    graphicsPoolCreate.queueFamilyIndex = context->physical_device_info.queuesInfo.graphicsQueueIndex;
     graphicsPoolCreate.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
 
-    vkCreateCommandPool(context->logicalDeviceInfo.handle, &graphicsPoolCreate, context->allocator, &context->physicalDeviceInfo.commandPoolsInfo.graphicsCommandPool);
+    vkCreateCommandPool(context->logical_device_info.handle, &graphicsPoolCreate, context->allocator, &context->physical_device_info.commandPoolsInfo.graphicsCommandPool);
     return true;
 }
 
@@ -557,7 +558,7 @@ bool Startup(BackendRenderer *in_renderer, ApplicationStartup startup)
     createInfo.enabledExtensionCount = sizeof(INSATNCE_EXTENSION) / sizeof(char *);
     createInfo.ppEnabledExtensionNames = INSATNCE_EXTENSION;
 
-    VkResult result = vkCreateInstance(&createInfo, nullptr, &ctx->vulkanInstance);
+    VkResult result = vkCreateInstance(&createInfo, nullptr, &ctx->vulkan_instance);
 
     if (result != VK_SUCCESS)
     {
@@ -583,8 +584,8 @@ bool Startup(BackendRenderer *in_renderer, ApplicationStartup startup)
     debugInfoCreate.pNext = nullptr;
     debugInfoCreate.pfnUserCallback = DebugCallback;
 
-    PFN_vkCreateDebugUtilsMessengerEXT func = (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr(ctx->vulkanInstance, "vkCreateDebugUtilsMessengerEXT");
-    func(ctx->vulkanInstance, &debugInfoCreate, ctx->allocator, &ctx->debugMessenger);
+    PFN_vkCreateDebugUtilsMessengerEXT func = (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr(ctx->vulkan_instance, "vkCreateDebugUtilsMessengerEXT");
+    func(ctx->vulkan_instance, &debugInfoCreate, ctx->allocator, &ctx->debug_messenger);
 
     Global::logger.NewLine(1);
 
@@ -611,13 +612,13 @@ bool Startup(BackendRenderer *in_renderer, ApplicationStartup startup)
 
     PhysicalDeviceInfo physicalDeviceInfo = {};
 
-    if (!CreatePhysicalDevice(&Global::platform, ctx->vulkanInstance, &ctx->surface, &physicalDeviceInfo))
+    if (!CreatePhysicalDevice(&Global::platform, ctx->vulkan_instance, &ctx->surface, &physicalDeviceInfo))
     {
         Global::logger.Error("Couldn't create Physical device ...");
         return false;
     }
 
-    ctx->physicalDeviceInfo = physicalDeviceInfo;
+    ctx->physical_device_info = physicalDeviceInfo;
 
     Global::logger.NewLine();
 
@@ -673,13 +674,13 @@ bool Startup(BackendRenderer *in_renderer, ApplicationStartup startup)
     logicalRequirements.samplerAnisotropy = true;
 
     VkDevice handle = {};
-    if (!CreateLogicalDevice(ctx->vulkanInstance, ctx->surface, &ctx->physicalDeviceInfo, &logicalRequirements, ctx->allocator, &handle))
+    if (!CreateLogicalDevice(ctx->vulkan_instance, ctx->surface, &ctx->physical_device_info, &logicalRequirements, ctx->allocator, &handle))
     {
         Global::logger.Error("Couldn't create logical device ....");
         return false;
     }
 
-    ctx->logicalDeviceInfo.handle = handle;
+    ctx->logical_device_info.handle = handle;
 
     Global::logger.Info("Logical device and queue created");
 
@@ -773,7 +774,7 @@ bool Startup(BackendRenderer *in_renderer, ApplicationStartup startup)
             return false;
         }
 
-        DArray<Renderpass>::Add(&ctx->renderPasses, renderpass);
+        DArray<Renderpass>::Add(&ctx->renderpasses, renderpass);
 
         Global::logger.Info("UI Renderpass created");
     }
@@ -801,7 +802,7 @@ bool Startup(BackendRenderer *in_renderer, ApplicationStartup startup)
         create_sampler.anisotropyEnable = VK_FALSE;
         create_sampler.mipmapMode = VkSamplerMipmapMode::VK_SAMPLER_MIPMAP_MODE_NEAREST;
 
-        vkCreateSampler(ctx->logicalDeviceInfo.handle, &create_sampler, ctx->allocator, &ctx->default_sampler);
+        vkCreateSampler(ctx->logical_device_info.handle, &create_sampler, ctx->allocator, &ctx->default_sampler);
     }
 
     Global::logger.Info("Default texture created");
@@ -850,9 +851,9 @@ void Resize(BackendRenderer *in_backend, uint32_t width, uint32_t height)
 bool StartFrame(BackendRenderer *in_backend, RendererContext *renderer_ctx)
 {
     VulkanContext *ctx = (VulkanContext *)in_backend->user_data;
-    LogicalDeviceInfo device = ctx->logicalDeviceInfo;
+    LogicalDeviceInfo device = ctx->logical_device_info;
 
-    if (ctx->recreateSwapchain)
+    if (ctx->recreate_swapchain)
     {
         VkResult result = vkDeviceWaitIdle(device.handle);
 
@@ -909,9 +910,9 @@ bool StartFrame(BackendRenderer *in_backend, RendererContext *renderer_ctx)
     cmdBuffer.Reset();
     cmdBuffer.Begin(false, false, false);
 
-    for (size_t i = 0; i < ctx->renderPasses.size; ++i)
+    for (size_t i = 0; i < ctx->renderpasses.size; ++i)
     {
-        Renderpass *curr = &ctx->renderPasses.data[i];
+        Renderpass *curr = &ctx->renderpasses.data[i];
         curr->begin(curr, &cmdBuffer);
     }
 
@@ -924,9 +925,9 @@ bool DrawFrame(BackendRenderer *in_backend, RendererContext *renderer_ctx)
     uint32_t current_index = ctx->current_image_index;
     CommandBuffer cmd = ctx->swapchain_info.graphics_cmd_buffers_per_image.data[current_index];
 
-    for (size_t i = 0; i < ctx->renderPasses.size; ++i)
+    for (size_t i = 0; i < ctx->renderpasses.size; ++i)
     {
-        Renderpass *curr = &ctx->renderPasses.data[i];
+        Renderpass *curr = &ctx->renderpasses.data[i];
         curr->draw(curr, &cmd, renderer_ctx);
     }
 
@@ -939,9 +940,9 @@ bool EndFrame(BackendRenderer *in_backend, RendererContext *rendererContext)
     VulkanContext *ctx = (VulkanContext *)in_backend->user_data;
     CommandBuffer cmd = ctx->swapchain_info.graphics_cmd_buffers_per_image.data[ctx->current_image_index];
 
-    for (size_t i = 0; i < ctx->renderPasses.size; ++i)
+    for (size_t i = 0; i < ctx->renderpasses.size; ++i)
     {
-        Renderpass *curr = &ctx->renderPasses.data[i];
+        Renderpass *curr = &ctx->renderpasses.data[i];
         curr->end(curr, &cmd);
     }
 
@@ -999,7 +1000,7 @@ bool EndFrame(BackendRenderer *in_backend, RendererContext *rendererContext)
     // this is an async (non-blocking call) that returns immidiately
     // to know if the sumbission is done on the GPU side , we will need to check the Fence passed
     // from the docs : fence is an optional handle to a fence to be signaled once all submitted command buffers have completed execution
-    vkQueueSubmit(ctx->physicalDeviceInfo.queuesInfo.graphicsQueue, 1, &info, submit_fence->handle);
+    vkQueueSubmit(ctx->physical_device_info.queuesInfo.graphicsQueue, 1, &info, submit_fence->handle);
 
     cmd.UpdateSubmitted();
 
@@ -1024,37 +1025,43 @@ bool Destroy(BackendRenderer *in_backend)
     VulkanContext *ctx = (VulkanContext *)in_backend->user_data;
     Global::event_system.Unlisten<WindowResizeEvent>(HandleWindowResize);
 
-    vkDeviceWaitIdle(ctx->logicalDeviceInfo.handle);
+    vkDeviceWaitIdle(ctx->logical_device_info.handle);
 
     Buffer::Destroy(&ctx->mesh_buffer);
     FreeList::Destroy(&ctx->mesh_freelist);
 
     DescriptorManager::Destroy(&ctx->descriptor_manager);
 
-    for (size_t i = 0; i < ctx->renderPasses.size; ++i)
+    for (size_t i = 0; i < ctx->renderpasses.size; ++i)
     {
-        Renderpass *curr = &ctx->renderPasses.data[i];
+        Renderpass *curr = &ctx->renderpasses.data[i];
         curr->on_destroy(curr);
 
-        vkDestroyRenderPass(ctx->logicalDeviceInfo.handle, curr->handle, ctx->allocator);
+        vkDestroyRenderPass(ctx->logical_device_info.handle, curr->handle, ctx->allocator);
     }
 
-    DArray<Renderpass>::Destroy(&ctx->renderPasses);
+    DArray<Renderpass>::Destroy(&ctx->renderpasses);
 
     SwapchainInfo::Destroy(ctx, &ctx->swapchain_info);
 
-    vkDestroySampler(ctx->logicalDeviceInfo.handle, ctx->default_sampler, ctx->allocator);
-    vkDestroySurfaceKHR(ctx->vulkanInstance, ctx->surface, ctx->allocator);
-    vkDestroyCommandPool(ctx->logicalDeviceInfo.handle, ctx->physicalDeviceInfo.commandPoolsInfo.graphicsCommandPool, ctx->allocator);
-    vkDestroyDevice(ctx->logicalDeviceInfo.handle, ctx->allocator);
+    vkDestroySampler(ctx->logical_device_info.handle, ctx->default_sampler, ctx->allocator);
+    vkDestroySurfaceKHR(ctx->vulkan_instance, ctx->surface, ctx->allocator);
+    vkDestroyCommandPool(ctx->logical_device_info.handle, ctx->physical_device_info.commandPoolsInfo.graphicsCommandPool, ctx->allocator);
+    vkDestroyDevice(ctx->logical_device_info.handle, ctx->allocator);
 
     return true;
+}
+
+inline void WaitIdle(BackendRenderer* in_renderer)
+{
+    VulkanContext* ctx = (VulkanContext*) in_renderer->user_data;
+    vkDeviceWaitIdle(ctx->logical_device_info.handle);
 }
 
 void VulkanBackendRenderer::Create(BackendRenderer *out_renderer)
 {
     VulkanContext *ctx = Global::alloc_toolbox.HeapAlloc<VulkanContext>();
-    DArray<Renderpass>::Create(3, &ctx->renderPasses, Global::alloc_toolbox.heap_allocator);
+    DArray<Renderpass>::Create(3, &ctx->renderpasses, Global::alloc_toolbox.heap_allocator);
 
     out_renderer->user_data = ctx;
     out_renderer->startup = Startup;
@@ -1063,4 +1070,5 @@ void VulkanBackendRenderer::Create(BackendRenderer *out_renderer)
     out_renderer->end_frame = EndFrame;
     out_renderer->draw_frame = DrawFrame;
     out_renderer->destroy = Destroy;
+    out_renderer->wait_idle = WaitIdle;
 }

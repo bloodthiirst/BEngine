@@ -97,8 +97,8 @@ public:
         }
 
         // else shift the "right" side 1 spot to leave place for the new item to be inserted
-        void *src = in_arr->data + (sizeof(T) * index);
-        void *dst = (char *)src + sizeof(T);
+        void *src = (void*) &in_arr->data[index];
+        void *dst = ((char*)src) + sizeof(T);
         size_t size = (in_arr->size - index) * sizeof(T);
         CoreContext::mem_copy(src, dst, size);
 
@@ -210,7 +210,8 @@ public:
         if (count == 0)
             return;
 
-        size_t mem_to_move = (in_arr->size - count - index) * sizeof(T);
+        const size_t elem_size = sizeof(T);
+        size_t mem_to_move = (in_arr->size - count - index) * elem_size;
         CoreContext::mem_move(&in_arr->data[index + count], &in_arr->data[index], mem_to_move);
         in_arr->size -= count;
     }

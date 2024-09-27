@@ -82,12 +82,12 @@ Texture CreateColorTexture()
         Global::alloc_toolbox.HeapFree<Color>(colors);
 
         CommandBuffer cmd = {};
-        VkCommandPool pool = ctx->physicalDeviceInfo.commandPoolsInfo.graphicsCommandPool;
+        VkCommandPool pool = ctx->physical_device_info.commandPoolsInfo.graphicsCommandPool;
         CommandBuffer::SingleUseAllocateBegin(pool, &cmd);
         Texture::TransitionLayout(&tex, cmd, VkFormat::VK_FORMAT_R32G32B32A32_SFLOAT, VkImageLayout::VK_IMAGE_LAYOUT_UNDEFINED, VkImageLayout::VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
         Texture::CopyFromBuffer(copy_buffer.handle, &tex, cmd);
         Texture::TransitionLayout(&tex, cmd, VkFormat::VK_FORMAT_R32G32B32A32_SFLOAT, VkImageLayout::VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VkImageLayout::VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-        CommandBuffer::SingleUseEndSubmit(pool, &cmd, ctx->physicalDeviceInfo.queuesInfo.graphicsQueue);
+        CommandBuffer::SingleUseEndSubmit(pool, &cmd, ctx->physical_device_info.queuesInfo.graphicsQueue);
     }
     Buffer::Destroy(&copy_buffer);
 
@@ -146,12 +146,12 @@ Texture CreateGridTexture()
         Global::alloc_toolbox.HeapFree<Color>(colors);
 
         CommandBuffer cmd = {};
-        VkCommandPool pool = ctx->physicalDeviceInfo.commandPoolsInfo.graphicsCommandPool;
+        VkCommandPool pool = ctx->physical_device_info.commandPoolsInfo.graphicsCommandPool;
         CommandBuffer::SingleUseAllocateBegin(pool, &cmd);
         Texture::TransitionLayout(&tex, cmd, VkFormat::VK_FORMAT_R32G32B32A32_SFLOAT, VkImageLayout::VK_IMAGE_LAYOUT_UNDEFINED, VkImageLayout::VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
         Texture::CopyFromBuffer(copy_buffer.handle, &tex, cmd);
         Texture::TransitionLayout(&tex, cmd, VkFormat::VK_FORMAT_R32G32B32A32_SFLOAT, VkImageLayout::VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VkImageLayout::VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-        CommandBuffer::SingleUseEndSubmit(pool, &cmd, ctx->physicalDeviceInfo.queuesInfo.graphicsQueue);
+        CommandBuffer::SingleUseEndSubmit(pool, &cmd, ctx->physical_device_info.queuesInfo.graphicsQueue);
     }
     Buffer::Destroy(&copy_buffer);
 
@@ -313,6 +313,8 @@ void OnRender(GameApp *game_app, RendererContext *render_ctx, float delta_time)
 void Destroy(GameApp *game_app)
 {
     CustomGameState *state = (CustomGameState *)game_app->user_data;
+
+    Global::backend_renderer.wait_idle(&Global::backend_renderer);
     
     Mesh3D::Destroy(&state->plane_mesh);
     Texture::Destroy(&state->texture);

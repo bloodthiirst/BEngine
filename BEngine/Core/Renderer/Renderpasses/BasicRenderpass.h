@@ -87,7 +87,7 @@ struct BasicRenderpass
 
         // depth attachement
         {
-            depthAttachmentDesc.format = ctx->physicalDeviceInfo.depthFormat;
+            depthAttachmentDesc.format = ctx->physical_device_info.depthFormat;
             depthAttachmentDesc.samples = VK_SAMPLE_COUNT_1_BIT;
 
             // loadOp define what to do to the texture when we load it
@@ -152,7 +152,7 @@ struct BasicRenderpass
         createInfo.pNext = 0;
 
         VkRenderPass vkRenderpass = {};
-        VK_CHECK(vkCreateRenderPass(ctx->logicalDeviceInfo.handle, &createInfo, ctx->allocator, &vkRenderpass), result);
+        VK_CHECK(vkCreateRenderPass(ctx->logical_device_info.handle, &createInfo, ctx->allocator, &vkRenderpass), result);
 
         if (result != VK_SUCCESS)
         {

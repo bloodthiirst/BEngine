@@ -16,7 +16,7 @@ void DescriptorManager::Destroy( DescriptorManager* in_manager )
     {
         DescriptorPoolInfo pool = in_manager->pools_map.all_values.data[i];
 
-        vkDestroyDescriptorPool( context->logicalDeviceInfo.handle, pool.pool_handle, VK_NULL_HANDLE );
+        vkDestroyDescriptorPool( context->logical_device_info.handle, pool.pool_handle, VK_NULL_HANDLE );
     }
 
     HMap<DescriptorLayoutInfo, DescriptorPoolInfo>::Destroy( &in_manager->pools_map );
@@ -62,7 +62,7 @@ bool DescriptorManager::Allocate( DescriptorLayoutInfo layout, DescriptorManager
             poolCreate.maxSets = context->swapchain_info.imagesCount * (uint32_t) in_manager->init_sets_count;
 
             VkDescriptorPool pool = {};
-            vkCreateDescriptorPool( context->logicalDeviceInfo.handle, &poolCreate, context->allocator, &pool );
+            vkCreateDescriptorPool( context->logical_device_info.handle, &poolCreate, context->allocator, &pool );
 
             pool_to_use.pool_handle = pool;
             pool_to_use.allocation_count = 0;

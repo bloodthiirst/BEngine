@@ -20,16 +20,16 @@
 struct BAPI VulkanContext
 {
 #if defined(_DEBUG)
-	VkDebugUtilsMessengerEXT debugMessenger;
+	VkDebugUtilsMessengerEXT debug_messenger;
 #endif
 	VkAllocationCallbacks* allocator;
-	VkInstance vulkanInstance;
+	VkInstance vulkan_instance;
 	VkSurfaceKHR surface;
 
-	LogicalDeviceInfo logicalDeviceInfo;
-	PhysicalDeviceInfo physicalDeviceInfo;
+	LogicalDeviceInfo logical_device_info;
+	PhysicalDeviceInfo physical_device_info;
 	SwapchainInfo swapchain_info;
-    DArray<Renderpass> renderPasses;
+    DArray<Renderpass> renderpasses;
     
     DescriptorManager descriptor_manager;
 
@@ -48,7 +48,7 @@ struct BAPI VulkanContext
 	/// Always between 0 and swapchain.maxFramesInFlight 
 	/// </summary>
 	uint32_t current_frame;
-	bool recreateSwapchain;
+	bool recreate_swapchain;
 
 	Vector2Int frameBufferSize;
     uint32_t frameBufferSizeCurrentGeneration;

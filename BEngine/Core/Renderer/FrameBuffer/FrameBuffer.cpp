@@ -15,13 +15,13 @@ void FrameBuffer::Create ( VulkanContext* context, Renderpass* renderpass, Vecto
     createInfo.height = dimensions.y;
     createInfo.layers = 1;
 
-    vkCreateFramebuffer ( context->logicalDeviceInfo.handle, &createInfo, context->allocator, &outFramebuffer->handle );
+    vkCreateFramebuffer ( context->logical_device_info.handle, &createInfo, context->allocator, &outFramebuffer->handle );
 }
 
 
 void FrameBuffer::Destroy ( VulkanContext * context, FrameBuffer * outFramebuffer )
 {
-    vkDestroyFramebuffer ( context->logicalDeviceInfo.handle, outFramebuffer->handle, context->allocator );
+    vkDestroyFramebuffer ( context->logical_device_info.handle, outFramebuffer->handle, context->allocator );
     DArray< VkImageView>::Destroy(&outFramebuffer->attatchments);
     outFramebuffer->handle = nullptr;
     outFramebuffer->renderpass = nullptr;

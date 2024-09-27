@@ -73,40 +73,47 @@ struct FreeList
         assert(insert_index != -1);
 
         uint32_t start = in_node.start;
-        uint32_t start_index = (uint32_t)insert_index;
-
         DArray<Node>::Insert(&in_freelist->free_nodes, in_node, insert_index);
 
-        // merge backwards
-        for (uint32_t i = start_index; i != -1; i--)
-        {
-            Node *curr = &in_freelist->free_nodes.data[i];
-
-            if ((curr->start + curr->size) == start)
-            {
-                start = curr->start;
-                start_index = i;
-            }
-        }
+        uint32_t start_index = (uint32_t)insert_index;
         uint32_t size = in_node.size;
         uint32_t count = 0;
 
+        // merge backwards
+        for (uint32_t i = start_index - 1; i != -1; i--)
+        {
+            Node *curr = &in_freelist->free_nodes.data[i];
+
+            if ((curr->start + curr->size) != start)
+            {
+                break;
+            }
+
+            start = curr->start;
+            start_index = i;
+            size += curr->size;
+            count++;
+        }
+        
+        count++;
+
         // merge forward
         {
-            for (size_t end = start_index; end < in_freelist->free_nodes.size - 1; end++)
+            for (size_t end = insert_index; end < in_freelist->free_nodes.size - 1; end++)
             {
                 Node *curr = &in_freelist->free_nodes.data[end];
                 Node *next = &in_freelist->free_nodes.data[end + 1];
 
                 if ((curr->start + curr->size) != next->start)
+                {
                     break;
-
-                size += curr->size;
+                }
+                size += next->size;
                 count++;
             }
         }
 
-        const uint32_t remove_range = count;
+        const uint32_t remove_range = count - 1;
         const uint32_t remove_index = start_index + 1;
 
         if (remove_index < in_freelist->free_nodes.size)
@@ -208,33 +215,33 @@ private:
 
         size_t node_end = (in_node.start + in_node.size);
 
-        while (low <= high)
+        while (low <= high && high != -1)
         {
-            size_t index = low + ((high - low) / 2);
+            size_t middle = low + ((high - low) / 2);
 
-            Node *curr = &in_nodes->data[index];
+            Node *curr = &in_nodes->data[middle];
 
             if (curr->start == node_end)
             {
-                best_index = index;
+                best_index = middle;
                 break;
             }
 
             if ((curr->start + curr->size) == in_node.start)
             {
-                best_index = index + 1;
+                best_index = middle + 1;
                 break;
             }
 
             if (in_node.start < curr->start)
             {
-                best_index = index;
-                high = index - 1;
+                best_index = middle;
+                high = middle - 1;
             }
             else
             {
-                best_index = index + 1;
-                low = index + 1;
+                best_index = middle + 1;
+                low = middle + 1;
             }
         }
 

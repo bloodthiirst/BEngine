@@ -14,7 +14,7 @@ void Fence::Create ( VulkanContext* context, bool isSignaled, Fence* outFence )
         createInfo.flags = VkFenceCreateFlagBits::VK_FENCE_CREATE_SIGNALED_BIT;
     }
 
-    vkCreateFence ( context->logicalDeviceInfo.handle, &createInfo, context->allocator, &outFence->handle );
+    vkCreateFence ( context->logical_device_info.handle, &createInfo, context->allocator, &outFence->handle );
     outFence->isSignaled = isSignaled;
 }
 
@@ -22,7 +22,7 @@ void Fence::Destroy ( VulkanContext* context, Fence* outFence )
 {
     if ( outFence->handle != 0 )
     {
-        vkDestroyFence ( context->logicalDeviceInfo.handle, outFence->handle, context->allocator );
+        vkDestroyFence ( context->logical_device_info.handle, outFence->handle, context->allocator );
         outFence->handle = 0;
     }
 
@@ -34,7 +34,7 @@ bool Fence::Wait ( VulkanContext* context, uint64_t timeoutMs )
     if ( isSignaled )
         return true;
 
-    VkResult result = vkWaitForFences ( context->logicalDeviceInfo.handle, 1, &handle, true, timeoutMs );
+    VkResult result = vkWaitForFences ( context->logical_device_info.handle, 1, &handle, true, timeoutMs );
 
     switch ( result )
     {
@@ -78,7 +78,7 @@ void Fence::Reset ( VulkanContext* context )
 {
     if ( isSignaled )
     {
-        vkResetFences ( context->logicalDeviceInfo.handle, 1, &handle );
+        vkResetFences ( context->logical_device_info.handle, 1, &handle );
         isSignaled = false;
     }
     

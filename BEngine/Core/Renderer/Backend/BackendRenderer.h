@@ -17,7 +17,7 @@ struct BackendRenderer
     Func<bool, BackendRenderer*, RendererContext*> start_frame;
     Func<bool, BackendRenderer*, RendererContext*> draw_frame;
     Func<bool, BackendRenderer*, RendererContext*> end_frame;
-
     Func<bool, BackendRenderer*> destroy;
+    ActionParams<BackendRenderer*> wait_idle;
 };
 

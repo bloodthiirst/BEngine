@@ -16,7 +16,7 @@ bool Shader::Destroy(VulkanContext *context, Shader *in_shader)
 
     for (size_t i = 0; i < in_shader->descriptor_set_layouts.size; ++i)
     {
-        vkDestroyDescriptorSetLayout(context->logicalDeviceInfo.handle, in_shader->descriptor_set_layouts.data[i], context->allocator);
+        vkDestroyDescriptorSetLayout(context->logical_device_info.handle, in_shader->descriptor_set_layouts.data[i], context->allocator);
     }
 
     DArray<VkDescriptorSetLayout>::Destroy(&in_shader->descriptor_set_layouts);
@@ -30,7 +30,7 @@ bool Shader::Destroy(VulkanContext *context, Shader *in_shader)
         if (*shader_mod == VK_NULL_HANDLE)
             continue;
 
-        vkDestroyShaderModule(context->logicalDeviceInfo.handle, *shader_mod, context->allocator);
+        vkDestroyShaderModule(context->logical_device_info.handle, *shader_mod, context->allocator);
         *shader_mod = VK_NULL_HANDLE;
     }
 
@@ -62,7 +62,7 @@ void Shader::SetBuffer(VulkanContext *context, Shader *in_shader, uint32_t descr
     writeDescriptor.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
     writeDescriptor.pBufferInfo = &bufferInfo;
 
-    vkUpdateDescriptorSets(context->logicalDeviceInfo.handle, 1, &writeDescriptor, 0, nullptr);
+    vkUpdateDescriptorSets(context->logical_device_info.handle, 1, &writeDescriptor, 0, nullptr);
 }
 
 void Shader::SetTexture(VulkanContext *context, Shader *in_shader, uint32_t descriptor_set_index, Texture *in_texture)
@@ -84,7 +84,7 @@ void Shader::SetTexture(VulkanContext *context, Shader *in_shader, uint32_t desc
     writeDescriptor.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
     writeDescriptor.pImageInfo = &image_info;
 
-    vkUpdateDescriptorSets(context->logicalDeviceInfo.handle, 1, &writeDescriptor, 0, nullptr);
+    vkUpdateDescriptorSets(context->logical_device_info.handle, 1, &writeDescriptor, 0, nullptr);
 }
 
 bool Shader::Bind(VulkanContext *context, Shader *in_shader)

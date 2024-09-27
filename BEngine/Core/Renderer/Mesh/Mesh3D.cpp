@@ -4,14 +4,24 @@
 #include "Mesh3D.h"
 #include "Vertex3D.h"
 
+void LogFreeList(FreeList lst)
+{
+    for(size_t i = 0; i < lst.free_nodes.size; ++i)
+    {
+        FreeList::Node curr = lst.free_nodes.data[i];
+        StringBuffer str = StringUtils::Format(Global::alloc_toolbox.frame_allocator , "start : {} , size : {}" , curr.start , curr.size);
+        Global::logger.Log(str.view);
+    }
+}
+
 void Mesh3D::Create(Mesh3D *out_mesh, ArrayView<Vertex3D> verts, ArrayView<uint32_t> indicies, Allocator alloc)
 {
     *out_mesh = {};
     out_mesh->alloc = alloc;
 
     VulkanContext *ctx = (VulkanContext *)Global::backend_renderer.user_data;
-    VkCommandPool pool = ctx->physicalDeviceInfo.commandPoolsInfo.graphicsCommandPool;
-    VkQueue queue = ctx->physicalDeviceInfo.queuesInfo.graphicsQueue;
+    VkCommandPool pool = ctx->physical_device_info.commandPoolsInfo.graphicsCommandPool;
+    VkQueue queue = ctx->physical_device_info.queuesInfo.graphicsQueue;
 
     DArray<Vertex3D>::Create(verts.data, &out_mesh->vertices, verts.size, out_mesh->alloc);
     DArray<uint32_t>::Create(indicies.data, &out_mesh->indicies, indicies.size, out_mesh->alloc);
@@ -26,13 +36,15 @@ void Mesh3D::Create(Mesh3D *out_mesh, ArrayView<Vertex3D> verts, ArrayView<uint3
     UploadDataRange(ctx, pool, {}, queue, &ctx->mesh_buffer, out_mesh->indicies_block.start, out_mesh->indicies_block.size, indicies.data);
 }
 
+
+
 void Mesh3D::Destroy(Mesh3D *inout_mesh)
 {
     VulkanContext *ctx = (VulkanContext *)Global::backend_renderer.user_data;
 
-    FreeList::FreeBlock(&ctx->mesh_freelist, inout_mesh->verticies_block);
     FreeList::FreeBlock(&ctx->mesh_freelist, inout_mesh->indicies_block);
-
+    FreeList::FreeBlock(&ctx->mesh_freelist, inout_mesh->verticies_block);
+    
     DArray<Vertex3D>::Destroy(&inout_mesh->vertices);
     DArray<uint32_t>::Destroy(&inout_mesh->indicies);
 

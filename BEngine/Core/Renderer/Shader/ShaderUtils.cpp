@@ -32,7 +32,7 @@ void ShaderUtils::CreateDescriptorFromInfo( DescriptorLayoutInfo* in_info, VkDes
     createLayout.bindingCount = (uint32_t) tmp_bindings.size;
     createLayout.pBindings = tmp_bindings.data;
 
-    vkCreateDescriptorSetLayout( context->logicalDeviceInfo.handle, &createLayout, context->allocator, out_layout );
+    vkCreateDescriptorSetLayout( context->logical_device_info.handle, &createLayout, context->allocator, out_layout );
 
     Global::alloc_toolbox.ResetArenaOffset( &arena );
 }

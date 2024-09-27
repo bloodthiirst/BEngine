@@ -60,7 +60,7 @@ void CommandBuffer::Allocate(VkCommandPool pool, bool isPrimary, CommandBuffer* 
 
     out_command_buffer->state = CommandBufferState::NoAllocated;
 
-    vkAllocateCommandBuffers ( context->logicalDeviceInfo.handle, &allocateInfo, &out_command_buffer->handle );
+    vkAllocateCommandBuffers ( context->logical_device_info.handle, &allocateInfo, &out_command_buffer->handle );
 
     out_command_buffer->state = CommandBufferState::Ready;
 }
@@ -69,7 +69,7 @@ void CommandBuffer::Free (VkCommandPool pool, CommandBuffer* outCommandBuffer )
 {
     VulkanContext *context = (VulkanContext *)Global::backend_renderer.user_data;
 
-    vkFreeCommandBuffers ( context->logicalDeviceInfo.handle, pool, 1, &outCommandBuffer->handle );
+    vkFreeCommandBuffers ( context->logical_device_info.handle, pool, 1, &outCommandBuffer->handle );
     outCommandBuffer->handle = 0;
     outCommandBuffer->state = CommandBufferState::NoAllocated;
 }

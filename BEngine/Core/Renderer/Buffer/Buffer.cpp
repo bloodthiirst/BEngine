@@ -17,7 +17,7 @@ bool Buffer::Create(BufferDescriptor descriptor, bool bind_on_create, Buffer* ou
     // this means that this buffer will be used with only one queue
     createInfo.sharingMode = descriptor.sharing_mode;
 
-    VkResult res = vkCreateBuffer( context->logicalDeviceInfo.handle, &createInfo, context->allocator, &out_buffer->handle );
+    VkResult res = vkCreateBuffer( context->logical_device_info.handle, &createInfo, context->allocator, &out_buffer->handle );
 
     if (res != VK_SUCCESS)
     {
@@ -25,10 +25,10 @@ bool Buffer::Create(BufferDescriptor descriptor, bool bind_on_create, Buffer* ou
         return false;
     }
     VkMemoryRequirements memReqs = {};
-    vkGetBufferMemoryRequirements( context->logicalDeviceInfo.handle, out_buffer->handle, &memReqs );
+    vkGetBufferMemoryRequirements( context->logical_device_info.handle, out_buffer->handle, &memReqs );
 
 
-    if (!context->physicalDeviceInfo.FindMemoryIndex( memReqs.memoryTypeBits, descriptor.memoryPropertyFlags, &out_buffer->memoryIndex ))
+    if (!context->physical_device_info.FindMemoryIndex( memReqs.memoryTypeBits, descriptor.memoryPropertyFlags, &out_buffer->memoryIndex ))
     {
         Global::logger.Error( "Couldn't find appropriate memory index for buffer" );
         return false;
@@ -40,7 +40,7 @@ bool Buffer::Create(BufferDescriptor descriptor, bool bind_on_create, Buffer* ou
     allocateInfo.memoryTypeIndex = out_buffer->memoryIndex;
 
 
-    res = vkAllocateMemory( context->logicalDeviceInfo.handle, &allocateInfo, context->allocator, &out_buffer->memory );
+    res = vkAllocateMemory( context->logical_device_info.handle, &allocateInfo, context->allocator, &out_buffer->memory );
 
     if (res != VK_SUCCESS)
     {
@@ -64,9 +64,9 @@ bool Buffer::Destroy(Buffer* out_buffer )
 {
     VulkanContext *context = (VulkanContext *)Global::backend_renderer.user_data;
 
-    vkFreeMemory( context->logicalDeviceInfo.handle, out_buffer->memory, context->allocator );
+    vkFreeMemory( context->logical_device_info.handle, out_buffer->memory, context->allocator );
 
-    vkDestroyBuffer( context->logicalDeviceInfo.handle, out_buffer->handle, context->allocator );
+    vkDestroyBuffer( context->logical_device_info.handle, out_buffer->handle, context->allocator );
 
     *out_buffer = {};
 
@@ -92,7 +92,7 @@ bool Buffer::Lock(uint32_t offset, uint32_t size, VkMemoryMapFlags flags, Buffer
 {
     VulkanContext *context = (VulkanContext *)Global::backend_renderer.user_data;
 
-    VkResult res = vkMapMemory( context->logicalDeviceInfo.handle, in_buffer->memory, offset, size, flags, data );
+    VkResult res = vkMapMemory( context->logical_device_info.handle, in_buffer->memory, offset, size, flags, data );
     in_buffer->isLocked = true;
 
     return true;
@@ -102,7 +102,7 @@ bool Buffer::Unlock(Buffer* in_buffer )
 {
     VulkanContext *context = (VulkanContext *)Global::backend_renderer.user_data;
 
-    vkUnmapMemory( context->logicalDeviceInfo.handle, in_buffer->memory );
+    vkUnmapMemory( context->logical_device_info.handle, in_buffer->memory );
     in_buffer->isLocked = false;
     return true;
 }
@@ -146,11 +146,11 @@ bool Buffer::Resize(uint32_t new_size, VkQueue queue, VkCommandPool pool, Buffer
 
     Copy(pool, {}, queue, in_buffer, 0, &new_buffer, 0, in_buffer->descriptor.size );
 
-    vkDeviceWaitIdle( context->logicalDeviceInfo.handle );
+    vkDeviceWaitIdle( context->logical_device_info.handle );
 
-    vkFreeMemory( context->logicalDeviceInfo.handle, in_buffer->memory, context->allocator );
+    vkFreeMemory( context->logical_device_info.handle, in_buffer->memory, context->allocator );
 
-    vkDestroyBuffer( context->logicalDeviceInfo.handle, in_buffer->handle, context->allocator );
+    vkDestroyBuffer( context->logical_device_info.handle, in_buffer->handle, context->allocator );
 
     in_buffer->descriptor.size = new_size;
     in_buffer->memory = new_buffer.memory;
@@ -163,7 +163,7 @@ bool Buffer::Bind(uint32_t offset, Buffer* in_buffer )
 {
     VulkanContext *context = (VulkanContext *)Global::backend_renderer.user_data;
 
-    VK_CHECK(vkBindBufferMemory( context->logicalDeviceInfo.handle, in_buffer->handle, in_buffer->memory, offset ) , res);
+    VK_CHECK(vkBindBufferMemory( context->logical_device_info.handle, in_buffer->handle, in_buffer->memory, offset ) , res);
 
     return res == VK_SUCCESS;
 }

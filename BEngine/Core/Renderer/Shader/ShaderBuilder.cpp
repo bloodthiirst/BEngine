@@ -203,7 +203,7 @@ bool ShaderBuilder::Build(VulkanContext *context, Renderpass *in_renderpass, Sha
             info.pCode = (uint32_t *)shader_stage->code.buffer;
 
             VkShaderModule shader_handle = {};
-            VkResult res = vkCreateShaderModule(context->logicalDeviceInfo.handle, &info, context->allocator, &shader_handle);
+            VkResult res = vkCreateShaderModule(context->logical_device_info.handle, &info, context->allocator, &shader_handle);
 
             if (res != VK_SUCCESS)
             {
@@ -251,7 +251,7 @@ bool ShaderBuilder::Build(VulkanContext *context, Renderpass *in_renderpass, Sha
                 alloc_descriptor.pSetLayouts = layout;
 
                 VkDescriptorSet descriptor_set = {};
-                vkAllocateDescriptorSets(context->logicalDeviceInfo.handle, &alloc_descriptor, &descriptor_set);
+                vkAllocateDescriptorSets(context->logical_device_info.handle, &alloc_descriptor, &descriptor_set);
 
                 DArray<VkDescriptorSet>::Add(descriptor_sets, descriptor_set);
             }

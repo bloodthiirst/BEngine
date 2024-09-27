@@ -21,7 +21,7 @@ bool QueryDepthBufferFormat( VulkanContext* context, VkFormat* outDepthFormat )
     for ( uint32_t i = 0; i < context->swapchain_info.imagesCount; ++i )
     {
         VkFormatProperties formatProps = {};
-        vkGetPhysicalDeviceFormatProperties( context->physicalDeviceInfo.handle, depthFormats[i], &formatProps );
+        vkGetPhysicalDeviceFormatProperties( context->physical_device_info.handle, depthFormats[i], &formatProps );
 
         VkFormat curr = depthFormats[i];
 
@@ -85,7 +85,7 @@ bool AllocateResource( VulkanContext* context, SwapchainInfo* outSwapchain )
     DArray<CommandBuffer>::Create( image_count, &outSwapchain->graphics_cmd_buffers_per_image, alloc );
     outSwapchain->graphics_cmd_buffers_per_image.size = image_count;
 
-    VkResult result = vkGetSwapchainImagesKHR( context->logicalDeviceInfo.handle, outSwapchain->handle, &outSwapchain->imagesCount, outSwapchain->images.data );
+    VkResult result = vkGetSwapchainImagesKHR( context->logical_device_info.handle, outSwapchain->handle, &outSwapchain->imagesCount, outSwapchain->images.data );
 
     // create imageViews for swapchain images
     for ( uint32_t i = 0; i < outSwapchain->imagesCount; ++i )
@@ -101,23 +101,23 @@ bool AllocateResource( VulkanContext* context, SwapchainInfo* outSwapchain )
         imageViewCreateInfo.subresourceRange.levelCount = 1;
         imageViewCreateInfo.subresourceRange.baseMipLevel = 0;
 
-        VkResult imageViewResult = vkCreateImageView( context->logicalDeviceInfo.handle, &imageViewCreateInfo, context->allocator, &outSwapchain->imageViews.data[i] );
+        VkResult imageViewResult = vkCreateImageView( context->logical_device_info.handle, &imageViewCreateInfo, context->allocator, &outSwapchain->imageViews.data[i] );
     }
 
     // depth buffer format
     {
-        if ( !QueryDepthBufferFormat( context, &context->physicalDeviceInfo.depthFormat ) )
+        if ( !QueryDepthBufferFormat( context, &context->physical_device_info.depthFormat ) )
         {
-            context->physicalDeviceInfo.depthFormat = VK_FORMAT_UNDEFINED;
+            context->physical_device_info.depthFormat = VK_FORMAT_UNDEFINED;
             Global::logger.Fatal( "Couldn't find depth format" );
             return false;
         }
 
         // create depth buffer image
         TextureDescriptor descriptor = {};
-        descriptor.format = context->physicalDeviceInfo.depthFormat;
-        descriptor.width = context->physicalDeviceInfo.swapchainSupportInfo.capabilities.currentExtent.width;
-        descriptor.height = context->physicalDeviceInfo.swapchainSupportInfo.capabilities.currentExtent.height;
+        descriptor.format = context->physical_device_info.depthFormat;
+        descriptor.width = context->physical_device_info.swapchainSupportInfo.capabilities.currentExtent.width;
+        descriptor.height = context->physical_device_info.swapchainSupportInfo.capabilities.currentExtent.height;
         descriptor.image_type = VK_IMAGE_TYPE_2D;
         descriptor.tiling = VK_IMAGE_TILING_OPTIMAL;
         descriptor.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
@@ -137,10 +137,10 @@ bool AllocateResource( VulkanContext* context, SwapchainInfo* outSwapchain )
 
             if ( curr->handle != VK_NULL_HANDLE )
             {
-                CommandBuffer::Free( context->physicalDeviceInfo.commandPoolsInfo.graphicsCommandPool, curr );
+                CommandBuffer::Free( context->physical_device_info.commandPoolsInfo.graphicsCommandPool, curr );
             }
 
-            CommandBuffer::Allocate( context->physicalDeviceInfo.commandPoolsInfo.graphicsCommandPool, true, curr );
+            CommandBuffer::Allocate( context->physical_device_info.commandPoolsInfo.graphicsCommandPool, true, curr );
         }
     }
 
@@ -164,10 +164,10 @@ bool AllocateResource( VulkanContext* context, SwapchainInfo* outSwapchain )
             createInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 
             // create semaphore for image available
-            vkCreateSemaphore( context->logicalDeviceInfo.handle, &createInfo, context->allocator, &outSwapchain->image_presentation_complete_semaphores.data[i] );
+            vkCreateSemaphore( context->logical_device_info.handle, &createInfo, context->allocator, &outSwapchain->image_presentation_complete_semaphores.data[i] );
 
             // create semaphore for queue complete
-            vkCreateSemaphore( context->logicalDeviceInfo.handle, &createInfo, context->allocator, &outSwapchain->finished_rendering_semaphores.data[i] );
+            vkCreateSemaphore( context->logical_device_info.handle, &createInfo, context->allocator, &outSwapchain->finished_rendering_semaphores.data[i] );
 
             // the fences are initialized to true so that tha app doesn't block waiting for the first frame
             Fence::Create( context, true, &outSwapchain->cmd_buffer_done_execution_per_frame.data[i] );
@@ -186,7 +186,7 @@ void FreeResources( VulkanContext* context, SwapchainInfo* out_swapchain )
     {
         CommandBuffer* curr = &out_swapchain->graphics_cmd_buffers_per_image.data[i];
 
-        CommandBuffer::Free( context->physicalDeviceInfo.commandPoolsInfo.graphicsCommandPool, curr );
+        CommandBuffer::Free( context->physical_device_info.commandPoolsInfo.graphicsCommandPool, curr );
     }
 
     DArray<CommandBuffer>::Clear( &out_swapchain->graphics_cmd_buffers_per_image );
@@ -203,13 +203,13 @@ void FreeResources( VulkanContext* context, SwapchainInfo* out_swapchain )
     {
         if ( out_swapchain->image_presentation_complete_semaphores.data[i] )
         {
-            vkDestroySemaphore( context->logicalDeviceInfo.handle, out_swapchain->image_presentation_complete_semaphores.data[i], context->allocator );
+            vkDestroySemaphore( context->logical_device_info.handle, out_swapchain->image_presentation_complete_semaphores.data[i], context->allocator );
             out_swapchain->image_presentation_complete_semaphores.data[i] = nullptr;
         }
 
         if ( out_swapchain->finished_rendering_semaphores.data[i] )
         {
-            vkDestroySemaphore( context->logicalDeviceInfo.handle, out_swapchain->finished_rendering_semaphores.data[i], context->allocator );
+            vkDestroySemaphore( context->logical_device_info.handle, out_swapchain->finished_rendering_semaphores.data[i], context->allocator );
             out_swapchain->finished_rendering_semaphores.data[i] = nullptr;
         }
 
@@ -220,7 +220,7 @@ void FreeResources( VulkanContext* context, SwapchainInfo* out_swapchain )
     {
         for ( uint32_t i = 0; i < out_swapchain->imageViews.size; ++i )
         {
-            vkDestroyImageView( context->logicalDeviceInfo.handle, out_swapchain->imageViews.data[i], context->allocator );
+            vkDestroyImageView( context->logical_device_info.handle, out_swapchain->imageViews.data[i], context->allocator );
         }
 
         DArray<VkImageView>::Clear( &context->swapchain_info.imageViews );
@@ -235,14 +235,14 @@ void FreeResources( VulkanContext* context, SwapchainInfo* out_swapchain )
 bool SwapchainInfo::Destroy( VulkanContext* ctx, SwapchainInfo* out_swapchain )
 {
     FreeResources(ctx , out_swapchain);
-    vkDestroySwapchainKHR(ctx->logicalDeviceInfo.handle , out_swapchain->handle , ctx->allocator);
+    vkDestroySwapchainKHR(ctx->logical_device_info.handle , out_swapchain->handle , ctx->allocator);
     return true;
 }
 
 bool CreateInternal( VulkanContext* ctx, SwapchainCreateDescription description , VkSwapchainKHR old_swapchain , SwapchainInfo* out_swapchain )
 {
     // query the swapchain support
-    QuerySwapchainSupport( ctx->physicalDeviceInfo.handle, ctx->surface, &ctx->physicalDeviceInfo.swapchainSupportInfo );
+    QuerySwapchainSupport( ctx->physical_device_info.handle, ctx->surface, &ctx->physical_device_info.swapchainSupportInfo );
 
     // we select the image format that the swapchain's image will use
     // first we try to get format => R8G8B8A8 and colorSpace =>  VK_COLOR_SPACE_SRGB_NONLINEAR_KHR
@@ -250,9 +250,9 @@ bool CreateInternal( VulkanContext* ctx, SwapchainCreateDescription description 
     {
         bool found = false;
 
-        for ( uint32_t i = 0; i < ctx->physicalDeviceInfo.swapchainSupportInfo.surfaceFormats.size; ++i )
+        for ( uint32_t i = 0; i < ctx->physical_device_info.swapchainSupportInfo.surfaceFormats.size; ++i )
         {
-            VkSurfaceFormatKHR* curr = &ctx->physicalDeviceInfo.swapchainSupportInfo.surfaceFormats.data[i];
+            VkSurfaceFormatKHR* curr = &ctx->physical_device_info.swapchainSupportInfo.surfaceFormats.data[i];
 
             if ( curr->format == VK_FORMAT_R8G8B8A8_UNORM && curr->colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR )
             {
@@ -264,7 +264,7 @@ bool CreateInternal( VulkanContext* ctx, SwapchainCreateDescription description 
 
         if ( !found )
         {
-            out_swapchain->surfaceFormat = ctx->physicalDeviceInfo.swapchainSupportInfo.surfaceFormats.data[0];
+            out_swapchain->surfaceFormat = ctx->physical_device_info.swapchainSupportInfo.surfaceFormats.data[0];
         }
     }
 
@@ -273,9 +273,9 @@ bool CreateInternal( VulkanContext* ctx, SwapchainCreateDescription description 
     // we query the physical devices modes and try to select MAILBOX if it's supported
     VkPresentModeKHR presentMode = VK_PRESENT_MODE_FIFO_KHR;
     {
-        for ( int i = 0; i < ctx->physicalDeviceInfo.swapchainSupportInfo.presentModes.size; ++i )
+        for ( int i = 0; i < ctx->physical_device_info.swapchainSupportInfo.presentModes.size; ++i )
         {
-            VkPresentModeKHR mode = ctx->physicalDeviceInfo.swapchainSupportInfo.presentModes.data[i];
+            VkPresentModeKHR mode = ctx->physical_device_info.swapchainSupportInfo.presentModes.data[i];
 
             if ( mode == VK_PRESENT_MODE_MAILBOX_KHR )
             {
@@ -285,10 +285,10 @@ bool CreateInternal( VulkanContext* ctx, SwapchainCreateDescription description 
         }
     }
 
-    VkExtent2D swapchainExtent = ctx->physicalDeviceInfo.swapchainSupportInfo.capabilities.currentExtent;
+    VkExtent2D swapchainExtent = ctx->physical_device_info.swapchainSupportInfo.capabilities.currentExtent;
 
-    VkExtent2D gpuMin = ctx->physicalDeviceInfo.swapchainSupportInfo.capabilities.minImageExtent;
-    VkExtent2D gpuMax = ctx->physicalDeviceInfo.swapchainSupportInfo.capabilities.maxImageExtent;
+    VkExtent2D gpuMin = ctx->physical_device_info.swapchainSupportInfo.capabilities.minImageExtent;
+    VkExtent2D gpuMax = ctx->physical_device_info.swapchainSupportInfo.capabilities.maxImageExtent;
 
     swapchainExtent.width = Maths::Clamp( swapchainExtent.width, gpuMin.width, gpuMax.width );
     swapchainExtent.height = Maths::Clamp( swapchainExtent.height, gpuMin.height, gpuMax.height );
@@ -299,8 +299,8 @@ bool CreateInternal( VulkanContext* ctx, SwapchainCreateDescription description 
     imagesCount = Maths::Clamp
     (
         imagesCount,
-        ctx->physicalDeviceInfo.swapchainSupportInfo.capabilities.minImageCount,
-        ctx->physicalDeviceInfo.swapchainSupportInfo.capabilities.maxImageCount
+        ctx->physical_device_info.swapchainSupportInfo.capabilities.minImageCount,
+        ctx->physical_device_info.swapchainSupportInfo.capabilities.maxImageCount
     );
 
     // create swapchain
@@ -319,15 +319,15 @@ bool CreateInternal( VulkanContext* ctx, SwapchainCreateDescription description 
     swapchainCreateInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
 
     // this deals with the case where the device can be in portait or horizontal mode
-    swapchainCreateInfo.preTransform = ctx->physicalDeviceInfo.swapchainSupportInfo.capabilities.currentTransform;
+    swapchainCreateInfo.preTransform = ctx->physical_device_info.swapchainSupportInfo.capabilities.currentTransform;
 
     uint32_t queueFamilyIndicies[] =
     {
-        ctx->physicalDeviceInfo.queuesInfo.presentQueueFamilyIndex,
-        ctx->physicalDeviceInfo.queuesInfo.graphicsQueueIndex,
+        ctx->physical_device_info.queuesInfo.presentQueueFamilyIndex,
+        ctx->physical_device_info.queuesInfo.graphicsQueueIndex,
     };
 
-    if ( ctx->physicalDeviceInfo.queuesInfo.presentQueueFamilyIndex != ctx->physicalDeviceInfo.queuesInfo.graphicsQueueIndex )
+    if ( ctx->physical_device_info.queuesInfo.presentQueueFamilyIndex != ctx->physical_device_info.queuesInfo.graphicsQueueIndex )
     {
         swapchainCreateInfo.queueFamilyIndexCount = 2;
         swapchainCreateInfo.pQueueFamilyIndices = queueFamilyIndicies;
@@ -336,22 +336,22 @@ bool CreateInternal( VulkanContext* ctx, SwapchainCreateDescription description 
     else
     {
         swapchainCreateInfo.queueFamilyIndexCount = 1;
-        swapchainCreateInfo.pQueueFamilyIndices = &ctx->physicalDeviceInfo.queuesInfo.presentQueueFamilyIndex;
+        swapchainCreateInfo.pQueueFamilyIndices = &ctx->physical_device_info.queuesInfo.presentQueueFamilyIndex;
         swapchainCreateInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
     }
 
-    VkResult createSwapchainResult = vkCreateSwapchainKHR( ctx->logicalDeviceInfo.handle, &swapchainCreateInfo, ctx->allocator, &out_swapchain->handle );
+    VkResult createSwapchainResult = vkCreateSwapchainKHR( ctx->logical_device_info.handle, &swapchainCreateInfo, ctx->allocator, &out_swapchain->handle );
 
     ctx->current_frame = 0;
     out_swapchain->imagesCount = 0;
 
     // here we take the image count returned by vulkan even though we already specified a wanted count
     // we do this since the number returned can be less than the count we requested (for whatever reason) 
-    VkResult getImagesResult = vkGetSwapchainImagesKHR( ctx->logicalDeviceInfo.handle, out_swapchain->handle, &out_swapchain->imagesCount, nullptr );
+    VkResult getImagesResult = vkGetSwapchainImagesKHR( ctx->logical_device_info.handle, out_swapchain->handle, &out_swapchain->imagesCount, nullptr );
 
     if(old_swapchain != VK_NULL_HANDLE)
     {
-        vkDestroySwapchainKHR(ctx->logicalDeviceInfo.handle , old_swapchain , ctx->allocator);
+        vkDestroySwapchainKHR(ctx->logical_device_info.handle , old_swapchain , ctx->allocator);
     }
 
     return true;
@@ -374,7 +374,7 @@ bool SwapchainInfo::Recreate( VulkanContext* context, SwapchainCreateDescription
 {
     VkSwapchainKHR old_swap = context->swapchain_info.handle;
 
-    if ( context->recreateSwapchain )
+    if ( context->recreate_swapchain )
     {
         return false;
     }
@@ -384,9 +384,9 @@ bool SwapchainInfo::Recreate( VulkanContext* context, SwapchainCreateDescription
         return false;
     }
 
-    context->recreateSwapchain = true;
+    context->recreate_swapchain = true;
 
-    vkDeviceWaitIdle( context->logicalDeviceInfo.handle );
+    vkDeviceWaitIdle( context->logical_device_info.handle );
 
     // recreate
     {
@@ -397,13 +397,13 @@ bool SwapchainInfo::Recreate( VulkanContext* context, SwapchainCreateDescription
 
     context->frameBufferSizeLastGeneration = context->frameBufferSizeCurrentGeneration;
 
-    for(size_t i = 0; i < context->renderPasses.size; ++i)
+    for(size_t i = 0; i < context->renderpasses.size; ++i)
     {
-        Renderpass* curr = &context->renderPasses.data[i];
+        Renderpass* curr = &context->renderpasses.data[i];
         curr->on_resize(curr);
     }
 
-    context->recreateSwapchain = false;
+    context->recreate_swapchain = false;
 
     return true;
 }
@@ -412,7 +412,7 @@ bool SwapchainInfo::Recreate( VulkanContext* context, SwapchainCreateDescription
 bool SwapchainInfo::AcquireNextImageIndex( VulkanContext* context, uint32_t timeout_ms, VkSemaphore semaphore, VkFence fence, uint32_t* out_next_image_index )
 {
     VkResult result = vkAcquireNextImageKHR(
-        context->logicalDeviceInfo.handle,
+        context->logical_device_info.handle,
         this->handle,
         timeout_ms,
         semaphore,
@@ -449,7 +449,7 @@ bool SwapchainInfo::Present( VulkanContext* context, VkSemaphore render_complete
     presentInfo.pImageIndices = in_present_image_index;
     presentInfo.pResults = nullptr;
 
-    VkResult result = vkQueuePresentKHR( context->physicalDeviceInfo.queuesInfo.presentQueue, &presentInfo );
+    VkResult result = vkQueuePresentKHR( context->physical_device_info.queuesInfo.presentQueue, &presentInfo );
 
     if ( result == VK_ERROR_OUT_OF_DATE_KHR )
     {

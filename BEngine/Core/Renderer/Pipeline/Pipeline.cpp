@@ -139,7 +139,7 @@ bool Pipeline::Create( VulkanContext* context, Renderpass* renderpass, PipelineD
         pipelineLayoutCreateInfo.setLayoutCount = (uint32_t) in_dependencies->descriptor_set_layouts.size;
         pipelineLayoutCreateInfo.pSetLayouts = in_dependencies->descriptor_set_layouts.data;
 
-        vkCreatePipelineLayout( context->logicalDeviceInfo.handle, &pipelineLayoutCreateInfo, context->allocator, &pipelineLayout );
+        vkCreatePipelineLayout( context->logical_device_info.handle, &pipelineLayoutCreateInfo, context->allocator, &pipelineLayout );
     }
 
     VkGraphicsPipelineCreateInfo graphicsPipelineCreateInfo = {};
@@ -182,7 +182,7 @@ bool Pipeline::Create( VulkanContext* context, Renderpass* renderpass, PipelineD
     graphicsPipelineCreateInfo.renderPass = renderpass->handle;
 
     VkPipeline pipeline = {};
-    VkResult result = vkCreateGraphicsPipelines( context->logicalDeviceInfo.handle, VK_NULL_HANDLE, 1, &graphicsPipelineCreateInfo, context->allocator, &pipeline );
+    VkResult result = vkCreateGraphicsPipelines( context->logical_device_info.handle, VK_NULL_HANDLE, 1, &graphicsPipelineCreateInfo, context->allocator, &pipeline );
 
     Global::alloc_toolbox.ResetArenaOffset( &arena );
 
@@ -204,12 +204,12 @@ bool Pipeline::Destroy( VulkanContext* context, Pipeline* inPipeline )
 
     if ( inPipeline->handle )
     {
-        vkDestroyPipeline( context->logicalDeviceInfo.handle, inPipeline->handle, context->allocator );
+        vkDestroyPipeline( context->logical_device_info.handle, inPipeline->handle, context->allocator );
         inPipeline->handle = {};
     }
     if ( inPipeline->layout )
     {
-        vkDestroyPipelineLayout( context->logicalDeviceInfo.handle, inPipeline->layout, context->allocator );
+        vkDestroyPipelineLayout( context->logical_device_info.handle, inPipeline->layout, context->allocator );
         inPipeline->layout = {};
     }
 
