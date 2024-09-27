@@ -149,14 +149,13 @@ int main( int argc, char** argv )
 
     // xml test
     {
-        StringView xml = "<div isSelected=true isVisible=\"true\">Hello<p>World</p></div>";
+        StringView xml = "<div height=\"auto\" width=\"750px\"><p/>\nHello<p>World</p></div>";
 
         {
             ArenaCheckpoint check = Global::alloc_toolbox.GetArenaCheckpoint();
             assert(JSONSerializer::Validate(xml , Global::alloc_toolbox.frame_allocator ));
             Global::alloc_toolbox.ResetArenaOffset(&check);
         }
-
 
         XMLSerializerState state = {};
         XMLNode result = {};

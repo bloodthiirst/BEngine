@@ -126,16 +126,16 @@ struct XMLSerializer
         // Log element
         if (in_node->node_type == XMLNodeType::Element)
         {
-            StringBuffer name = StringUtils::Format(in_builder->alloc, "<Element : {}>\t", in_node->name);
-            StringBuilder::Append(in_builder, name.view);
-
+            StringBuilder::Append(in_builder, "<Element : ");
+            StringBuilder::Append(in_builder , in_node->name);
             for (size_t i = 0; i < in_node->attributes.size; ++i)
             {
                 AttributeValuePair attrVal = in_node->attributes.data[i];
 
-                StringBuffer atr = StringUtils::Format(in_builder->alloc, "<Attribute : {} , Value : {}>\t", attrVal.name, attrVal.value);
+                StringBuffer atr = StringUtils::Format(in_builder->alloc, "\t[Attribute : {} , Value : {}]", attrVal.name, attrVal.value);
                 StringBuilder::Append(in_builder, atr.view);
             }
+            StringBuilder::Append(in_builder, ">");
         }
 
         // Log text
@@ -222,32 +222,7 @@ struct XMLSerializer
 
         inout_node->node_type = XMLNodeType::Text;
         inout_node->value = xml.buffer + start;
-        // we subtract 1 from length to avoid including the last '\"' in the string value
         inout_node->value.length = state->current_index - start;
-    }
-
-    static void SerializeString(StringView xml, XMLSerializerState *state, XMLNode *inout_node, Allocator alloc)
-    {
-        bool stop = false;
-
-        // skip the first '\"'
-        state->current_index++;
-
-        size_t start = state->current_index;
-
-        while (!stop && state->current_index < xml.length)
-        {
-            char curr_char = xml.buffer[state->current_index];
-            bool is_valid = curr_char != '"';
-            stop |= !is_valid;
-
-            state->current_index++;
-        }
-
-        inout_node->node_type = XMLNodeType::Text;
-        inout_node->value = xml.buffer + start;
-        // we subtract 1 from length to avoid including the last '\"' in the string value
-        inout_node->value.length = state->current_index - start - 1;
     }
 
     void static SerializeObject(StringView xml, XMLSerializerState *state, XMLNode *out_node, Allocator alloc)
