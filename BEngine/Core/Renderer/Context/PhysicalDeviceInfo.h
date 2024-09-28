@@ -9,8 +9,8 @@
 struct PhysicalDeviceInfo
 {
 public:
-    QueuesInfo queuesInfo;
-    CommandPoolsInfo commandPoolsInfo;
+    QueuesInfo queues_info;
+    CommandPoolsInfo command_pools_info;
     SwapchainSupportInfo swapchainSupportInfo;
     VkPhysicalDevice handle;
     VkPhysicalDeviceProperties physicalDeviceProperties;

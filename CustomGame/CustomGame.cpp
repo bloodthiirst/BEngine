@@ -14,24 +14,17 @@
 #include <Core/AssetManager/MeshAssetManger.h>
 #include <Core/Renderer/Mesh/Mesh3D.h>
 #include <Core/Renderer/Texture/Texture.h>
-#include "CustomGame.h"
+#include "CustomGameState.h"
 #include "SceneCameraController.h"
+#include "CustomGame.h"
+#include "GameUI.h"
 
 static const char *game_name = "Custom game title";
-
-struct CustomGameState
-{
-    SceneCameraController camera_controller;
-    Mesh3D plane_mesh;
-    ShaderBuilder shader_builder;
-    Texture texture;
-};
 
 StringView GetName(GameApp *game_app)
 {
     return game_name;
 }
-
 
 Texture CreateColorTexture()
 {
@@ -82,12 +75,12 @@ Texture CreateColorTexture()
         Global::alloc_toolbox.HeapFree<Color>(colors);
 
         CommandBuffer cmd = {};
-        VkCommandPool pool = ctx->physical_device_info.commandPoolsInfo.graphicsCommandPool;
+        VkCommandPool pool = ctx->physical_device_info.command_pools_info.graphicsCommandPool;
         CommandBuffer::SingleUseAllocateBegin(pool, &cmd);
         Texture::TransitionLayout(&tex, cmd, VkFormat::VK_FORMAT_R32G32B32A32_SFLOAT, VkImageLayout::VK_IMAGE_LAYOUT_UNDEFINED, VkImageLayout::VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
         Texture::CopyFromBuffer(copy_buffer.handle, &tex, cmd);
         Texture::TransitionLayout(&tex, cmd, VkFormat::VK_FORMAT_R32G32B32A32_SFLOAT, VkImageLayout::VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VkImageLayout::VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-        CommandBuffer::SingleUseEndSubmit(pool, &cmd, ctx->physical_device_info.queuesInfo.graphicsQueue);
+        CommandBuffer::SingleUseEndSubmit(pool, &cmd, ctx->physical_device_info.queues_info.graphics_queue);
     }
     Buffer::Destroy(&copy_buffer);
 
@@ -146,12 +139,12 @@ Texture CreateGridTexture()
         Global::alloc_toolbox.HeapFree<Color>(colors);
 
         CommandBuffer cmd = {};
-        VkCommandPool pool = ctx->physical_device_info.commandPoolsInfo.graphicsCommandPool;
+        VkCommandPool pool = ctx->physical_device_info.command_pools_info.graphicsCommandPool;
         CommandBuffer::SingleUseAllocateBegin(pool, &cmd);
         Texture::TransitionLayout(&tex, cmd, VkFormat::VK_FORMAT_R32G32B32A32_SFLOAT, VkImageLayout::VK_IMAGE_LAYOUT_UNDEFINED, VkImageLayout::VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
         Texture::CopyFromBuffer(copy_buffer.handle, &tex, cmd);
         Texture::TransitionLayout(&tex, cmd, VkFormat::VK_FORMAT_R32G32B32A32_SFLOAT, VkImageLayout::VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VkImageLayout::VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-        CommandBuffer::SingleUseEndSubmit(pool, &cmd, ctx->physical_device_info.queuesInfo.graphicsQueue);
+        CommandBuffer::SingleUseEndSubmit(pool, &cmd, ctx->physical_device_info.queues_info.graphics_queue);
     }
     Buffer::Destroy(&copy_buffer);
 
@@ -262,8 +255,6 @@ Mesh3D CreatePlane()
 
 void Initialize(GameApp *game_app)
 {
-    // CoreContext::DefaultContext();
-
     game_app->game_state.camera_position = Vector3(0, 0, -3);
     game_app->game_state.camera_rotation = {1, 0, 0, 0};
 
@@ -289,13 +280,21 @@ void OnUpdate(GameApp *game_app, float delta_time)
 {
     CustomGameState *state = (CustomGameState *)game_app->user_data;
 
-    Vector3 new_pos = {};
-    Quaternion new_rot = {};
+    // ui
+    {
+        GameUI::Build(state);
+    }
 
-    state->camera_controller.Tick(delta_time, &new_pos, &new_rot);
+    // camera
+    {
+        Vector3 new_pos = {};
+        Quaternion new_rot = {};
 
-    game_app->game_state.camera_position = new_pos;
-    game_app->game_state.camera_rotation = new_rot;
+        state->camera_controller.Tick(delta_time, &new_pos, &new_rot);
+
+        game_app->game_state.camera_position = new_pos;
+        game_app->game_state.camera_rotation = new_rot;
+    }
 }
 
 void OnRender(GameApp *game_app, RendererContext *render_ctx, float delta_time)

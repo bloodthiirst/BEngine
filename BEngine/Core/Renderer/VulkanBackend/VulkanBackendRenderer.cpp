@@ -154,10 +154,10 @@ bool CreateLogicalDevice(VkInstance vkInstance, VkSurfaceKHR surface, PhysicalDe
     int *queuesNeededPerFamily = (int *)ALLOC(alloc, queueFamilyCount * sizeof(int));
 
     // for now , if multiple requirement share a queue index , only one queue will used for them
-    queuesNeededPerFamily[physicalDeviceinfo->queuesInfo.computeQueueFamilyIndex]++;
-    queuesNeededPerFamily[physicalDeviceinfo->queuesInfo.graphicsQueueIndex]++;
-    queuesNeededPerFamily[physicalDeviceinfo->queuesInfo.presentQueueFamilyIndex]++;
-    queuesNeededPerFamily[physicalDeviceinfo->queuesInfo.transferQueueIndex]++;
+    queuesNeededPerFamily[physicalDeviceinfo->queues_info.computeQueueFamilyIndex]++;
+    queuesNeededPerFamily[physicalDeviceinfo->queues_info.graphicsQueueIndex]++;
+    queuesNeededPerFamily[physicalDeviceinfo->queues_info.presentQueueFamilyIndex]++;
+    queuesNeededPerFamily[physicalDeviceinfo->queues_info.transferQueueIndex]++;
 
     Allocator alloc_create = STACK_ALLOC_ARRAY(VkDeviceQueueCreateInfo, queueFamilyCount);
     DArray<VkDeviceQueueCreateInfo> queueCreationInfos;
@@ -216,10 +216,10 @@ bool CreateLogicalDevice(VkInstance vkInstance, VkSurfaceKHR surface, PhysicalDe
         return false;
     }
 
-    vkGetDeviceQueue(*handle, physicalDeviceinfo->queuesInfo.graphicsQueueIndex, 0, &physicalDeviceinfo->queuesInfo.graphicsQueue);
-    vkGetDeviceQueue(*handle, physicalDeviceinfo->queuesInfo.computeQueueFamilyIndex, 0, &physicalDeviceinfo->queuesInfo.computeQueue);
-    vkGetDeviceQueue(*handle, physicalDeviceinfo->queuesInfo.presentQueueFamilyIndex, 0, &physicalDeviceinfo->queuesInfo.presentQueue);
-    vkGetDeviceQueue(*handle, physicalDeviceinfo->queuesInfo.transferQueueIndex, 0, &physicalDeviceinfo->queuesInfo.transferQueue);
+    vkGetDeviceQueue(*handle, physicalDeviceinfo->queues_info.graphicsQueueIndex, 0, &physicalDeviceinfo->queues_info.graphics_queue);
+    vkGetDeviceQueue(*handle, physicalDeviceinfo->queues_info.computeQueueFamilyIndex, 0, &physicalDeviceinfo->queues_info.computeQueue);
+    vkGetDeviceQueue(*handle, physicalDeviceinfo->queues_info.presentQueueFamilyIndex, 0, &physicalDeviceinfo->queues_info.presentQueue);
+    vkGetDeviceQueue(*handle, physicalDeviceinfo->queues_info.transferQueueIndex, 0, &physicalDeviceinfo->queues_info.transferQueue);
 
     return true;
 }
@@ -455,10 +455,10 @@ bool CreatePhysicalDevice(Platform *platform, VkInstance vkInstance, VkSurfaceKH
         outDeviceInfo->physicalDeviceMemoryProperties = memory;
         outDeviceInfo->physicalDeviceProperties = props;
         outDeviceInfo->swapchainSupportInfo = swapchainSupportInfo;
-        outDeviceInfo->queuesInfo.presentQueueFamilyIndex = computeQueueFamilyIndex;
-        outDeviceInfo->queuesInfo.computeQueueFamilyIndex = computeQueueFamilyIndex;
-        outDeviceInfo->queuesInfo.graphicsQueueIndex = graphicsQueueFamilyIndex;
-        outDeviceInfo->queuesInfo.transferQueueIndex = transferQueueFamilyIndex;
+        outDeviceInfo->queues_info.presentQueueFamilyIndex = computeQueueFamilyIndex;
+        outDeviceInfo->queues_info.computeQueueFamilyIndex = computeQueueFamilyIndex;
+        outDeviceInfo->queues_info.graphicsQueueIndex = graphicsQueueFamilyIndex;
+        outDeviceInfo->queues_info.transferQueueIndex = transferQueueFamilyIndex;
 
         Global::alloc_toolbox.ResetArenaOffset(&checkpoint);
         return true;
@@ -474,10 +474,10 @@ bool CreateGraphicsCommandPools(VulkanContext *context)
 {
     VkCommandPoolCreateInfo graphicsPoolCreate = {};
     graphicsPoolCreate.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-    graphicsPoolCreate.queueFamilyIndex = context->physical_device_info.queuesInfo.graphicsQueueIndex;
+    graphicsPoolCreate.queueFamilyIndex = context->physical_device_info.queues_info.graphicsQueueIndex;
     graphicsPoolCreate.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
 
-    vkCreateCommandPool(context->logical_device_info.handle, &graphicsPoolCreate, context->allocator, &context->physical_device_info.commandPoolsInfo.graphicsCommandPool);
+    vkCreateCommandPool(context->logical_device_info.handle, &graphicsPoolCreate, context->allocator, &context->physical_device_info.command_pools_info.graphicsCommandPool);
     return true;
 }
 
@@ -1000,7 +1000,7 @@ bool EndFrame(BackendRenderer *in_backend, RendererContext *rendererContext)
     // this is an async (non-blocking call) that returns immidiately
     // to know if the sumbission is done on the GPU side , we will need to check the Fence passed
     // from the docs : fence is an optional handle to a fence to be signaled once all submitted command buffers have completed execution
-    vkQueueSubmit(ctx->physical_device_info.queuesInfo.graphicsQueue, 1, &info, submit_fence->handle);
+    vkQueueSubmit(ctx->physical_device_info.queues_info.graphics_queue, 1, &info, submit_fence->handle);
 
     cmd.UpdateSubmitted();
 
@@ -1046,7 +1046,7 @@ bool Destroy(BackendRenderer *in_backend)
 
     vkDestroySampler(ctx->logical_device_info.handle, ctx->default_sampler, ctx->allocator);
     vkDestroySurfaceKHR(ctx->vulkan_instance, ctx->surface, ctx->allocator);
-    vkDestroyCommandPool(ctx->logical_device_info.handle, ctx->physical_device_info.commandPoolsInfo.graphicsCommandPool, ctx->allocator);
+    vkDestroyCommandPool(ctx->logical_device_info.handle, ctx->physical_device_info.command_pools_info.graphicsCommandPool, ctx->allocator);
     vkDestroyDevice(ctx->logical_device_info.handle, ctx->allocator);
 
     return true;

@@ -21,7 +21,6 @@ public:
 
 struct Matrix4x4
 {
-public:
     union
     {
         struct

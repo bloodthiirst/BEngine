@@ -9,7 +9,7 @@ struct QueuesInfo
     uint32_t transferQueueIndex;
 
     VkQueue presentQueue;
-    VkQueue graphicsQueue;
+    VkQueue graphics_queue;
     VkQueue computeQueue;
     VkQueue transferQueue;
 };

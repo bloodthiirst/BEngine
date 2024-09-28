@@ -137,10 +137,10 @@ bool AllocateResource( VulkanContext* context, SwapchainInfo* outSwapchain )
 
             if ( curr->handle != VK_NULL_HANDLE )
             {
-                CommandBuffer::Free( context->physical_device_info.commandPoolsInfo.graphicsCommandPool, curr );
+                CommandBuffer::Free( context->physical_device_info.command_pools_info.graphicsCommandPool, curr );
             }
 
-            CommandBuffer::Allocate( context->physical_device_info.commandPoolsInfo.graphicsCommandPool, true, curr );
+            CommandBuffer::Allocate( context->physical_device_info.command_pools_info.graphicsCommandPool, true, curr );
         }
     }
 
@@ -186,7 +186,7 @@ void FreeResources( VulkanContext* context, SwapchainInfo* out_swapchain )
     {
         CommandBuffer* curr = &out_swapchain->graphics_cmd_buffers_per_image.data[i];
 
-        CommandBuffer::Free( context->physical_device_info.commandPoolsInfo.graphicsCommandPool, curr );
+        CommandBuffer::Free( context->physical_device_info.command_pools_info.graphicsCommandPool, curr );
     }
 
     DArray<CommandBuffer>::Clear( &out_swapchain->graphics_cmd_buffers_per_image );
@@ -323,11 +323,11 @@ bool CreateInternal( VulkanContext* ctx, SwapchainCreateDescription description 
 
     uint32_t queueFamilyIndicies[] =
     {
-        ctx->physical_device_info.queuesInfo.presentQueueFamilyIndex,
-        ctx->physical_device_info.queuesInfo.graphicsQueueIndex,
+        ctx->physical_device_info.queues_info.presentQueueFamilyIndex,
+        ctx->physical_device_info.queues_info.graphicsQueueIndex,
     };
 
-    if ( ctx->physical_device_info.queuesInfo.presentQueueFamilyIndex != ctx->physical_device_info.queuesInfo.graphicsQueueIndex )
+    if ( ctx->physical_device_info.queues_info.presentQueueFamilyIndex != ctx->physical_device_info.queues_info.graphicsQueueIndex )
     {
         swapchainCreateInfo.queueFamilyIndexCount = 2;
         swapchainCreateInfo.pQueueFamilyIndices = queueFamilyIndicies;
@@ -336,7 +336,7 @@ bool CreateInternal( VulkanContext* ctx, SwapchainCreateDescription description 
     else
     {
         swapchainCreateInfo.queueFamilyIndexCount = 1;
-        swapchainCreateInfo.pQueueFamilyIndices = &ctx->physical_device_info.queuesInfo.presentQueueFamilyIndex;
+        swapchainCreateInfo.pQueueFamilyIndices = &ctx->physical_device_info.queues_info.presentQueueFamilyIndex;
         swapchainCreateInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
     }
 
@@ -449,7 +449,7 @@ bool SwapchainInfo::Present( VulkanContext* context, VkSemaphore render_complete
     presentInfo.pImageIndices = in_present_image_index;
     presentInfo.pResults = nullptr;
 
-    VkResult result = vkQueuePresentKHR( context->physical_device_info.queuesInfo.presentQueue, &presentInfo );
+    VkResult result = vkQueuePresentKHR( context->physical_device_info.queues_info.presentQueue, &presentInfo );
 
     if ( result == VK_ERROR_OUT_OF_DATE_KHR )
     {

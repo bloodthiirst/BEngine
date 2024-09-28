@@ -235,9 +235,9 @@ struct UIRenderpass
             float aspect = screen_h / screen_w;
             
             Matrix4x4 proj = Matrix4x4(
-                { 1 / screen_w  , 0             , 0 , -1},
-                { 0             , 1 / screen_h  , 0 , -1},                
-                { 0             , 0             , 1 , +0},
+                { 2 / screen_w  , 0             , 0 , -1},
+                { 0             , 2 / screen_h  , 0 , -1},                
+                { 0             , 0             , 2 , +0},
                 { 0             , 0             , 0 , +1}
                 );
             

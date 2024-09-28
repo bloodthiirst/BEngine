@@ -103,8 +103,8 @@ void Texture::TransitionLayout(Texture *texture, CommandBuffer cmd, VkFormat for
     // and whatever comes after use the new content/memory
     VkImageMemoryBarrier barrier = {};
     barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-    barrier.srcQueueFamilyIndex = context->physical_device_info.queuesInfo.graphicsQueueIndex;
-    barrier.dstQueueFamilyIndex = context->physical_device_info.queuesInfo.graphicsQueueIndex;
+    barrier.srcQueueFamilyIndex = context->physical_device_info.queues_info.graphicsQueueIndex;
+    barrier.dstQueueFamilyIndex = context->physical_device_info.queues_info.graphicsQueueIndex;
     barrier.image = texture->handle;
     barrier.oldLayout = old_layout;
     barrier.newLayout = new_layout;
