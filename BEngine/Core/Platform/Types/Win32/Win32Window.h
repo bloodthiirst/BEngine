@@ -199,6 +199,7 @@ struct Win32Window
 
             return 0;
         }
+        case WM_SIZING:
         case WM_SIZE:
         {
             RECT size;
