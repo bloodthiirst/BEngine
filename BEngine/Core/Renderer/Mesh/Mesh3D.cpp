@@ -29,6 +29,9 @@ void Mesh3D::AllocData(Mesh3D* inout_mesh, ArrayView<Vertex3D> verts, ArrayView<
 
     VulkanContext *ctx = (VulkanContext *)Global::backend_renderer.user_data;
 
+    DArray<Vertex3D>::AddRange(&inout_mesh->vertices , verts);
+    DArray<uint32_t>::AddRange(&inout_mesh->indicies , indicies);
+
     const uint32_t verts_size = sizeof(Vertex3D) * verts.size;
     const uint32_t index_size = sizeof(uint32_t) * indicies.size;
 

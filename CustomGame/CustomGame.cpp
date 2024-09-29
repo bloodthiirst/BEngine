@@ -215,20 +215,12 @@ Mesh3D CreatePlane()
     const uint32_t vert_count = 4;
     const uint32_t index_count = 6;
 
-    const Vector2 pos = Vector2(0, 0);
-    const Vector2 size = Vector2(500, 300);
-
-    const Vector2 tr = pos + size;
-    const Vector2 tl = pos + Vector2(0, size.y);
-    const Vector2 br = pos + Vector2(size.x, 0);
-    const Vector2 bl = pos;
-
     Vertex3D vertPositions[vert_count] =
         {
-            {tr, Vector2(1.0f, 1.0f)}, // TOP RIGHT
-            {tl, Vector2(0.0f, 1.0f)}, // TOP LEFT
-            {br, Vector2(1.0f, 0.0f)}, // BOT RIGHT
-            {bl, Vector2(0.0f, 0.0f)}  // BOT LEFT
+            {Vector2(1.0f, 1.0f), Vector2(1.0f, 1.0f)}, // TOP RIGHT
+            {Vector2(0.0f, 1.0f), Vector2(0.0f, 1.0f)}, // TOP LEFT
+            {Vector2(1.0f, 0.0f), Vector2(1.0f, 0.0f)}, // BOT RIGHT
+            { Vector2(0.0f, 0.0f), Vector2(0.0f, 0.0f)}  // BOT LEFT
         };
 
     uint32_t vertIndicies[6] = {
@@ -317,47 +309,11 @@ void OnRender(GameApp *game_app, RendererContext *render_ctx, float delta_time)
 {
     CustomGameState *game_state = (CustomGameState *)game_app->user_data;
 
-    const Vector2 pos = game_state->ui_root.resolved_rect.pos;
-    const Vector2 size = game_state->ui_root.resolved_rect.size;
-
-    const Vector2 tr = pos + size;
-    const Vector2 tl = pos + Vector2(0, size.y);
-    const Vector2 br = pos + Vector2(size.x, 0);
-    const Vector2 bl = pos;
-
-    Vertex3D verts[] =
-        {
-            {Vector2(1.0f, 1.0f), Vector2(1.0f, 1.0f)}, // TOP RIGHT
-            {Vector2(0.0f, 1.0f), Vector2(0.0f, 1.0f)}, // TOP LEFT
-            {Vector2(1.0f, 0.0f), Vector2(1.0f, 0.0f)}, // BOT RIGHT
-            {Vector2(0.0f, 0.0f), Vector2(0.0f, 0.0f)}  // BOT LEFT
-        };
-
-    uint32_t indicies[] =
-        {
-            2,
-            1,
-            0,
-
-            2,
-            3,
-            1,
-        };
-
-    ArrayView<Vertex3D> vert_view = {};
-    vert_view.data = verts;
-    vert_view.size = 4;
-
-    ArrayView<uint32_t> ind_view = {};
-    ind_view.data = indicies;
-    ind_view.size = 6;
-
-    Mesh3D::FreeData(&game_state->plane_mesh);
-    Mesh3D::AllocData(&game_state->plane_mesh, vert_view, ind_view);
+    Rect rect = game_state->ui_root.resolved_rect;
 
     Matrix4x4 ui_rect_mat = Matrix4x4(
-        {size.x, 0, 0, pos.x},
-        {0, size.y, 0, pos.y},
+        {rect.size.x, 0, 0, rect.pos.x},
+        {0, rect.size.y, 0, rect.pos.y},
         {0, 0, 1, 0},
         {0, 0, 0, 1});
 
@@ -365,6 +321,7 @@ void OnRender(GameApp *game_app, RendererContext *render_ctx, float delta_time)
     draw.mesh = &game_state->plane_mesh;
     draw.shader_builder = &game_state->shader_builder;
     draw.texture = &game_state->texture;
+    draw.instances_count = 1;
     draw.instances_data = game_state->instances_data;
 
     Buffer::Load(0, sizeof(ui_rect_mat), &ui_rect_mat, 0, &game_state->instances_data);

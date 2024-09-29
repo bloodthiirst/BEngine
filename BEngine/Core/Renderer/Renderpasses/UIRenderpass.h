@@ -261,7 +261,7 @@ struct UIRenderpass
                 guo.projection = proj;
                 guo.view = view;
                 guo.time = (float) Global::platform.time.get_system_time(&Global::platform.time);
-                
+
                 Buffer::Load(0, sizeof(GlobalUniformObject), &guo, 0, &data->camera_matrix_buffer);
             }
 
@@ -315,7 +315,7 @@ struct UIRenderpass
                 vkCmdBindIndexBuffer(cmd->handle, ctx->mesh_buffer.handle, curr.mesh->indicies_block.start, VkIndexType::VK_INDEX_TYPE_UINT32);
 
                 // finally issue the draw command
-                vkCmdDrawIndexed(cmd->handle, 6, 1, 0, 0, 0);
+                vkCmdDrawIndexed(cmd->handle, curr.mesh->indicies.size, curr.instances_count, 0, 0, 0);
 
                 pos_offsets[i] += sizeof(Vertex3D);
                 tex_offsets[i] += sizeof(Vertex3D);

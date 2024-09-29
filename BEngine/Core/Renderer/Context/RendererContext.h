@@ -10,6 +10,7 @@ struct DrawMesh
     ShaderBuilder* shader_builder;
     Texture* texture;
     Buffer instances_data;    
+    size_t instances_count;
 };
 
 struct RendererContext

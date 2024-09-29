@@ -3,6 +3,7 @@
 #include "../Defines/Defines.h"
 #include "../Allocators/Allocator.h"
 #include "../Context/CoreContext.h"
+#include "ArrayView.h"
 
 /// <summary>
 /// Stands for Dynamic Array , pretty much an auto-resizing array so you can consider it the equivalent of std::vector
@@ -54,6 +55,7 @@ public:
 
         *in_arr = {};
     }
+
 
     static void Resize(DArray *in_arr, size_t new_size)
     {
@@ -114,6 +116,18 @@ public:
         }
 
         in_arr->data[in_arr->size++] = item;
+    }
+
+    
+    static void AddRange(DArray* in_arr , ArrayView<T> items_to_add)
+    {
+        if(in_arr->capacity < (in_arr->size + items_to_add.size))
+        {
+            Resize(in_arr, (in_arr->capacity * 2) + items_to_add.size);
+        }
+
+        CoreContext::mem_copy((void*)items_to_add.data ,(void*) (in_arr->data + in_arr->size), sizeof(T) * items_to_add.size);
+        in_arr->size += items_to_add.size;
     }
 
     /// <summary>
