@@ -49,7 +49,6 @@ bool Pipeline::Create( VulkanContext* context, Renderpass* renderpass, PipelineD
     depthAndStencilCreateInfo.depthBoundsTestEnable = VK_FALSE;
     depthAndStencilCreateInfo.stencilTestEnable = VK_FALSE;
 
-
     // blending
     // controls the way colors are blended into the image
     VkPipelineColorBlendAttachmentState colorBlendAttachementInfo = {};
@@ -83,9 +82,11 @@ bool Pipeline::Create( VulkanContext* context, Renderpass* renderpass, PipelineD
     dynamicStateCreateInfo.dynamicStateCount = dynamicsStateCount;
     dynamicStateCreateInfo.pDynamicStates = dynamicState;
 
-
-
     // attributes
+    // attributes map to "layout (location = i)" in the shader
+    // example :
+    // layout ( location = 0) in vec3 in_position;
+    // layout ( location = 1) in vec2 in_texcoord;
     DArray<VkVertexInputAttributeDescription> vertexAttributes = {};
     DArray<VkVertexInputAttributeDescription>::Create( builder->vertex_attributes.size, &vertexAttributes, temp_alloc );
 
@@ -119,7 +120,6 @@ bool Pipeline::Create( VulkanContext* context, Renderpass* renderpass, PipelineD
     vertexStateCreateInfo.pVertexBindingDescriptions = &binding;
     vertexStateCreateInfo.vertexAttributeDescriptionCount = (uint32_t) vertexAttributes.size;
     vertexStateCreateInfo.pVertexAttributeDescriptions = vertexAttributes.data;
-
 
     // input assembly
     VkPipelineInputAssemblyStateCreateInfo inputAssemblyCreateInfo = {};

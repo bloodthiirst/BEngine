@@ -8,6 +8,7 @@
 #include <Core/Global/Global.h>
 #include <Core/Logger/Logger.h>
 #include <Context/CoreContext.h>
+#include <vulkan/vulkan.h>
 #include <Core/Renderer/Context/VulkanContext.h>
 #include <Core/Renderer/Context/RendererContext.h>
 #include <Core/AssetManager/GlobalAssetManager.h>
@@ -28,7 +29,7 @@ StringView GetName(GameApp *game_app)
 
 Texture CreateColorTexture()
 {
-    VulkanContext* ctx = (VulkanContext*) Global::backend_renderer.user_data;
+    VulkanContext *ctx = (VulkanContext *)Global::backend_renderer.user_data;
 
     size_t width = 64;
     size_t height = 64;
@@ -54,7 +55,7 @@ Texture CreateColorTexture()
         for (size_t x = 0; x < width; ++x)
         {
             Color col = {};
-            col.r = x / (float) width;
+            col.r = x / (float)width;
             col.g = y / (float)height;
             col.b = 0;
             col.a = 1;
@@ -89,7 +90,7 @@ Texture CreateColorTexture()
 
 Texture CreateGridTexture()
 {
-    VulkanContext* ctx = (VulkanContext*) Global::backend_renderer.user_data;
+    VulkanContext *ctx = (VulkanContext *)Global::backend_renderer.user_data;
 
     size_t width = 64;
     size_t height = 64;
@@ -155,8 +156,8 @@ ShaderBuilder CreateShaderBuilder()
 {
     Allocator alloc = Global::alloc_toolbox.heap_allocator;
 
-    StringView vert_path = "C:\\Dev\\BEngine\\BEngine\\Core\\Resources\\SimpleShader.vert.spv";
-    StringView frag_path = "C:\\Dev\\BEngine\\BEngine\\Core\\Resources\\SimpleShader.frag.spv";
+    StringView vert_path = "C:\\Dev\\BEngine\\BEngine\\Core\\Resources\\UIShader.vert.spv";
+    StringView frag_path = "C:\\Dev\\BEngine\\BEngine\\Core\\Resources\\UIShader.frag.spv";
 
     FileHandle vert_handle = {};
     FileHandle frag_handle = {};
@@ -187,13 +188,14 @@ ShaderBuilder CreateShaderBuilder()
     Global::platform.filesystem.read_all(frag_handle, frag_code.buffer, &bytes_read);
 
     ShaderBuilder builder = ShaderBuilder::Create()
-                                .SetName("Basic_Textured")
+                                .SetName("UI_Textured")
                                 .SetStage(VkShaderStageFlagBits::VK_SHADER_STAGE_VERTEX_BIT, vert_code)
                                 .SetStage(VkShaderStageFlagBits::VK_SHADER_STAGE_FRAGMENT_BIT, frag_code)
                                 .AddVertexAttribute("position", 0, sizeof(Vector3), VkFormat::VK_FORMAT_R32G32B32_SFLOAT)
                                 .AddVertexAttribute("texcoord", 1, sizeof(Vector2), VkFormat::VK_FORMAT_R32G32_SFLOAT)
                                 .AddDescriptor("global_ubo", 0, 0, VkDescriptorType::VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VkShaderStageFlagBits::VK_SHADER_STAGE_VERTEX_BIT)
-                                .AddDescriptor("diffuse_sampler", 1, 0, VkDescriptorType::VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VkShaderStageFlagBits::VK_SHADER_STAGE_FRAGMENT_BIT);
+                                .AddDescriptor("diffuse_sampler", 1, 0, VkDescriptorType::VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VkShaderStageFlagBits::VK_SHADER_STAGE_FRAGMENT_BIT)
+                                .AddDescriptor("instances_buffer", 2, 0, VkDescriptorType::VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VkShaderStageFlagBits::VK_SHADER_STAGE_VERTEX_BIT);
 
     if (vert_handle.is_valid)
     {
@@ -213,21 +215,21 @@ Mesh3D CreatePlane()
     const uint32_t vert_count = 4;
     const uint32_t index_count = 6;
 
-    const Vector2 pos = Vector2(0 , 0);
-    const Vector2 size = Vector2(500 , 300);
+    const Vector2 pos = Vector2(0, 0);
+    const Vector2 size = Vector2(500, 300);
 
     const Vector2 tr = pos + size;
-    const Vector2 tl = pos + Vector2(0 , size.y);
-    const Vector2 br = pos + Vector2(size.x , 0);
+    const Vector2 tl = pos + Vector2(0, size.y);
+    const Vector2 br = pos + Vector2(size.x, 0);
     const Vector2 bl = pos;
 
-    Vertex3D vertPositions[vert_count] = 
-    {
-        {tr , Vector2(1.0f, 1.0f)}, // TOP RIGHT
-        {tl , Vector2(0.0f, 1.0f)}, // TOP LEFT
-        {br , Vector2(1.0f, 0.0f)}, // BOT RIGHT
-        {bl , Vector2(0.0f, 0.0f)}  // BOT LEFT
-    }; 
+    Vertex3D vertPositions[vert_count] =
+        {
+            {tr, Vector2(1.0f, 1.0f)}, // TOP RIGHT
+            {tl, Vector2(0.0f, 1.0f)}, // TOP LEFT
+            {br, Vector2(1.0f, 0.0f)}, // BOT RIGHT
+            {bl, Vector2(0.0f, 0.0f)}  // BOT LEFT
+        };
 
     uint32_t vertIndicies[6] = {
         2,
@@ -249,7 +251,7 @@ Mesh3D CreatePlane()
     index_view.size = index_count;
 
     Mesh3D::Create(&plane_mesh, vert_view, index_view, Global::alloc_toolbox.heap_allocator);
-    
+
     return plane_mesh;
 }
 
@@ -273,6 +275,20 @@ void Initialize(GameApp *game_app)
         state->plane_mesh = CreatePlane();
         state->shader_builder = CreateShaderBuilder();
         state->texture = CreateColorTexture();
+    }
+
+    // create instance data
+    {
+        BufferDescriptor desc = {};
+        desc.memoryPropertyFlags = (VkMemoryPropertyFlagBits)(VkMemoryPropertyFlagBits::VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
+                                                              VkMemoryPropertyFlagBits::VK_MEMORY_PROPERTY_HOST_COHERENT_BIT |
+                                                              VkMemoryPropertyFlagBits::VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+
+        desc.sharing_mode = VkSharingMode::VK_SHARING_MODE_EXCLUSIVE;
+        desc.size = sizeof(Matrix4x4);
+        desc.usage = VkBufferUsageFlagBits::VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
+
+        Buffer::Create(desc, true, &state->instances_data);
     }
 }
 
@@ -299,14 +315,61 @@ void OnUpdate(GameApp *game_app, float delta_time)
 
 void OnRender(GameApp *game_app, RendererContext *render_ctx, float delta_time)
 {
-    CustomGameState *state = (CustomGameState *)game_app->user_data;
+    CustomGameState *game_state = (CustomGameState *)game_app->user_data;
+
+    const Vector2 pos = game_state->ui_root.resolved_rect.pos;
+    const Vector2 size = game_state->ui_root.resolved_rect.size;
+
+    const Vector2 tr = pos + size;
+    const Vector2 tl = pos + Vector2(0, size.y);
+    const Vector2 br = pos + Vector2(size.x, 0);
+    const Vector2 bl = pos;
+
+    Vertex3D verts[] =
+        {
+            {Vector2(1.0f, 1.0f), Vector2(1.0f, 1.0f)}, // TOP RIGHT
+            {Vector2(0.0f, 1.0f), Vector2(0.0f, 1.0f)}, // TOP LEFT
+            {Vector2(1.0f, 0.0f), Vector2(1.0f, 0.0f)}, // BOT RIGHT
+            {Vector2(0.0f, 0.0f), Vector2(0.0f, 0.0f)}  // BOT LEFT
+        };
+
+    uint32_t indicies[] =
+        {
+            2,
+            1,
+            0,
+
+            2,
+            3,
+            1,
+        };
+
+    ArrayView<Vertex3D> vert_view = {};
+    vert_view.data = verts;
+    vert_view.size = 4;
+
+    ArrayView<uint32_t> ind_view = {};
+    ind_view.data = indicies;
+    ind_view.size = 6;
+
+    Mesh3D::FreeData(&game_state->plane_mesh);
+    Mesh3D::AllocData(&game_state->plane_mesh, vert_view, ind_view);
+
+    Matrix4x4 ui_rect_mat = Matrix4x4(
+        {size.x, 0, 0, pos.x},
+        {0, size.y, 0, pos.y},
+        {0, 0, 1, 0},
+        {0, 0, 0, 1});
 
     DrawMesh draw = {};
-    draw.mesh = &state->plane_mesh;
-    draw.shader_builder = &state->shader_builder;
-    draw.texture = &state->texture;
+    draw.mesh = &game_state->plane_mesh;
+    draw.shader_builder = &game_state->shader_builder;
+    draw.texture = &game_state->texture;
+    draw.instances_data = game_state->instances_data;
 
-    DArray<DrawMesh>::Add(&render_ctx->mesh_draws, draw);
+    Buffer::Load(0, sizeof(ui_rect_mat), &ui_rect_mat, 0, &game_state->instances_data);
+
+    DArray<DrawMesh>::Add(&render_ctx->mesh_draws , draw);
 }
 
 void Destroy(GameApp *game_app)
@@ -314,11 +377,11 @@ void Destroy(GameApp *game_app)
     CustomGameState *state = (CustomGameState *)game_app->user_data;
 
     Global::backend_renderer.wait_idle(&Global::backend_renderer);
-    
+
     Mesh3D::Destroy(&state->plane_mesh);
     Texture::Destroy(&state->texture);
     ShaderBuilder::Destroy(&state->shader_builder);
-
+    Buffer::Destroy(&state->instances_data);
     Global::alloc_toolbox.HeapFree((CustomGameState *)game_app->user_data);
 }
 

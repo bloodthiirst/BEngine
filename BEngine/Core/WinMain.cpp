@@ -25,6 +25,7 @@
 #include "AssetManager/MeshAssetManger.h"
 #include "AssetManager/ShaderAssetManager.h"
 #include "AssetManager/TextureAssetManager.h"
+#include "Command/Command.h"
 #ifdef _WIN32
 #include "Platform/Types/Win32/Win32Platform.h"
 #endif
@@ -173,6 +174,44 @@ int main( int argc, char** argv )
         assert(result.node_type == XMLNodeType::Element);
     }
 
+
+    // compile shaders
+    {
+        StringView shader_folder = "C:\\Dev\\BEngine\\BEngine\\Core\\Resources";
+        ArenaCheckpoint check = Global::alloc_toolbox.GetArenaCheckpoint();
+        {
+            Allocator alloc = Global::alloc_toolbox.frame_allocator;
+            DArray<StringBuffer> files {};
+            DArray<StringBuffer>::Create(5 , &files , alloc);
+            Global::platform.filesystem.get_files(shader_folder , &files , alloc );
+
+            StringView glsl_path = "C:\\Dev\\Vulkan\\Bin\\glslc.exe";
+            
+            Global::logger.Log("Resource files :");
+            for(size_t i = 0; i < files.size; ++i)
+            {
+                StringView curr = files.data[i].view;
+                
+                if(!StringUtils::EndsWith(curr , ".frag") && !StringUtils::EndsWith(curr , ".vert") )
+                {
+                    continue;
+                }
+
+                Global::logger.Log(curr);
+                
+                StringBuffer full_path = StringUtils::Format(alloc ,"{}\\{}" , shader_folder, curr );
+                StringBuffer complile_cmd = StringUtils::Format(alloc ,"{} {} -o {}.spv" , glsl_path, full_path.view , full_path.view );
+                
+                StringBuffer output = {};
+                Command cmd = {};
+                Command::Create( &cmd , complile_cmd.view );
+                Command::Run(cmd , &output , Global::alloc_toolbox.frame_allocator);
+
+                Global::logger.Log(output.view);
+            }
+        }
+        Global::alloc_toolbox.ResetArenaOffset(&check);
+    }
     GameApp client_game = {};
     HMODULE hmodule = nullptr;
 

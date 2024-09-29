@@ -24,6 +24,7 @@ struct GlobalUniformObject
         {
             Matrix4x4 projection;
             Matrix4x4 view;
+            float time;
         };
     };
 };

@@ -18,7 +18,7 @@ bool QueryDepthBufferFormat( VulkanContext* context, VkFormat* outDepthFormat )
 
     uint32_t flags = VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT;
 
-    for ( uint32_t i = 0; i < context->swapchain_info.imagesCount; ++i )
+    for ( uint32_t i = 0; i < context->swapchain_info.images_count; ++i )
     {
         VkFormatProperties formatProps = {};
         vkGetPhysicalDeviceFormatProperties( context->physical_device_info.handle, depthFormats[i], &formatProps );
@@ -73,7 +73,7 @@ void QuerySwapchainSupport( VkPhysicalDevice handle, VkSurfaceKHR surface, Swapc
 
 bool AllocateResource( VulkanContext* context, SwapchainInfo* outSwapchain )
 {
-    uint32_t image_count = outSwapchain->imagesCount;
+    uint32_t image_count = outSwapchain->images_count;
 
     Allocator alloc = Global::alloc_toolbox.heap_allocator;
     DArray<VkImage>::Create( image_count, &outSwapchain->images, alloc );
@@ -85,10 +85,10 @@ bool AllocateResource( VulkanContext* context, SwapchainInfo* outSwapchain )
     DArray<CommandBuffer>::Create( image_count, &outSwapchain->graphics_cmd_buffers_per_image, alloc );
     outSwapchain->graphics_cmd_buffers_per_image.size = image_count;
 
-    VkResult result = vkGetSwapchainImagesKHR( context->logical_device_info.handle, outSwapchain->handle, &outSwapchain->imagesCount, outSwapchain->images.data );
+    VkResult result = vkGetSwapchainImagesKHR( context->logical_device_info.handle, outSwapchain->handle, &outSwapchain->images_count, outSwapchain->images.data );
 
     // create imageViews for swapchain images
-    for ( uint32_t i = 0; i < outSwapchain->imagesCount; ++i )
+    for ( uint32_t i = 0; i < outSwapchain->images_count; ++i )
     {
         VkImageViewCreateInfo imageViewCreateInfo = {};
         imageViewCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
@@ -152,10 +152,10 @@ bool AllocateResource( VulkanContext* context, SwapchainInfo* outSwapchain )
         DArray<VkSemaphore>::Create( image_count, &outSwapchain->image_presentation_complete_semaphores, heap_alloc );
         outSwapchain->image_presentation_complete_semaphores.size = image_count;
 
-        DArray<VkSemaphore>::Create( context->swapchain_info.imagesCount, &outSwapchain->finished_rendering_semaphores, heap_alloc );
+        DArray<VkSemaphore>::Create( context->swapchain_info.images_count, &outSwapchain->finished_rendering_semaphores, heap_alloc );
         outSwapchain->finished_rendering_semaphores.size = image_count;
 
-        DArray<Fence>::Create( context->swapchain_info.imagesCount, &outSwapchain->cmd_buffer_done_execution_per_frame, heap_alloc );
+        DArray<Fence>::Create( context->swapchain_info.images_count, &outSwapchain->cmd_buffer_done_execution_per_frame, heap_alloc );
         outSwapchain->cmd_buffer_done_execution_per_frame.size = image_count;
 
         for ( uint32_t i = 0; i < image_count; ++i )
@@ -173,7 +173,7 @@ bool AllocateResource( VulkanContext* context, SwapchainInfo* outSwapchain )
             Fence::Create( context, true, &outSwapchain->cmd_buffer_done_execution_per_frame.data[i] );
         }
 
-        DArray<Fence*>::Create( context->swapchain_info.imagesCount, &outSwapchain->in_flight_fence_per_image, heap_alloc );
+        DArray<Fence*>::Create( context->swapchain_info.images_count, &outSwapchain->in_flight_fence_per_image, heap_alloc );
         outSwapchain->in_flight_fence_per_image.size = image_count;
     }
 
@@ -199,7 +199,7 @@ void FreeResources( VulkanContext* context, SwapchainInfo* out_swapchain )
 
     DArray<Fence*>::Clear( &out_swapchain->in_flight_fence_per_image );
 
-    for ( uint32_t i = 0; i < context->swapchain_info.imagesCount; ++i )
+    for ( uint32_t i = 0; i < context->swapchain_info.images_count; ++i )
     {
         if ( out_swapchain->image_presentation_complete_semaphores.data[i] )
         {
@@ -343,11 +343,11 @@ bool CreateInternal( VulkanContext* ctx, SwapchainCreateDescription description 
     VkResult createSwapchainResult = vkCreateSwapchainKHR( ctx->logical_device_info.handle, &swapchainCreateInfo, ctx->allocator, &out_swapchain->handle );
 
     ctx->current_frame = 0;
-    out_swapchain->imagesCount = 0;
+    out_swapchain->images_count = 0;
 
     // here we take the image count returned by vulkan even though we already specified a wanted count
     // we do this since the number returned can be less than the count we requested (for whatever reason) 
-    VkResult getImagesResult = vkGetSwapchainImagesKHR( ctx->logical_device_info.handle, out_swapchain->handle, &out_swapchain->imagesCount, nullptr );
+    VkResult getImagesResult = vkGetSwapchainImagesKHR( ctx->logical_device_info.handle, out_swapchain->handle, &out_swapchain->images_count, nullptr );
 
     if(old_swapchain != VK_NULL_HANDLE)
     {
@@ -374,17 +374,10 @@ bool SwapchainInfo::Recreate( VulkanContext* context, SwapchainCreateDescription
 {
     VkSwapchainKHR old_swap = context->swapchain_info.handle;
 
-    if ( context->recreate_swapchain )
-    {
-        return false;
-    }
-
     if ( descrption.height == 0 || descrption.width == 0 )
     {
         return false;
     }
-
-    context->recreate_swapchain = true;
 
     vkDeviceWaitIdle( context->logical_device_info.handle );
 
@@ -394,16 +387,6 @@ bool SwapchainInfo::Recreate( VulkanContext* context, SwapchainCreateDescription
         CreateInternal( context, descrption, old_swap, outSwapchain );
         AllocateResource( context, outSwapchain );
     }
-
-    context->frameBufferSizeLastGeneration = context->frameBufferSizeCurrentGeneration;
-
-    for(size_t i = 0; i < context->renderpasses.size; ++i)
-    {
-        Renderpass* curr = &context->renderpasses.data[i];
-        curr->on_resize(curr);
-    }
-
-    context->recreate_swapchain = false;
 
     return true;
 }
@@ -422,8 +405,8 @@ bool SwapchainInfo::AcquireNextImageIndex( VulkanContext* context, uint32_t time
     if ( result == VK_ERROR_OUT_OF_DATE_KHR )
     {
         SwapchainCreateDescription desc = {};
-        desc.width = context->frameBufferSize.x;
-        desc.height = context->frameBufferSize.y;
+        desc.width = context->frame_buffer_size.x;
+        desc.height = context->frame_buffer_size.y;
 
         SwapchainInfo::Recreate( context, desc, &context->swapchain_info );
         return false;
@@ -454,8 +437,8 @@ bool SwapchainInfo::Present( VulkanContext* context, VkSemaphore render_complete
     if ( result == VK_ERROR_OUT_OF_DATE_KHR )
     {
         SwapchainCreateDescription desc = {};
-        desc.width = context->frameBufferSize.x;
-        desc.height = context->frameBufferSize.y;
+        desc.width = context->frame_buffer_size.x;
+        desc.height = context->frame_buffer_size.y;
 
         SwapchainInfo::Recreate( context, desc, &context->swapchain_info );
         return false;

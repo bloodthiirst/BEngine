@@ -505,7 +505,7 @@ bool UploadDataRange(VulkanContext *context, VkCommandPool pool, Fence fence, Vk
 }
 
 void HandleWindowResize(WindowResizeEvent evt)
-{
+{         
     Global::backend_renderer.resize(&Global::backend_renderer, evt.dimensions.x, evt.dimensions.y);
 }
 
@@ -514,8 +514,8 @@ bool Startup(BackendRenderer *in_renderer, ApplicationStartup startup)
     VulkanContext *ctx = (VulkanContext *)in_renderer->user_data;
 
     ctx->allocator = nullptr;
-    ctx->frameBufferSize.x = Global::platform.window.width;
-    ctx->frameBufferSize.y = Global::platform.window.height;
+    ctx->frame_buffer_size.x = Global::platform.window.width;
+    ctx->frame_buffer_size.y = Global::platform.window.height;
 
     Global::event_system.Listen<WindowResizeEvent>(HandleWindowResize);
 
@@ -839,9 +839,9 @@ bool Startup(BackendRenderer *in_renderer, ApplicationStartup startup)
 void Resize(BackendRenderer *in_backend, uint32_t width, uint32_t height)
 {
     VulkanContext *ctx = (VulkanContext *)in_backend->user_data;
-    ctx->frameBufferSize.x = width;
-    ctx->frameBufferSize.y = height;
-    ctx->frameBufferSizeCurrentGeneration++;
+    ctx->frame_buffer_size.x = width;
+    ctx->frame_buffer_size.y = height;
+    ctx->frame_buffer_current_counter++;
 }
 
 // Recreate the swapchain if needed
@@ -853,6 +853,7 @@ bool StartFrame(BackendRenderer *in_backend, RendererContext *renderer_ctx)
     VulkanContext *ctx = (VulkanContext *)in_backend->user_data;
     LogicalDeviceInfo device = ctx->logical_device_info;
 
+    /*
     if (ctx->recreate_swapchain)
     {
         VkResult result = vkDeviceWaitIdle(device.handle);
@@ -864,9 +865,10 @@ bool StartFrame(BackendRenderer *in_backend, RendererContext *renderer_ctx)
 
         return false;
     }
+    */
 
     // check if we need to recreate the swapchain
-    if (ctx->frameBufferSizeCurrentGeneration != ctx->frameBufferSizeLastGeneration)
+    if (ctx->frame_buffer_current_counter != ctx->frame_buffer_last_counter)
     {
         VkResult result = vkDeviceWaitIdle(device.handle);
 
@@ -876,14 +878,25 @@ bool StartFrame(BackendRenderer *in_backend, RendererContext *renderer_ctx)
             return false;
         }
 
+        Global::logger.Error("Recreating swapchain");
+
         SwapchainCreateDescription desc = {};
-        desc.width = ctx->frameBufferSize.x;
-        desc.height = ctx->frameBufferSize.y;
+        desc.width = ctx->frame_buffer_size.x;
+        desc.height = ctx->frame_buffer_size.y;
         desc.imagesCount = 3;
         SwapchainInfo::Recreate(ctx, desc, &ctx->swapchain_info);
 
-        return false;
+        for(size_t i = 0; i < ctx->renderpasses.size; ++i)
+        {
+            Renderpass* curr = &ctx->renderpasses.data[i];
+            curr->on_resize(curr);
+        }
+
+        ctx->frame_buffer_last_counter = ctx->frame_buffer_current_counter;
+
+        result = vkDeviceWaitIdle(device.handle);
     }
+
 
     // first we get the index of the last frame index
     uint32_t last_frame = ctx->current_frame;
@@ -897,6 +910,7 @@ bool StartFrame(BackendRenderer *in_backend, RendererContext *renderer_ctx)
     // we ask the swapchain to get us the index of an image that we can render to
     // plug last frame's presentaion semaphore as a "dependency" (in other words , make sure last presentation is donee)
     uint32_t current_image = {};
+    
     if (!ctx->swapchain_info.AcquireNextImageIndex(ctx, UINT32_MAX, ctx->swapchain_info.image_presentation_complete_semaphores.data[last_frame], nullptr, &current_image))
     {
         Global::logger.Error("Couldn't get next image to render to from the swapchain");
@@ -1015,7 +1029,7 @@ bool EndFrame(BackendRenderer *in_backend, RendererContext *rendererContext)
         &ctx->current_image_index);
 
     // increments and loop frame count
-    ctx->current_frame = (ctx->current_frame + 1) % ctx->swapchain_info.imagesCount;
+    ctx->current_frame = (ctx->current_frame + 1) % ctx->swapchain_info.images_count;
 
     return true;
 }

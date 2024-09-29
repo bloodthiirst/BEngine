@@ -120,7 +120,7 @@ struct Win32Window
         MSG msg = { 0 };
         bool hasQuit = false;
 
-        while ( PeekMessage( &msg, NULL, 0, 0, PM_REMOVE ) )
+        while ( PeekMessage( &msg, NULL, 0, 0, PM_REMOVE ))
         {
             TranslateMessage( &msg );
 
@@ -199,7 +199,6 @@ struct Win32Window
 
             return 0;
         }
-        case WM_SIZING:
         case WM_SIZE:
         {
             RECT size;

@@ -22,7 +22,7 @@ public:
     VkSurfaceFormatKHR surfaceFormat;
     VkPresentModeKHR presentMode;
 
-    uint32_t imagesCount;
+    uint32_t images_count;
     DArray<VkImage> images;
     DArray<VkImageView> imageViews;
 

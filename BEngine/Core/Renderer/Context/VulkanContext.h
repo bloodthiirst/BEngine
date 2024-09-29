@@ -48,10 +48,9 @@ struct BAPI VulkanContext
 	/// Always between 0 and swapchain.maxFramesInFlight 
 	/// </summary>
 	uint32_t current_frame;
-	bool recreate_swapchain;
 
-	Vector2Int frameBufferSize;
-    uint32_t frameBufferSizeCurrentGeneration;
-    uint32_t frameBufferSizeLastGeneration;
+	Vector2Int frame_buffer_size;
+    uint32_t frame_buffer_current_counter;
+    uint32_t frame_buffer_last_counter;
 };
 

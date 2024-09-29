@@ -233,7 +233,7 @@ bool ShaderBuilder::Build(VulkanContext *context, Renderpass *in_renderpass, Sha
     {
         // we create a descriptor per swapchain image
         // but they all share the same layout since they describe the same descriptor/resource
-        for (size_t i = 0; i < context->swapchain_info.imagesCount; ++i)
+        for (size_t i = 0; i < context->swapchain_info.images_count; ++i)
         {
             DArray<VkDescriptorSet> *descriptor_sets = &out_shader->descriptor_sets[i];
             DArray<VkDescriptorSet>::Create(out_shader->descriptor_set_layouts.size, descriptor_sets, Global::alloc_toolbox.heap_allocator);

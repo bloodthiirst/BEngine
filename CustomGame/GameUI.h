@@ -56,42 +56,5 @@ struct GameUI
         ui_state.root = &game_state->ui_root;
 
         LayoutBuilder::ComputeLayout(&game_state->ui_root , &ui_state);
-        
-        const Vector2 pos = game_state->ui_root.resolved_rect.pos;
-        const Vector2 size = game_state->ui_root.resolved_rect.size;
-
-        const Vector2 tr = pos + size;
-        const Vector2 tl = pos + Vector2(0 , size.y);
-        const Vector2 br = pos + Vector2(size.x , 0);
-        const Vector2 bl = pos;
-
-        Vertex3D verts[] = 
-        {
-            {tr , Vector2(1.0f, 1.0f)}, // TOP RIGHT
-            {tl , Vector2(0.0f, 1.0f)}, // TOP LEFT
-            {br , Vector2(1.0f, 0.0f)}, // BOT RIGHT
-            {bl , Vector2(0.0f, 0.0f)}  // BOT LEFT
-        }; 
-
-        uint32_t indicies[] = {
-            2,
-            1,
-            0,
-
-            2,
-            3,
-            1,
-        };
-
-        ArrayView<Vertex3D> vert_view = {};
-        vert_view.data = verts;
-        vert_view.size = 4;
-
-        ArrayView<uint32_t> ind_view = {};
-        ind_view.data = indicies;
-        ind_view.size = 6;
-        
-        Mesh3D::FreeData(&game_state->plane_mesh);
-        Mesh3D::AllocData(&game_state->plane_mesh , vert_view , ind_view);
     };
 };

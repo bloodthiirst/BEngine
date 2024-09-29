@@ -59,14 +59,14 @@ bool DescriptorManager::Allocate( DescriptorLayoutInfo layout, DescriptorManager
             poolCreate.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
             poolCreate.pPoolSizes = pool_sizes.data;
             poolCreate.poolSizeCount = (uint32_t) pool_sizes.size;
-            poolCreate.maxSets = context->swapchain_info.imagesCount * (uint32_t) in_manager->init_sets_count;
+            poolCreate.maxSets = context->swapchain_info.images_count * (uint32_t) in_manager->init_sets_count;
 
             VkDescriptorPool pool = {};
             vkCreateDescriptorPool( context->logical_device_info.handle, &poolCreate, context->allocator, &pool );
 
             pool_to_use.pool_handle = pool;
             pool_to_use.allocation_count = 0;
-            pool_to_use.total_count = context->swapchain_info.imagesCount * in_manager->init_sets_count;
+            pool_to_use.total_count = context->swapchain_info.images_count * in_manager->init_sets_count;
 
             DescriptorLayoutInfo layout_copy = {};
             layout_copy.layout_index = layout.layout_index;

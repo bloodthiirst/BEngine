@@ -163,6 +163,28 @@ public:
         return res;
     }
 
+    static bool EndsWith(const StringView str , const StringView e)
+    {
+        if(str.length < e.length)
+        {
+            return false;
+        }
+
+        for(size_t i = 0; i < e.length ; ++i)
+        {
+            char cmp_char = e.buffer[e.length - 1 - i];
+            char str_char = str.buffer[str.length - 1 - i];
+
+            if(cmp_char == str_char)
+            {
+                continue;
+            }
+
+            return false;
+        }
+
+        return true;
+    }
 
     static bool Compare( const StringView a, const StringView b )
     {

@@ -22,16 +22,6 @@ struct BasicRenderpassParams
 
 struct BasicRenderpass
 {
-    static inline size_t ShaderBuilderHash(ShaderBuilder s)
-    {
-        return StringUtils::Hash(s.name);
-    };
-
-    static inline bool ShaderBuilderCmp(ShaderBuilder a , ShaderBuilder b)
-    {
-        return StringUtils::Compare(a.name , b.name);
-    };
-
     static inline const char *BASIC_RENDERPASS_ID = "BasicRenderPass - ID";
 
     static bool Create(VulkanContext *ctx, BasicRenderpassParams params, Renderpass *out_renderpass)
@@ -166,7 +156,7 @@ struct BasicRenderpass
         data->depth = params.depth;
         data->stencil = params.stencil;
         data->camera_matrix_buffer;
-        HMap<ShaderBuilder,Shader>::Create(&data->shader_lookup , Global::alloc_toolbox.heap_allocator , 10 , 10 , ShaderBuilderHash , ShaderBuilderCmp );
+        HMap<ShaderBuilder,Shader>::Create(&data->shader_lookup , Global::alloc_toolbox.heap_allocator , 10 , 10 , ShaderUtils::ShaderBuilderHash , ShaderUtils::ShaderBuilderCmp );
 
         // camera buffer
         {
@@ -188,10 +178,10 @@ struct BasicRenderpass
         out_renderpass->on_destroy = OnDestroy;
 
         Allocator alloc = Global::alloc_toolbox.heap_allocator;
-        DArray<RenderTarget>::Create(ctx->swapchain_info.imagesCount, &out_renderpass->render_targets, alloc);
+        DArray<RenderTarget>::Create(ctx->swapchain_info.images_count, &out_renderpass->render_targets, alloc);
 
         // we start creating a renderTarget for each swapchain image
-        for (size_t i = 0; i < ctx->swapchain_info.imagesCount; ++i)
+        for (size_t i = 0; i < ctx->swapchain_info.images_count; ++i)
         {
             RenderTarget rt = {};
 
@@ -207,7 +197,7 @@ struct BasicRenderpass
             // [as specified at the start of this method with the line]
             // "createInfo.pAttachments = attachementDescs.data;"
             FrameBuffer framebuffer = {};
-            FrameBuffer::Create(ctx, out_renderpass, ctx->frameBufferSize, attachements, &framebuffer);
+            FrameBuffer::Create(ctx, out_renderpass, ctx->frame_buffer_size, attachements, &framebuffer);
 
             rt.framebuffer = framebuffer;
 
@@ -247,17 +237,17 @@ struct BasicRenderpass
                 // hence why the y == height and height = -height
                 VkViewport viewport = {};
                 viewport.x = 0;
-                viewport.y = (float)ctx->frameBufferSize.y;
-                viewport.width = (float)ctx->frameBufferSize.x;
-                viewport.height = -(float)ctx->frameBufferSize.y;
+                viewport.y = (float)ctx->frame_buffer_size.y;
+                viewport.width = (float)ctx->frame_buffer_size.x;
+                viewport.height = -(float)ctx->frame_buffer_size.y;
                 viewport.maxDepth = 1;
                 viewport.minDepth = 0;
 
                 VkRect2D scissor = {};
                 scissor.offset.x = 0;
                 scissor.offset.y = 0;
-                scissor.extent.width = ctx->frameBufferSize.x;
-                scissor.extent.height = ctx->frameBufferSize.y;
+                scissor.extent.width = ctx->frame_buffer_size.x;
+                scissor.extent.height = ctx->frame_buffer_size.y;
 
                 vkCmdSetViewport(cmd->handle, 0, 1, &viewport);
                 vkCmdSetScissor(cmd->handle, 0, 1, &scissor);
@@ -343,8 +333,8 @@ struct BasicRenderpass
 
         begin_info.renderArea.offset.x = (int32_t)data->area.x;
         begin_info.renderArea.offset.y = (int32_t)data->area.y;
-        begin_info.renderArea.extent.width = (int32_t)ctx->frameBufferSize.x;
-        begin_info.renderArea.extent.height = (int32_t)ctx->frameBufferSize.y;
+        begin_info.renderArea.extent.width = (int32_t)ctx->frame_buffer_size.x;
+        begin_info.renderArea.extent.height = (int32_t)ctx->frame_buffer_size.y;
 
         VkClearValue clear_values[2];
 
@@ -376,7 +366,7 @@ struct BasicRenderpass
 
         DArray<RenderTarget>::Clear(&in_renderpass->render_targets);
 
-        for (size_t i = 0; i < ctx->swapchain_info.imagesCount; ++i)
+        for (size_t i = 0; i < ctx->swapchain_info.images_count; ++i)
         {
             RenderTarget rt = {};
 
@@ -386,7 +376,7 @@ struct BasicRenderpass
             DArray<VkImageView>::Add(&attachements, ctx->swapchain_info.depthAttachement.view);
 
             FrameBuffer framebuffer = {};
-            FrameBuffer::Create(ctx, in_renderpass, ctx->frameBufferSize, attachements, &framebuffer);
+            FrameBuffer::Create(ctx, in_renderpass, ctx->frame_buffer_size, attachements, &framebuffer);
 
             rt.framebuffer = framebuffer;
 
@@ -395,8 +385,8 @@ struct BasicRenderpass
 
         data->area.x = 0;
         data->area.y = 0;
-        data->area.width = (float)ctx->frameBufferSize.x;
-        data->area.height = (float)ctx->frameBufferSize.y;
+        data->area.width = (float)ctx->frame_buffer_size.x;
+        data->area.height = (float)ctx->frame_buffer_size.y;
     }
 
     static void End(Renderpass *in_renderpass, CommandBuffer *cmd)

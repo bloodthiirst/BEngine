@@ -33,7 +33,7 @@ struct BAPI Global
     {                                           \
         Global::logger.Error("Vulkan Error !"); \
         Global::logger.Error(#X);               \
-    }
+    }                                           \
 
 struct BAPI ArenaCheckpoint
 {

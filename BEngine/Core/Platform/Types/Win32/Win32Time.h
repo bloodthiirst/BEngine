@@ -9,7 +9,7 @@ struct Win32Time
 {
     double seconds_per_tick;
     int64_t ticks_per_second;
-    int64_t startTime;
+    int64_t ticks_on_startup;
 
     static void Create(Time* out_time)
     {
@@ -21,16 +21,17 @@ struct Win32Time
         // frequency is basically ticks per second
         QueryPerformanceFrequency(&frequency);
 
+        // get the current "tick" counter of the CPU
+        // we consider this to be the "startTime" of the engine
+        QueryPerformanceCounter(&start_time);
+
         // since frequency is ticks/sec
         // if would be also useful to have sec/tick
         // that way if we wanna get the timing in seconds
         // we just need to (ticks * sec/tick) = the time passed in seconds
         time->ticks_per_second = frequency.QuadPart;
         time->seconds_per_tick = 1.0 / frequency.QuadPart;
-
-        // get the current "tick" counter of the CPU
-        // we consider this to be the "startTime" of the engine
-        QueryPerformanceCounter(&start_time);
+        time->ticks_on_startup = start_time.QuadPart;
 
         out_time->user_data = time;
         out_time->get_system_time = GetTimeWin32;
@@ -43,7 +44,7 @@ struct Win32Time
 
         Win32Time* time = (Win32Time*) in_time->user_data;
 
-        int64_t elapsed_ticks = curr_ticks.QuadPart - time->startTime;
+        int64_t elapsed_ticks = curr_ticks.QuadPart - time->ticks_on_startup;
 
         double time_elapsed = elapsed_ticks * time->seconds_per_tick;
 
