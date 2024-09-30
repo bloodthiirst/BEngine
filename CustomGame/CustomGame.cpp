@@ -277,7 +277,7 @@ void Initialize(GameApp *game_app)
                                                               VkMemoryPropertyFlagBits::VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 
         desc.sharing_mode = VkSharingMode::VK_SHARING_MODE_EXCLUSIVE;
-        desc.size = sizeof(Matrix4x4);
+        desc.size = sizeof(Matrix4x4) * 100;
         desc.usage = VkBufferUsageFlagBits::VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
 
         Buffer::Create(desc, true, &state->instances_data);
@@ -305,11 +305,9 @@ void OnUpdate(GameApp *game_app, float delta_time)
     }
 }
 
-void OnRender(GameApp *game_app, RendererContext *render_ctx, float delta_time)
+void GetAllRectRecursive(LayoutNode* root_node , DArray<Matrix4x4>* inout_mats)
 {
-    CustomGameState *game_state = (CustomGameState *)game_app->user_data;
-
-    Rect rect = game_state->ui_root.resolved_rect;
+    Rect rect = root_node->resolved_rect;
 
     Matrix4x4 ui_rect_mat = Matrix4x4(
         {rect.size.x, 0, 0, rect.pos.x},
@@ -317,14 +315,33 @@ void OnRender(GameApp *game_app, RendererContext *render_ctx, float delta_time)
         {0, 0, 1, 0},
         {0, 0, 0, 1});
 
+    DArray<Matrix4x4>::Add(inout_mats , ui_rect_mat);
+
+    for(size_t i = 0; i < root_node->sub_nodes.size ; ++i)
+    {
+        GetAllRectRecursive(&root_node->sub_nodes.data[i] , inout_mats);
+    }
+}
+
+void OnRender(GameApp *game_app, RendererContext *render_ctx, float delta_time)
+{
+    CustomGameState *game_state = (CustomGameState *)game_app->user_data;
+
+    Rect rect = game_state->ui_root.resolved_rect;
+
+    DArray<Matrix4x4> rects_to_render = {};
+    DArray<Matrix4x4>::Create(100 , &rects_to_render , Global::alloc_toolbox.frame_allocator);
+
+    GetAllRectRecursive(&game_state->ui_root , &rects_to_render);
+
     DrawMesh draw = {};
     draw.mesh = &game_state->plane_mesh;
     draw.shader_builder = &game_state->shader_builder;
     draw.texture = &game_state->texture;
-    draw.instances_count = 1;
+    draw.instances_count = rects_to_render.size;
     draw.instances_data = game_state->instances_data;
 
-    Buffer::Load(0, sizeof(ui_rect_mat), &ui_rect_mat, 0, &game_state->instances_data);
+    Buffer::Load(0, sizeof(Matrix4x4) * rects_to_render.size, rects_to_render.data, 0, &game_state->instances_data);
 
     DArray<DrawMesh>::Add(&render_ctx->mesh_draws , draw);
 }

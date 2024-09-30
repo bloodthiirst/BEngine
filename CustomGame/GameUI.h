@@ -17,37 +17,20 @@ struct GameUI
         
         // root node
         LayoutNode root_node = {};
-        root_node.option.x =
-        {
-            LayoutOrigin::Screen,
-            LayoutSize::Value,
-            LayoutUnit::Pixels,
-            0
-        };
+        root_node.option.x = { LayoutOrigin::Screen , LayoutSize::Value,LayoutUnit::Pixels, 0 };
+        root_node.option.y = { LayoutOrigin::Screen , LayoutSize::Value,LayoutUnit::Pixels, 0 };
+        root_node.option.width = { LayoutOrigin::Screen , LayoutSize::Value,LayoutUnit::Percentage, 1 };
+        root_node.option.height = { LayoutOrigin::Screen , LayoutSize::Value,LayoutUnit::Pixels, 300 };
+        DArray<LayoutNode>::Create(1 , &root_node.sub_nodes , Global::alloc_toolbox.frame_allocator);
 
-        root_node.option.y =
-        {
-            LayoutOrigin::Screen,
-            LayoutSize::Value,
-            LayoutUnit::Pixels,
-            0
-        };
+        // test node
+        LayoutNode test_node = {};
+        test_node.option.x = { LayoutOrigin::Screen , LayoutSize::Value,LayoutUnit::Percentage, 0.25 };
+        test_node.option.y = { LayoutOrigin::Screen , LayoutSize::Value,LayoutUnit::Pixels, 400 };
+        test_node.option.width = { LayoutOrigin::Screen , LayoutSize::Value,LayoutUnit::Percentage, 0.5};
+        test_node.option.height = { LayoutOrigin::Screen , LayoutSize::Value,LayoutUnit::Pixels, 100 };
 
-        root_node.option.width = 
-        {
-            LayoutOrigin::Screen,
-            LayoutSize::Value,
-            LayoutUnit::Percentage,
-            1
-        };
-
-        root_node.option.height = 
-        {
-            LayoutOrigin::Screen,
-            LayoutSize::Value,
-            LayoutUnit::Pixels,
-            300
-        };
+        DArray<LayoutNode>::Add(&root_node.sub_nodes , test_node);
 
         game_state->ui_root = root_node;
         

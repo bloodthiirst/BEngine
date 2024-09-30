@@ -186,5 +186,11 @@ struct LayoutBuilder
         }
 
         in_node->resolved_rect = rect;
+
+        for(size_t i = 0; i < in_node->sub_nodes.size; ++i)
+        {
+            LayoutNode* curr = &in_node->sub_nodes.data[i];
+            ComputeLayout(curr , in_state);
+        }
     }
 };
