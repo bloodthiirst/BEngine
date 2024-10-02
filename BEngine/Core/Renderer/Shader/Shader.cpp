@@ -37,7 +37,7 @@ bool Shader::Destroy(VulkanContext *context, Shader *in_shader)
     return true;
 }
 
-void Shader::SetBuffer(VulkanContext *context, Shader *in_shader, uint32_t descriptor_set_index, Buffer *in_buffer)
+void Shader::SetBuffer(VulkanContext *context, Shader *in_shader, uint32_t descriptor_set_index, Buffer *in_buffer , size_t offset , size_t size)
 {
     uint32_t current_image = context->current_image_index;
 
@@ -50,8 +50,8 @@ void Shader::SetBuffer(VulkanContext *context, Shader *in_shader, uint32_t descr
 
     VkDescriptorBufferInfo bufferInfo = {};
     bufferInfo.buffer = in_buffer->handle;
-    bufferInfo.offset = 0;
-    bufferInfo.range = in_buffer->descriptor.size;
+    bufferInfo.offset = offset;
+    bufferInfo.range = size;
 
     VkWriteDescriptorSet writeDescriptor = {};
     writeDescriptor.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;

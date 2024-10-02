@@ -15,6 +15,7 @@
 #include <Core/AssetManager/MeshAssetManger.h>
 #include <Core/Renderer/Mesh/Mesh3D.h>
 #include <Core/Renderer/Texture/Texture.h>
+#include <Core/Thread/Thread.h>
 #include "CustomGameState.h"
 #include "SceneCameraController.h"
 #include "CustomGame.h"
@@ -247,6 +248,16 @@ Mesh3D CreatePlane()
     return plane_mesh;
 }
 
+DWORD Test(void* param)
+{   
+    while(true)
+    {
+        Global::logger.Log("Hi from test");
+        Global::platform.sleep(500);
+    }
+    return -1;
+}
+
 void Initialize(GameApp *game_app)
 {
     game_app->game_state.camera_position = Vector3(0, 0, -3);
@@ -271,18 +282,16 @@ void Initialize(GameApp *game_app)
 
     // create instance data
     {
-        BufferDescriptor desc = {};
-        desc.memoryPropertyFlags = (VkMemoryPropertyFlagBits)(VkMemoryPropertyFlagBits::VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
-                                                              VkMemoryPropertyFlagBits::VK_MEMORY_PROPERTY_HOST_COHERENT_BIT |
-                                                              VkMemoryPropertyFlagBits::VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-
-        desc.sharing_mode = VkSharingMode::VK_SHARING_MODE_EXCLUSIVE;
-        desc.size = sizeof(Matrix4x4) * 100;
-        desc.usage = VkBufferUsageFlagBits::VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
-
-        Buffer::Create(desc, true, &state->instances_data);
+        VulkanContext* ctx = (VulkanContext*) Global::backend_renderer.user_data;
+        const size_t size = sizeof(Matrix4x4) * 100;
+        FreeList::AllocBlock(&ctx->descriptors_freelist , size , &state->instances_data);
     }
+
+    Thread::Create(Test , nullptr , &state->thread_test);
+    Thread::Run(&state->thread_test);
 }
+
+
 
 void OnUpdate(GameApp *game_app, float delta_time)
 {
@@ -326,6 +335,7 @@ void GetAllRectRecursive(LayoutNode* root_node , DArray<Matrix4x4>* inout_mats)
 void OnRender(GameApp *game_app, RendererContext *render_ctx, float delta_time)
 {
     CustomGameState *game_state = (CustomGameState *)game_app->user_data;
+    VulkanContext* ctx = (VulkanContext*) Global::backend_renderer.user_data;
 
     Rect rect = game_state->ui_root.resolved_rect;
 
@@ -334,6 +344,9 @@ void OnRender(GameApp *game_app, RendererContext *render_ctx, float delta_time)
 
     GetAllRectRecursive(&game_state->ui_root , &rects_to_render);
 
+    const size_t size_for_rects = sizeof(Matrix4x4) * rects_to_render.size;
+    assert(size_for_rects <= game_state->instances_data.size);
+
     DrawMesh draw = {};
     draw.mesh = &game_state->plane_mesh;
     draw.shader_builder = &game_state->shader_builder;
@@ -341,7 +354,10 @@ void OnRender(GameApp *game_app, RendererContext *render_ctx, float delta_time)
     draw.instances_count = rects_to_render.size;
     draw.instances_data = game_state->instances_data;
 
-    Buffer::Load(0, sizeof(Matrix4x4) * rects_to_render.size, rects_to_render.data, 0, &game_state->instances_data);
+    VkCommandPool pool = ctx->physical_device_info.command_pools_info.graphicsCommandPool;
+    VkQueue queue = ctx->physical_device_info.queues_info.graphics_queue;
+    Buffer::Load(game_state->instances_data.start, size_for_rects , rects_to_render.data, 0, &ctx->staging_buffer);
+    Buffer::Copy(pool , {} , queue, &ctx->staging_buffer, 0 , &ctx->descriptors_buffer , game_state->instances_data.start, size_for_rects);
 
     DArray<DrawMesh>::Add(&render_ctx->mesh_draws , draw);
 }
@@ -349,13 +365,15 @@ void OnRender(GameApp *game_app, RendererContext *render_ctx, float delta_time)
 void Destroy(GameApp *game_app)
 {
     CustomGameState *state = (CustomGameState *)game_app->user_data;
+    
+    Thread::Suspend(&state->thread_test);
+    Thread::Destroy(&state->thread_test);
 
     Global::backend_renderer.wait_idle(&Global::backend_renderer);
 
     Mesh3D::Destroy(&state->plane_mesh);
     Texture::Destroy(&state->texture);
     ShaderBuilder::Destroy(&state->shader_builder);
-    Buffer::Destroy(&state->instances_data);
     Global::alloc_toolbox.HeapFree((CustomGameState *)game_app->user_data);
 }
 

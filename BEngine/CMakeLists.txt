@@ -58,6 +58,10 @@ message("\t-- Adding game headers from ${gameHeaders}")
 set(vulkanHeaders "C:/Dev/Vulkan/Include")
 message("\t-- Adding Vulkan headers from ${vulkanHeaders}")
 
+# add FreeType headers
+set(freeTypeHeaders "C:/Dev/FreeType/include")
+message("\t-- Adding FreeType headers from ${freeTypeHeaders}")
+
 # add Spir-V headers
 set(spirVHeaders "C:/Dev/SPIRV-Reflect")
 message("\t-- Adding SPIR-V headers from ${spirVHeaders}")
@@ -83,6 +87,11 @@ set(VulkanLib "C:/Dev/Vulkan/Lib/vulkan-1.lib")
 message("\t-- Adding Vulkan Static library from ${VulkanLib}")
 message("\r")
 
+# add Freetype static lib
+set(FreeTypeLib "C:/Dev/FreeType/out/Debug/freetyped.lib")
+message("\t-- Adding FreeType Static library from ${FreeTypeLib}")
+message("\r")
+
 message("-- Build path")
 message("\t-- ${BUILD_PATH}")
 message("\r")
@@ -104,7 +113,8 @@ add_custom_command(TARGET BEngineExe POST_BUILD
     COMMAND_EXPAND_LISTS
 )
 
-set(All_Libs ${VulkanLib} ${BCoreLib})
+set(All_Libs ${VulkanLib} ${BCoreLib} ${FreeTypeLib})
+set(All_Headers ${mathHeaders} ${bcoreHeaders} ${gameHeaders} ${vulkanHeaders} ${spirVHeaders} ${freeTypeHeaders})
 
 target_link_libraries(BEngineCommon ${All_Libs})
 target_link_libraries(BEngineExe ${All_Libs})
@@ -113,8 +123,6 @@ target_link_libraries(BEngineDLL ${All_Libs})
 # Make both the .dll and .exe have the same name "BEngine"
 set_property(TARGET BEngineExe PROPERTY OUTPUT_NAME BEngine)
 set_property(TARGET BEngineDLL PROPERTY OUTPUT_NAME BEngine)
-
-set(All_Headers ${mathHeaders} ${bcoreHeaders} ${gameHeaders} ${vulkanHeaders} ${spirVHeaders})
 
 target_include_directories(BEngineCommon PUBLIC ${All_Headers})
 target_include_directories(BEngineExe PUBLIC ${All_Headers})

@@ -33,8 +33,13 @@ struct BAPI VulkanContext
     
     DescriptorManager descriptor_manager;
 
-    Buffer mesh_buffer;
+	Buffer staging_buffer;
+    
+	Buffer mesh_buffer;
 	FreeList mesh_freelist;
+
+	Buffer descriptors_buffer;
+	FreeList descriptors_freelist;
 	
     VkSampler default_sampler;
 

@@ -290,8 +290,8 @@ struct UIRenderpass
                 assert(shader.pipeline.handle != VK_NULL_HANDLE);
 
                 Shader::Bind(ctx, &shader);
-                Shader::SetBuffer(ctx, &shader, 0, &data->camera_matrix_buffer);
-                Shader::SetBuffer(ctx , &shader,2, &curr.instances_data);
+                Shader::SetBuffer(ctx, &shader, 0, &data->camera_matrix_buffer , 0 , sizeof(GlobalUniformObject));
+                Shader::SetBuffer(ctx , &shader,2, &ctx->descriptors_buffer , curr.instances_data.start , curr.instances_data.size);
                 Shader::SetTexture(ctx, &shader, 1, curr.texture);
 
                 DArray<VkDescriptorSet> curr_set = shader.descriptor_sets[frame_index];

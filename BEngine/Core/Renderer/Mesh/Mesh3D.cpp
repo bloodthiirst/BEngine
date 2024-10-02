@@ -38,34 +38,20 @@ void Mesh3D::AllocData(Mesh3D* inout_mesh, ArrayView<Vertex3D> verts, ArrayView<
     FreeList::AllocBlock(&ctx->mesh_freelist, verts_size, &inout_mesh->verticies_block);
     FreeList::AllocBlock(&ctx->mesh_freelist, index_size, &inout_mesh->indicies_block);
 
-    // first , we create a host-visible staging buffer to upload the data to in
-    // then we mark it as the source of the transfer
-    VkMemoryPropertyFlagBits usage = (VkMemoryPropertyFlagBits)(VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-    Buffer staging_buffer = {};
-
-    BufferDescriptor buffer_desc = {};
-    buffer_desc.size = Maths::Max(verts_size , index_size);
-    buffer_desc.memoryPropertyFlags = usage;
-    buffer_desc.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
-
     VkCommandPool pool = ctx->physical_device_info.command_pools_info.graphicsCommandPool;
     VkQueue queue = ctx->physical_device_info.queues_info.graphics_queue;
 
-    Buffer::Create(buffer_desc, true, &staging_buffer);
-
     // copy verts
     {
-        Buffer::Load(0, verts_size, verts.data, 0, &staging_buffer);
-        Buffer::Copy( pool, {}, queue, &staging_buffer, 0, &ctx->mesh_buffer, inout_mesh->verticies_block.start, verts_size);
+        Buffer::Load(0, verts_size, verts.data, 0, &ctx->staging_buffer);
+        Buffer::Copy( pool, {}, queue, &ctx->staging_buffer, 0, &ctx->mesh_buffer, inout_mesh->verticies_block.start, verts_size);
     }
 
     // copy indicies
     {
-        Buffer::Load(0, index_size, indicies.data, 0, &staging_buffer);
-        Buffer::Copy( pool, {}, queue, &staging_buffer, 0, &ctx->mesh_buffer, inout_mesh->indicies_block.start, index_size);
+        Buffer::Load(0, index_size, indicies.data, 0, &ctx->staging_buffer);
+        Buffer::Copy( pool, {}, queue, &ctx->staging_buffer, 0, &ctx->mesh_buffer, inout_mesh->indicies_block.start, index_size);
     }
-
-    Buffer::Destroy(&staging_buffer);
 }
 
 void Mesh3D::FreeData(Mesh3D* inout_mesh)

@@ -26,6 +26,7 @@
 #include "AssetManager/ShaderAssetManager.h"
 #include "AssetManager/TextureAssetManager.h"
 #include "Command/Command.h"
+#include "Renderer/Font/Font.h"
 #ifdef _WIN32
 #include "Platform/Types/Win32/Win32Platform.h"
 #endif
@@ -174,7 +175,6 @@ int main( int argc, char** argv )
         assert(result.node_type == XMLNodeType::Element);
     }
 
-
     // compile shaders
     {
         StringView shader_folder = "C:\\Dev\\BEngine\\BEngine\\Core\\Resources";
@@ -206,12 +206,37 @@ int main( int argc, char** argv )
                 Command cmd = {};
                 Command::Create( &cmd , complile_cmd.view );
                 Command::Run(cmd , &output , Global::alloc_toolbox.frame_allocator);
-
-                Global::logger.Log(output.view);
             }
         }
         Global::alloc_toolbox.ResetArenaOffset(&check);
     }
+    
+    // render font
+    {
+        StringView font_ttf_path = "C:\\Dev\\BEngine\\BEngine\\Core\\Resources\\GORILAZ PERSONAL USE.ttf";
+        FileHandle handle = {};
+        uint64_t filesize = {};
+        
+        Global::platform.filesystem.open(font_ttf_path , FileModeFlag::Read , true , &handle);
+        Global::platform.filesystem.get_size(&handle, &filesize);
+        void* filedata = (void*) ALLOC(Global::alloc_toolbox.frame_allocator , filesize);
+        Global::platform.filesystem.read_all(handle , filedata , &filesize);
+        Global::platform.filesystem.close(&handle);
+
+        ArrayView<char> fileview = { (char*)filedata , (size_t) filesize };
+        FontImporter importer = {};
+        FontImporter::Create(&importer);
+
+        Font font = {}; 
+        FontImporter::LoadFont(&importer , fileview , &font);
+
+        FontDescriptor desc = {};
+        desc.atlas_size = { 2048 , 128};
+        desc.font_size_px = 64;
+
+        Font::GenerateAtlas(&font , desc , nullptr);
+    }
+
     GameApp client_game = {};
     HMODULE hmodule = nullptr;
 

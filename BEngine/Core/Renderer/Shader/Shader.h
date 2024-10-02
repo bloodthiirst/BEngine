@@ -55,7 +55,7 @@ struct BAPI Shader
 
 public:
     static bool Bind(VulkanContext *context, Shader *in_shader);
-    static void SetBuffer(VulkanContext *context, Shader *in_shader, uint32_t descriptor_set_index, Buffer *in_buffer);
+    static void SetBuffer(VulkanContext *context, Shader *in_shader, uint32_t descriptor_set_index, Buffer *in_buffer , size_t offset , size_t size);
     static void SetTexture(VulkanContext *context, Shader *in_shader, uint32_t descriptor_set_index, Texture *in_texture);
     static bool Destroy(VulkanContext *context, Shader *in_shader);
 };

@@ -61,8 +61,7 @@ const char *VK_LAYERS[] = {"VK_LAYER_KHRONOS_validation"};
 const char *DEVICE_EXTENSIONS[] =
     {
         VK_KHR_SWAPCHAIN_EXTENSION_NAME,
-        VK_KHR_MAINTENANCE1_EXTENSION_NAME
-    };
+        VK_KHR_MAINTENANCE1_EXTENSION_NAME};
 
 VKAPI_ATTR VkBool32 DebugCallback(
     VkDebugUtilsMessageSeverityFlagBitsEXT severity,
@@ -481,31 +480,8 @@ bool CreateGraphicsCommandPools(VulkanContext *context)
     return true;
 }
 
-bool UploadDataRange(VulkanContext *context, VkCommandPool pool, Fence fence, VkQueue queue, Buffer *in_buffer, uint32_t offset, uint32_t size, void *inDataPtr)
-{
-    // first , we create a host-visible staging buffer to upload the data to in
-    // then we mark it as the source of the transfer
-    VkMemoryPropertyFlagBits usage = (VkMemoryPropertyFlagBits)(VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-    Buffer stagingBuffer = {};
-
-    BufferDescriptor bufferDesc = {};
-    bufferDesc.size = size;
-    bufferDesc.memoryPropertyFlags = usage;
-    bufferDesc.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
-
-    Buffer::Create(bufferDesc, true, &stagingBuffer);
-
-    Buffer::Load(0, size, inDataPtr, 0, &stagingBuffer);
-
-    Buffer::Copy(pool, fence, queue, &stagingBuffer, 0, in_buffer, offset, size);
-
-    Buffer::Destroy(&stagingBuffer);
-
-    return true;
-}
-
 void HandleWindowResize(WindowResizeEvent evt)
-{         
+{
     Global::backend_renderer.resize(&Global::backend_renderer, evt.dimensions.x, evt.dimensions.y);
 }
 
@@ -807,6 +783,25 @@ bool Startup(BackendRenderer *in_renderer, ApplicationStartup startup)
 
     Global::logger.Info("Default texture created");
 
+    // staging buffer
+    {
+        uint32_t staging_alloc_size = 1024 * 1024;
+
+        BufferDescriptor buffer_desc = {};
+        VkBufferUsageFlagBits usage = (VkBufferUsageFlagBits)(VkBufferUsageFlagBits::VK_BUFFER_USAGE_TRANSFER_SRC_BIT);
+
+        buffer_desc.memoryPropertyFlags = (VkMemoryPropertyFlagBits)(   VkMemoryPropertyFlagBits::VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT | 
+                                                                        VkMemoryPropertyFlagBits::VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
+        buffer_desc.size = staging_alloc_size;
+        buffer_desc.usage = usage;
+
+        if (!Buffer::Create(buffer_desc, true, &ctx->staging_buffer))
+        {
+            Global::logger.Error("Couldn't create staging buffer ....");
+            return false;
+        }
+    }
+
     // mesh buffer
     {
         uint32_t mesh_alloc_size = 1024 * 1024;
@@ -829,8 +824,33 @@ bool Startup(BackendRenderer *in_renderer, ApplicationStartup startup)
         }
 
         const uint32_t nodes_capacity = 512;
-        FreeList::Create(&ctx->mesh_freelist , nodes_capacity , mesh_alloc_size , Global::alloc_toolbox.heap_allocator); 
+        FreeList::Create(&ctx->mesh_freelist, nodes_capacity, mesh_alloc_size, Global::alloc_toolbox.heap_allocator);
         Global::logger.Info("Vertex buffer created");
+    }
+
+    // descriptors buffer
+    {
+        uint32_t desc_alloc_size = 1024 * 1024;
+
+        BufferDescriptor buffer_desc = {};
+
+        VkBufferUsageFlagBits usage = (VkBufferUsageFlagBits)(VkBufferUsageFlagBits::VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT |
+                                                              VkBufferUsageFlagBits::VK_BUFFER_USAGE_TRANSFER_DST_BIT |
+                                                              VkBufferUsageFlagBits::VK_BUFFER_USAGE_TRANSFER_SRC_BIT);
+
+        buffer_desc.memoryPropertyFlags = (VkMemoryPropertyFlagBits)(VkMemoryPropertyFlagBits::VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+        buffer_desc.size = desc_alloc_size;
+        buffer_desc.usage = usage;
+
+        if (!Buffer::Create(buffer_desc, true, &ctx->descriptors_buffer))
+        {
+            Global::logger.Error("Couldn't create descriptor buffer ....");
+            return false;
+        }
+
+        const uint32_t nodes_capacity = 512;
+        FreeList::Create(&ctx->descriptors_freelist, nodes_capacity, desc_alloc_size, Global::alloc_toolbox.heap_allocator);
+        Global::logger.Info("Descriptor buffer created");
     }
 
     return true;
@@ -886,9 +906,9 @@ bool StartFrame(BackendRenderer *in_backend, RendererContext *renderer_ctx)
         desc.imagesCount = 3;
         SwapchainInfo::Recreate(ctx, desc, &ctx->swapchain_info);
 
-        for(size_t i = 0; i < ctx->renderpasses.size; ++i)
+        for (size_t i = 0; i < ctx->renderpasses.size; ++i)
         {
-            Renderpass* curr = &ctx->renderpasses.data[i];
+            Renderpass *curr = &ctx->renderpasses.data[i];
             curr->on_resize(curr);
         }
 
@@ -896,7 +916,6 @@ bool StartFrame(BackendRenderer *in_backend, RendererContext *renderer_ctx)
 
         result = vkDeviceWaitIdle(device.handle);
     }
-
 
     // first we get the index of the last frame index
     uint32_t last_frame = ctx->current_frame;
@@ -910,7 +929,7 @@ bool StartFrame(BackendRenderer *in_backend, RendererContext *renderer_ctx)
     // we ask the swapchain to get us the index of an image that we can render to
     // plug last frame's presentaion semaphore as a "dependency" (in other words , make sure last presentation is donee)
     uint32_t current_image = {};
-    
+
     if (!ctx->swapchain_info.AcquireNextImageIndex(ctx, UINT32_MAX, ctx->swapchain_info.image_presentation_complete_semaphores.data[last_frame], nullptr, &current_image))
     {
         Global::logger.Error("Couldn't get next image to render to from the swapchain");
@@ -1044,6 +1063,11 @@ bool Destroy(BackendRenderer *in_backend)
     Buffer::Destroy(&ctx->mesh_buffer);
     FreeList::Destroy(&ctx->mesh_freelist);
 
+    Buffer::Destroy(&ctx->descriptors_buffer);
+    FreeList::Destroy(&ctx->descriptors_freelist);
+
+    Buffer::Destroy(&ctx->staging_buffer);
+    
     DescriptorManager::Destroy(&ctx->descriptor_manager);
 
     for (size_t i = 0; i < ctx->renderpasses.size; ++i)
@@ -1066,9 +1090,9 @@ bool Destroy(BackendRenderer *in_backend)
     return true;
 }
 
-inline void WaitIdle(BackendRenderer* in_renderer)
+inline void WaitIdle(BackendRenderer *in_renderer)
 {
-    VulkanContext* ctx = (VulkanContext*) in_renderer->user_data;
+    VulkanContext *ctx = (VulkanContext *)in_renderer->user_data;
     vkDeviceWaitIdle(ctx->logical_device_info.handle);
 }
 

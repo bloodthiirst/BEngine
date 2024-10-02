@@ -42,5 +42,12 @@ struct Win32Platform
         Win32Filesystem::Create(&platform_out->filesystem);
         Win32Time::Create(&platform_out->time);
         Win32Window::Create(&platform_out->window);
+
+        platform_out->sleep = Win32Sleep;
+    }
+
+    static void Win32Sleep(uint64_t milliseconds)
+    {
+        Sleep((DWORD) milliseconds);
     }
 };
