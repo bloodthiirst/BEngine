@@ -36,7 +36,7 @@ struct PhysicalDeviceRequirements
     bool compute;
     bool transfer;
     bool sampler_anisotropy;
-    bool discreteGPU;
+    bool discrete_GPU;
 };
 
 struct LogicalDeviceRequirements
@@ -277,7 +277,7 @@ bool CreatePhysicalDevice(Platform *platform, VkInstance vkInstance, VkSurfaceKH
     requirements.compute = true;
     requirements.transfer = true;
     requirements.sampler_anisotropy = true;
-    requirements.discreteGPU = true;
+    requirements.discrete_GPU = true;
 
     int maxScore = 0;
 
@@ -297,7 +297,7 @@ bool CreatePhysicalDevice(Platform *platform, VkInstance vkInstance, VkSurfaceKH
         Global::logger.Log("> Evaluating device : {}", props.deviceName);
 
         // discrete
-        if ((requirements.discreteGPU) && (props.deviceType != VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU))
+        if ((requirements.discrete_GPU) && (props.deviceType != VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU))
         {
             Global::logger.Error("This device is not a discrete GPU , skippping ...");
             continue;

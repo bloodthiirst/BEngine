@@ -27,6 +27,7 @@
 #include "AssetManager/TextureAssetManager.h"
 #include "Command/Command.h"
 #include "Renderer/Font/Font.h"
+#include "Renderer/RenderGraph/RenderGraph.h"
 #ifdef _WIN32
 #include "Platform/Types/Win32/Win32Platform.h"
 #endif
@@ -237,6 +238,21 @@ int main( int argc, char** argv )
         Font::GenerateAtlas(&font , desc , nullptr);
     }
 
+    // rendergraph
+    {
+       RenderGraph graph = RenderGraph::Create(Global::alloc_toolbox.frame_allocator);
+
+       graph.AddRenderpass()
+                ->AddSubpass({})
+                ->AddSubpass({})
+                ->AddDependency(0 , 1)
+                ->Done()
+            ->AddRenderpass()
+                ->AddSubpass({})
+                ->AddSubpass({})
+                ->Done();
+    }
+    
     GameApp client_game = {};
     HMODULE hmodule = nullptr;
 
