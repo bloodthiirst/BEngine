@@ -4,6 +4,7 @@
 #include <Maths/Color.h>
 #include "../CommandBuffer/CommandBuffer.h"
 #include "../Texture/Texture.h"
+#include "../Subpasses/Subpass.h"
 #include "../FrameBuffer/FrameBuffer.h"
 
 enum class RenderpassState
@@ -28,9 +29,11 @@ struct CommandBuffer;
 struct Renderpass
 {
     StringView id;
+    RenderGraph* graph;
     VkRenderPass handle;
     void* internal_data;
     RenderpassState state;
+    DArray<Subpass> subpasses;
 
     DArray<RenderTarget> render_targets;
     ActionParams<Renderpass*, CommandBuffer*> begin;

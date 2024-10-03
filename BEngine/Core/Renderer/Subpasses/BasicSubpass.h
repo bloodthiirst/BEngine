@@ -2,37 +2,27 @@
 #include <Containers/DArray.h>
 #include <Containers/HMap.h>
 #include "../../Global/Global.h"
-#include "../Renderpass/Renderpass.h"
+#include "../Subpasses/Subpass.h"
 #include "../CommandBuffer/CommandBuffer.h"
 #include "../Buffer/Buffer.h"
 #include "../Context/VulkanContext.h"
 
-struct BasicRenderpassParams
+struct BasicSubpassParams
 {
     bool sync_window_size;
-    Rect area;
-    Color clearColor;
-    float depth;
-    uint32_t stencil;
-
     HMap<ShaderBuilder , Shader> shader_lookup;
     Buffer camera_matrix_buffer;
 };
 
 
-struct BasicRenderpass
+struct BasicSubpass
 {
-    static inline const char *BASIC_RENDERPASS_ID = "BasicRenderPass - ID";
+    static inline const char *BASIC_RENDERPASS_ID = "UI Subpass - ID";
 
-    static bool Create(VulkanContext *ctx, BasicRenderpassParams params, Renderpass *out_renderpass)
+    static bool Create(VulkanContext *ctx, BasicSubpassParams params, Subpass *out_subpass)
     {
-        *out_renderpass = {};
-
-        out_renderpass->id = StringView::Create(BASIC_RENDERPASS_ID);
-
-        // main subpass
-        VkSubpassDescription subpassDesc = {};
-        subpassDesc.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+        *out_subpass = {};
+        out_subpass->id = StringView::Create(BASIC_RENDERPASS_ID);
 
         Allocator heap_alloc = Global::alloc_toolbox.heap_allocator;
 
@@ -105,9 +95,11 @@ struct BasicRenderpass
 
             DArray<VkAttachmentDescription>::Add(&attachementDescs, depthAttachmentDesc);
         }
+        // main subpass
+        VkSubpassDescription subpassDesc = {};
+        subpassDesc.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
 
         // todo : we could have other attachement (input , resolve , preserve)
-
         subpassDesc.colorAttachmentCount = 1;
         subpassDesc.pColorAttachments = &colorReference;
         subpassDesc.pDepthStencilAttachment = &depthReference;
@@ -149,13 +141,9 @@ struct BasicRenderpass
             return false;
         }
 
-        BasicRenderpassParams *data = Global::alloc_toolbox.HeapAlloc<BasicRenderpassParams>();
-
-        data->area = params.area;
-        data->clearColor = params.clearColor;
-        data->depth = params.depth;
-        data->stencil = params.stencil;
-        data->camera_matrix_buffer;
+        UISubpassParams *data = Global::alloc_toolbox.HeapAlloc<UISubpassParams>();
+        data->sync_window_size = true;
+        
         HMap<ShaderBuilder,Shader>::Create(&data->shader_lookup , Global::alloc_toolbox.heap_allocator , 10 , 10 , ShaderUtils::ShaderBuilderHash , ShaderUtils::ShaderBuilderCmp );
 
         // camera buffer
@@ -169,47 +157,19 @@ struct BasicRenderpass
             Buffer::Create(desc, true, &data->camera_matrix_buffer);
         }
 
-        out_renderpass->internal_data = data;
-        out_renderpass->handle = vkRenderpass;
-        out_renderpass->begin = Begin;
-        out_renderpass->draw = Draw;
-        out_renderpass->end = End;
-        out_renderpass->on_resize = OnResize;
-        out_renderpass->on_destroy = OnDestroy;
-
-        Allocator alloc = Global::alloc_toolbox.heap_allocator;
-        DArray<RenderTarget>::Create(ctx->swapchain_info.images_count, &out_renderpass->render_targets, alloc);
-
-        // we start creating a renderTarget for each swapchain image
-        for (size_t i = 0; i < ctx->swapchain_info.images_count; ++i)
-        {
-            RenderTarget rt = {};
-
-            // the framebuffer at index [N] has the purpose of providing the needed images for rendering the Nth swapchain image
-            // in this simple case , we need two images (aka attachements) (the color , and the depth)
-            DArray<VkImageView> attachements = {};
-            DArray<VkImageView>::Create(2, &attachements, alloc);
-            DArray<VkImageView>::Add(&attachements, ctx->swapchain_info.imageViews.data[i]);
-            DArray<VkImageView>::Add(&attachements, ctx->swapchain_info.depthAttachement.view);
-
-            // now we just create the framebuffer with the corresponding attachments
-            // those attachement are refered to by index in the renderpass
-            // [as specified at the start of this method with the line]
-            // "createInfo.pAttachments = attachementDescs.data;"
-            FrameBuffer framebuffer = {};
-            FrameBuffer::Create(ctx, out_renderpass, ctx->frame_buffer_size, attachements, &framebuffer);
-
-            rt.framebuffer = framebuffer;
-
-            DArray<RenderTarget>::Add(&out_renderpass->render_targets, rt);
-        }
+        out_subpass->internal_data = data;
+        out_subpass->begin = Begin;
+        out_subpass->draw = Draw;
+        out_subpass->end = End;
+        out_subpass->on_resize = OnResize;
+        out_subpass->on_destroy = OnDestroy;
 
         return true;
     }
 
-    static void Draw(Renderpass *in_renderpass, CommandBuffer *cmd, RendererContext *render_ctx)
+    static void Draw(Subpass *in_subpass, CommandBuffer *cmd, RendererContext *render_ctx)
     {
-        BasicRenderpassParams *data = (BasicRenderpassParams *)in_renderpass->internal_data;
+        BasicSubpass *data = (BasicSubpass *)in_subpass->internal_data;
         BackendRenderer *in_backend = &Global::backend_renderer;
         VulkanContext *ctx = (VulkanContext *)Global::backend_renderer.user_data;
 
@@ -319,86 +279,29 @@ struct BasicRenderpass
         }
     }
 
-    static void Begin(Renderpass *in_renderpass, CommandBuffer *cmd)
+    static void Begin(Subpass *in_subpass, CommandBuffer *cmd)
     {
-        BasicRenderpassParams *data = (BasicRenderpassParams *)in_renderpass->internal_data;
+        BasicSubpass *data = (UISubpassPaBasicSubpassrams *)in_subpass->internal_data;
 
         VulkanContext *ctx = (VulkanContext *)Global::backend_renderer.user_data;
         uint32_t frame_index = ctx->current_image_index;
-        FrameBuffer framebuffer = in_renderpass->render_targets.data[frame_index].framebuffer;
-
-        VkRenderPassBeginInfo begin_info = {VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO};
-        begin_info.renderPass = in_renderpass->handle;
-        begin_info.framebuffer = framebuffer.handle;
-
-        begin_info.renderArea.offset.x = (int32_t)data->area.x;
-        begin_info.renderArea.offset.y = (int32_t)data->area.y;
-        begin_info.renderArea.extent.width = (int32_t)ctx->frame_buffer_size.x;
-        begin_info.renderArea.extent.height = (int32_t)ctx->frame_buffer_size.y;
-
-        VkClearValue clear_values[2];
-
-        clear_values[0].color.float32[0] = data->clearColor.r;
-        clear_values[0].color.float32[1] = data->clearColor.g;
-        clear_values[0].color.float32[2] = data->clearColor.b;
-        clear_values[0].color.float32[3] = data->clearColor.a;
-        clear_values[1].depthStencil.depth = data->depth;
-        clear_values[1].depthStencil.stencil = data->stencil;
-
-        begin_info.clearValueCount = 2;
-        begin_info.pClearValues = clear_values;
-
-        vkCmdBeginRenderPass(cmd->handle, &begin_info, VK_SUBPASS_CONTENTS_INLINE);
-
-        cmd->state = CommandBufferState::InRenderpass;
     }
 
-    static void OnResize(Renderpass *in_renderpass)
+    static void OnResize(Subpass *in_subpass)
     {
-        VulkanContext *ctx = (VulkanContext *)Global::backend_renderer.user_data;
-        BasicRenderpassParams *data = (BasicRenderpassParams *)in_renderpass->internal_data;
-        Allocator alloc = Global::alloc_toolbox.heap_allocator;
 
-        for (size_t i = 0; i < in_renderpass->render_targets.size; ++i)
-        {
-            FrameBuffer::Destroy(ctx, &in_renderpass->render_targets.data[i].framebuffer);
-        }
-
-        DArray<RenderTarget>::Clear(&in_renderpass->render_targets);
-
-        for (size_t i = 0; i < ctx->swapchain_info.images_count; ++i)
-        {
-            RenderTarget rt = {};
-
-            DArray<VkImageView> attachements = {};
-            DArray<VkImageView>::Create(2, &attachements, alloc);
-            DArray<VkImageView>::Add(&attachements, ctx->swapchain_info.imageViews.data[i]);
-            DArray<VkImageView>::Add(&attachements, ctx->swapchain_info.depthAttachement.view);
-
-            FrameBuffer framebuffer = {};
-            FrameBuffer::Create(ctx, in_renderpass, ctx->frame_buffer_size, attachements, &framebuffer);
-
-            rt.framebuffer = framebuffer;
-
-            DArray<RenderTarget>::Add(&in_renderpass->render_targets, rt);
-        }
-
-        data->area.x = 0;
-        data->area.y = 0;
-        data->area.width = (float)ctx->frame_buffer_size.x;
-        data->area.height = (float)ctx->frame_buffer_size.y;
     }
 
-    static void End(Renderpass *in_renderpass, CommandBuffer *cmd)
+    static void End(Subpass *in_subpass, CommandBuffer *cmd)
     {
         vkCmdEndRenderPass(cmd->handle);
         cmd->state = CommandBufferState::Recording;
     }
 
-    static void OnDestroy(Renderpass *in_renderpass)
+    static void OnDestroy(Subpass *in_subpass)
     {
         VulkanContext *ctx = (VulkanContext *)Global::backend_renderer.user_data;
-        BasicRenderpassParams *data = (BasicRenderpassParams *)in_renderpass->internal_data;
+        UISubpassParams *data = (UISubpassParams *)in_subpass->internal_data;
 
         ArenaCheckpoint check = Global::alloc_toolbox.GetArenaCheckpoint();
         
@@ -415,12 +318,6 @@ struct BasicRenderpass
         HMap<ShaderBuilder,Shader>::Destroy(&data->shader_lookup);
         Buffer::Destroy(&data->camera_matrix_buffer);
 
-        for (size_t i = 0; i < in_renderpass->render_targets.size; ++i)
-        {
-            FrameBuffer::Destroy(ctx, &in_renderpass->render_targets.data[i].framebuffer);
-        }
-
         Global::alloc_toolbox.ResetArenaOffset(&check);
-        DArray<RenderTarget>::Destroy(&in_renderpass->render_targets);
     }
 };

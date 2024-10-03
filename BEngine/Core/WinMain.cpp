@@ -27,7 +27,7 @@
 #include "AssetManager/TextureAssetManager.h"
 #include "Command/Command.h"
 #include "Renderer/Font/Font.h"
-#include "Renderer/RenderGraph/RenderGraph.h"
+#include "Renderer/RenderGraph/BasicRenderGraph.h"
 #ifdef _WIN32
 #include "Platform/Types/Win32/Win32Platform.h"
 #endif
@@ -240,17 +240,10 @@ int main( int argc, char** argv )
 
     // rendergraph
     {
-       RenderGraph graph = RenderGraph::Create(Global::alloc_toolbox.frame_allocator);
+        VulkanContext* ctx = (VulkanContext*) Global::backend_renderer.user_data;
 
-       graph.AddRenderpass()
-                ->AddSubpass({})
-                ->AddSubpass({})
-                ->AddDependency(0 , 1)
-                ->Done()
-            ->AddRenderpass()
-                ->AddSubpass({})
-                ->AddSubpass({})
-                ->Done();
+        RenderGraphBuilder builder = BasicRenderGraph::Create();
+        builder.Build(&ctx->render_graph);
     }
     
     GameApp client_game = {};

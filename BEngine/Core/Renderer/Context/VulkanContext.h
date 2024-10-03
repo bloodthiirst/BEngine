@@ -13,6 +13,7 @@
 #include "../Fence/Fence.h"
 #include "../DescriptorManager/DescriptorManager.h"
 #include "../Texture/Texture.h"
+#include "../RenderGraph/RenderGraphBuilder.h"
 #include "../Shader/Shader.h"
 #include "../Buffer/Buffer.h"
 
@@ -29,7 +30,7 @@ struct BAPI VulkanContext
 	LogicalDeviceInfo logical_device_info;
 	PhysicalDeviceInfo physical_device_info;
 	SwapchainInfo swapchain_info;
-    DArray<Renderpass> renderpasses;
+    RenderGraph render_graph;
     
     DescriptorManager descriptor_manager;
 

@@ -23,8 +23,7 @@
 #include "../Texture/Texture.h"
 #include "../Shader/Shader.h"
 #include "../Buffer/Buffer.h"
-#include "../Renderpasses/BasicRenderpass.h"
-#include "../Renderpasses/UIRenderpass.h"
+#include "../RenderGraph/BasicRenderGraph.h"
 #include "../../AssetManager/ShaderAssetManager.h"
 #include <Maths/Vector2.h>
 #include "../Mesh/Vertex3D.h"
@@ -683,79 +682,6 @@ bool Startup(BackendRenderer *in_renderer, ApplicationStartup startup)
 
     Global::logger.Info("Swapchain created");
 
-#define UI_PASS true
-#define BASIC_PASS false
-
-#if BASIC_PASS == true
-    // create basic renderpass
-    {
-        Rect rect = {};
-        rect.x = 0;
-        rect.y = 0;
-        rect.width = (float)Global::platform.window.width;
-        rect.height = (float)Global::platform.window.height;
-
-        Color clearColor = {};
-        clearColor.r = 0;
-        clearColor.g = 0;
-        clearColor.b = 0.2f;
-        clearColor.a = 1;
-
-        BasicRenderpassParams renderpass_params = {};
-        renderpass_params.area = rect;
-        renderpass_params.clearColor = clearColor;
-        renderpass_params.depth = 1;
-        renderpass_params.stencil = 0;
-        renderpass_params.sync_window_size = true;
-
-        Renderpass renderpass = {};
-        if (!BasicRenderpass::Create(ctx, renderpass_params, &renderpass))
-        {
-            Global::logger.Error("Couldn't create basic renderpass ....");
-            return false;
-        }
-
-        DArray<Renderpass>::Add(&ctx->renderPasses, renderpass);
-
-        Global::logger.Info("Basic Renderpass created");
-    }
-#endif
-
-#if UI_PASS
-    // create ui renderpass
-    {
-        Rect rect = {};
-        rect.x = 0;
-        rect.y = 0;
-        rect.width = (float)Global::platform.window.width;
-        rect.height = (float)Global::platform.window.height;
-
-        Color clearColor = {};
-        clearColor.r = 0;
-        clearColor.g = 0;
-        clearColor.b = 0.2f;
-        clearColor.a = 1;
-
-        UIRenderpassParams renderpass_params = {};
-        renderpass_params.area = rect;
-        renderpass_params.clearColor = clearColor;
-        renderpass_params.depth = 1;
-        renderpass_params.stencil = 0;
-        renderpass_params.sync_window_size = true;
-
-        Renderpass renderpass = {};
-        if (!UIRenderpass::Create(ctx, renderpass_params, &renderpass))
-        {
-            Global::logger.Error("Couldn't create ui renderpass ....");
-            return false;
-        }
-
-        DArray<Renderpass>::Add(&ctx->renderpasses, renderpass);
-
-        Global::logger.Info("UI Renderpass created");
-    }
-#endif
-
     // create descriptor set pools
     {
         DescriptorManager::Create(ctx, &ctx->descriptor_manager);
@@ -873,20 +799,6 @@ bool StartFrame(BackendRenderer *in_backend, RendererContext *renderer_ctx)
     VulkanContext *ctx = (VulkanContext *)in_backend->user_data;
     LogicalDeviceInfo device = ctx->logical_device_info;
 
-    /*
-    if (ctx->recreate_swapchain)
-    {
-        VkResult result = vkDeviceWaitIdle(device.handle);
-
-        if (result != VkResult::VK_SUCCESS)
-        {
-            Global::logger.Error("Couldn't wait device idle");
-        }
-
-        return false;
-    }
-    */
-
     // check if we need to recreate the swapchain
     if (ctx->frame_buffer_current_counter != ctx->frame_buffer_last_counter)
     {
@@ -906,10 +818,16 @@ bool StartFrame(BackendRenderer *in_backend, RendererContext *renderer_ctx)
         desc.imagesCount = 3;
         SwapchainInfo::Recreate(ctx, desc, &ctx->swapchain_info);
 
-        for (size_t i = 0; i < ctx->renderpasses.size; ++i)
+        for (size_t renderpass_idx = 0; renderpass_idx < ctx->render_graph.renderpasses.size; ++renderpass_idx)
         {
-            Renderpass *curr = &ctx->renderpasses.data[i];
+            Renderpass *curr = &ctx->render_graph.renderpasses.data[renderpass_idx];
             curr->on_resize(curr);
+
+            for (size_t sub_idx = 0; sub_idx < curr->subpasses.size; ++sub_idx)
+            {
+                Subpass *sub = &curr->subpasses.data[sub_idx];
+                sub->on_resize(sub);
+            }
         }
 
         ctx->frame_buffer_last_counter = ctx->frame_buffer_current_counter;
@@ -938,15 +856,21 @@ bool StartFrame(BackendRenderer *in_backend, RendererContext *renderer_ctx)
 
     ctx->current_image_index = current_image;
 
-    CommandBuffer cmdBuffer = ctx->swapchain_info.graphics_cmd_buffers_per_image.data[current_image];
+    CommandBuffer cmd = ctx->swapchain_info.graphics_cmd_buffers_per_image.data[current_image];
 
-    cmdBuffer.Reset();
-    cmdBuffer.Begin(false, false, false);
+    cmd.Reset();
+    cmd.Begin(false, false, false);
 
-    for (size_t i = 0; i < ctx->renderpasses.size; ++i)
+    for (size_t renderpass_idx = 0; renderpass_idx < ctx->render_graph.renderpasses.size; ++renderpass_idx)
     {
-        Renderpass *curr = &ctx->renderpasses.data[i];
-        curr->begin(curr, &cmdBuffer);
+        Renderpass *curr = &ctx->render_graph.renderpasses.data[renderpass_idx];
+        curr->begin(curr, &cmd);
+
+        for(size_t sub_idx = 0; sub_idx < curr->subpasses.size; sub_idx++)
+        {
+            Subpass* sub = &curr->subpasses.data[sub_idx];
+            sub->begin(sub , &cmd);
+        }
     }
 
     return true;
@@ -958,10 +882,16 @@ bool DrawFrame(BackendRenderer *in_backend, RendererContext *renderer_ctx)
     uint32_t current_index = ctx->current_image_index;
     CommandBuffer cmd = ctx->swapchain_info.graphics_cmd_buffers_per_image.data[current_index];
 
-    for (size_t i = 0; i < ctx->renderpasses.size; ++i)
+    for (size_t i = 0; i < ctx->render_graph.renderpasses.size; ++i)
     {
-        Renderpass *curr = &ctx->renderpasses.data[i];
+        Renderpass *curr = &ctx->render_graph.renderpasses.data[i];
         curr->draw(curr, &cmd, renderer_ctx);
+
+        for(size_t sub_idx = 0; sub_idx < curr->subpasses.size; sub_idx++)
+        {
+            Subpass* sub = &curr->subpasses.data[sub_idx];
+            sub->draw(sub , &cmd , renderer_ctx);
+        }
     }
 
     return true;
@@ -973,10 +903,16 @@ bool EndFrame(BackendRenderer *in_backend, RendererContext *rendererContext)
     VulkanContext *ctx = (VulkanContext *)in_backend->user_data;
     CommandBuffer cmd = ctx->swapchain_info.graphics_cmd_buffers_per_image.data[ctx->current_image_index];
 
-    for (size_t i = 0; i < ctx->renderpasses.size; ++i)
+    for (size_t i = 0; i < ctx->render_graph.renderpasses.size; ++i)
     {
-        Renderpass *curr = &ctx->renderpasses.data[i];
+        Renderpass *curr = &ctx->render_graph.renderpasses.data[i];
         curr->end(curr, &cmd);
+
+        for(size_t sub_idx = 0; sub_idx < curr->subpasses.size; sub_idx++)
+        {
+            Subpass* sub = &curr->subpasses.data[sub_idx];
+            sub->end(sub , &cmd);
+        }
     }
 
     cmd.End();
@@ -1070,15 +1006,22 @@ bool Destroy(BackendRenderer *in_backend)
     
     DescriptorManager::Destroy(&ctx->descriptor_manager);
 
-    for (size_t i = 0; i < ctx->renderpasses.size; ++i)
+    for (size_t i = 0; i < ctx->render_graph.renderpasses.size; ++i)
     {
-        Renderpass *curr = &ctx->renderpasses.data[i];
+        Renderpass *curr = &ctx->render_graph.renderpasses.data[i];
         curr->on_destroy(curr);
 
+        for(size_t sub_idx = 0; sub_idx < curr->subpasses.size; sub_idx++)
+        {
+            Subpass* sub = &curr->subpasses.data[sub_idx];
+            sub->on_destroy(sub);
+        }
+
+        DArray<Subpass>::Destroy(&curr->subpasses);
         vkDestroyRenderPass(ctx->logical_device_info.handle, curr->handle, ctx->allocator);
     }
 
-    DArray<Renderpass>::Destroy(&ctx->renderpasses);
+    DArray<Renderpass>::Destroy(&ctx->render_graph.renderpasses);
 
     SwapchainInfo::Destroy(ctx, &ctx->swapchain_info);
 
@@ -1099,7 +1042,6 @@ inline void WaitIdle(BackendRenderer *in_renderer)
 void VulkanBackendRenderer::Create(BackendRenderer *out_renderer)
 {
     VulkanContext *ctx = Global::alloc_toolbox.HeapAlloc<VulkanContext>();
-    DArray<Renderpass>::Create(3, &ctx->renderpasses, Global::alloc_toolbox.heap_allocator);
 
     out_renderer->user_data = ctx;
     out_renderer->startup = Startup;

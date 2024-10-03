@@ -14,7 +14,7 @@ public:
     Renderpass* renderpass;
 
 public:
-    static void Create ( VulkanContext* context, Renderpass* renderpass, Vector2Int dimensions, DArray<VkImageView> attatchments, FrameBuffer* outFramebuffer );
+    static void Create ( VulkanContext* context, Renderpass* in_renderpass, Vector2Int dimensions, DArray<VkImageView> attatchments, FrameBuffer* out_framebuffer );
     static void Destroy ( VulkanContext* context, FrameBuffer* outFramebuffer );
 };
 
