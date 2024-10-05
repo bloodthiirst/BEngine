@@ -37,7 +37,7 @@ void RenderGraphBuilder::Build(RenderGraph* out_graph)
     {
         RenderpassNode curr_rp = renderpasses.data[renderpass_idx];      
         
-        Renderpass rp = curr_rp.builder(this , curr_rp);
+        Renderpass rp = curr_rp.builder(this , out_graph , curr_rp);
         rp.graph = out_graph;
 
         for (size_t subpass_idx = 0; subpass_idx < curr_rp.subpasses.size; subpass_idx++)

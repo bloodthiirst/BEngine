@@ -181,7 +181,7 @@ struct Win32Window
 
         case WM_SETFOCUS:
         {
-            Global::app.application_state.isFocused = true;
+            Global::app.application_state.is_focused = true;
 
             WindowFocusEvent evt = WindowFocusEvent();
 
@@ -191,7 +191,7 @@ struct Win32Window
         }
         case WM_KILLFOCUS:
         {
-            Global::app.application_state.isFocused = false;
+            Global::app.application_state.is_focused = false;
 
             WindowUnfocusEvent evt = WindowUnfocusEvent();
 

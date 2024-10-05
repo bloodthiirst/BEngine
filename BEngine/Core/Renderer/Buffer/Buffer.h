@@ -24,7 +24,7 @@ struct BAPI Buffer
 
     static bool Create (BufferDescriptor descriptor , bool bindOnCreate ,Buffer* out_buffer );
     static bool Destroy (Buffer* out_buffer );
-    static bool Load (uint32_t offset, uint32_t size , void* in_data , VkMemoryMapFlags flags , Buffer* inout_buffer );
+    static bool Load (uint32_t buffer_offset, uint32_t size , void* in_data , VkMemoryMapFlags flags , Buffer* inout_buffer );
     
     /// <summary>
     /// Takes the content of the buffer and maps it to a block of memory (outDataPtr in out case)

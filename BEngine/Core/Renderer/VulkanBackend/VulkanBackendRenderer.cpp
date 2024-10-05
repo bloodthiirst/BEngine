@@ -711,7 +711,7 @@ bool Startup(BackendRenderer *in_renderer, ApplicationStartup startup)
 
     // staging buffer
     {
-        uint32_t staging_alloc_size = 1024 * 1024;
+        uint32_t staging_alloc_size = 1024 * 1024 * 1024;
 
         BufferDescriptor buffer_desc = {};
         VkBufferUsageFlagBits usage = (VkBufferUsageFlagBits)(VkBufferUsageFlagBits::VK_BUFFER_USAGE_TRANSFER_SRC_BIT);
@@ -730,7 +730,7 @@ bool Startup(BackendRenderer *in_renderer, ApplicationStartup startup)
 
     // mesh buffer
     {
-        uint32_t mesh_alloc_size = 1024 * 1024;
+        uint32_t mesh_alloc_size = 1024 * 1024 * 1024;
 
         BufferDescriptor buffer_desc = {};
 
@@ -889,6 +889,11 @@ bool DrawFrame(BackendRenderer *in_backend, RendererContext *renderer_ctx)
 
         for(size_t sub_idx = 0; sub_idx < curr->subpasses.size; sub_idx++)
         {
+            if(sub_idx != 0)
+            {
+                vkCmdNextSubpass(cmd.handle, VkSubpassContents::VK_SUBPASS_CONTENTS_INLINE);
+            }
+
             Subpass* sub = &curr->subpasses.data[sub_idx];
             sub->draw(sub , &cmd , renderer_ctx);
         }

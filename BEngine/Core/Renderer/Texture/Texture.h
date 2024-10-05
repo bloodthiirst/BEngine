@@ -24,6 +24,8 @@ struct TextureDescriptor
     /// </summary>
     VkImageTiling tiling;
 
+    uint32_t mipmaps_level;
+
     /// <summary>
     /// <para>Used mainly to define the use-case that can be done with the image like :</para>
     /// <para>- Being a color buffer for a Framebuffer</para>
@@ -31,6 +33,8 @@ struct TextureDescriptor
     /// <para>- Being sampled from in a shader's descriptor set</para>
     /// </summary>
     VkImageUsageFlags usage;
+
+
 
     VkMemoryPropertyFlags memory_flags;
 

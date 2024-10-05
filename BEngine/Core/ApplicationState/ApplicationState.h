@@ -3,8 +3,7 @@
 
 struct ApplicationState
 {
-	bool isRunning;
-    bool isFocused;
-    StringView executablePath;
+	bool is_running;
+    bool is_focused;
 };
 

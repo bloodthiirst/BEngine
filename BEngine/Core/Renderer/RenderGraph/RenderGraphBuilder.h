@@ -12,8 +12,7 @@ struct RenderGraphBuilder;
 struct RenderpassNode;
 struct RenderpassResult;
 
-typedef Func<Renderpass , RenderGraphBuilder* ,RenderpassNode> RenderpassBuilder;
-
+typedef Func<Renderpass , RenderGraphBuilder* , RenderGraph*,RenderpassNode> RenderpassBuilder;
 
 struct RenderGraph
 {

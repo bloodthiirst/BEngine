@@ -119,6 +119,7 @@ bool AllocateResource( VulkanContext* context, SwapchainInfo* outSwapchain )
         descriptor.width = context->physical_device_info.swapchainSupportInfo.capabilities.currentExtent.width;
         descriptor.height = context->physical_device_info.swapchainSupportInfo.capabilities.currentExtent.height;
         descriptor.image_type = VK_IMAGE_TYPE_2D;
+        descriptor.mipmaps_level = 4;
         descriptor.tiling = VK_IMAGE_TILING_OPTIMAL;
         descriptor.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
         descriptor.memory_flags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;

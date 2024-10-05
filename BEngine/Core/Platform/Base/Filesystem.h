@@ -2,6 +2,7 @@
 #include <Typedefs/Typedefs.h>
 #include <String/StringBuffer.h>
 #include <String/StringView.h>
+#include <Containers/ArrayView.h>
 
 enum BAPI FileModeFlag
 {
@@ -25,6 +26,7 @@ struct BAPI Filesystem
     Func<bool, const FileHandle*, StringBuffer*> read_text;
     Func<bool, const FileHandle, void* , uint64_t*> read_all;
     Func<bool, const FileHandle*, StringView> write_text;
+    Func<bool, const FileHandle*, ArrayView<char>> write_bytes;
 
     // Allocator refers to the one used to alloc the StringBuffers in the list
     ActionParams<StringView,DArray<StringBuffer>*,Allocator> get_files;

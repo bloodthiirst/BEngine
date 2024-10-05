@@ -16,10 +16,11 @@
 #include <Core/Renderer/Mesh/Mesh3D.h>
 #include <Core/Renderer/Texture/Texture.h>
 #include <Core/Thread/Thread.h>
-#include "CustomGameState.h"
+#include "EntryPoint.h"
 #include "SceneCameraController.h"
 #include "CustomGame.h"
 #include "GameUI.h"
+#include "GameText.h"
 
 static const char *game_name = "Custom game title";
 
@@ -41,6 +42,7 @@ Texture CreateColorTexture()
     tex_desc.format = VkFormat::VK_FORMAT_R32G32B32A32_SFLOAT;
     tex_desc.height = (uint32_t)height;
     tex_desc.width = (uint32_t)width;
+    tex_desc.mipmaps_level = 4;
     tex_desc.view_aspect_flags = VkImageAspectFlagBits::VK_IMAGE_ASPECT_COLOR_BIT;
     tex_desc.image_type = VkImageType::VK_IMAGE_TYPE_2D;
     tex_desc.tiling = VkImageTiling::VK_IMAGE_TILING_OPTIMAL;
@@ -102,6 +104,7 @@ Texture CreateGridTexture()
     tex_desc.format = VkFormat::VK_FORMAT_R32G32B32A32_SFLOAT;
     tex_desc.height = (uint32_t)height;
     tex_desc.width = (uint32_t)width;
+    tex_desc.mipmaps_level = 4;
     tex_desc.view_aspect_flags = VkImageAspectFlagBits::VK_IMAGE_ASPECT_COLOR_BIT;
     tex_desc.image_type = VkImageType::VK_IMAGE_TYPE_2D;
     tex_desc.tiling = VkImageTiling::VK_IMAGE_TILING_OPTIMAL;
@@ -216,7 +219,7 @@ Mesh3D CreatePlane()
     const uint32_t vert_count = 4;
     const uint32_t index_count = 6;
 
-    Vertex3D vertPositions[vert_count] =
+    Vertex3D vert_positions[vert_count] =
         {
             {Vector2(1.0f, 1.0f), Vector2(1.0f, 1.0f)}, // TOP RIGHT
             {Vector2(0.0f, 1.0f), Vector2(0.0f, 1.0f)}, // TOP LEFT
@@ -236,7 +239,7 @@ Mesh3D CreatePlane()
 
     Mesh3D plane_mesh = {};
     ArrayView<Vertex3D> vert_view = {};
-    vert_view.data = vertPositions;
+    vert_view.data = vert_positions;
     vert_view.size = vert_count;
 
     ArrayView<uint32_t> index_view = {};
@@ -263,8 +266,37 @@ void Initialize(GameApp *game_app)
     game_app->game_state.camera_position = Vector3(0, 0, -3);
     game_app->game_state.camera_rotation = {1, 0, 0, 0};
 
-    CustomGameState *state = Global::alloc_toolbox.HeapAlloc<CustomGameState>();
+    EntryPoint *state = Global::alloc_toolbox.HeapAlloc<EntryPoint>();
     game_app->user_data = state;
+    
+    // render font
+    {
+        StringView font_ttf_path = "C:\\Dev\\BEngine\\BEngine\\Core\\Resources\\monofonto rg.otf";
+        FileHandle handle = {};
+        uint64_t filesize = {};
+        
+        Global::platform.filesystem.open(font_ttf_path , FileModeFlag::Read , true , &handle);
+        Global::platform.filesystem.get_size(&handle, &filesize);
+        void* filedata = (void*) ALLOC(Global::alloc_toolbox.frame_allocator , filesize);
+        Global::platform.filesystem.read_all(handle , filedata , &filesize);
+        Global::platform.filesystem.close(&handle);
+
+        ArrayView<char> fileview = { (char*)filedata , (size_t) filesize };
+        FontImporter importer = {};
+        FontImporter::Create(&importer);
+
+        Font font = {}; 
+        FontImporter::LoadFont(&importer , fileview , &font);
+
+        FontDescriptor desc = {};
+        desc.atlas_size = { 2048 , 2048};
+        desc.font_size_px = 128;
+
+        FontInfo info = {};
+        Font::GenerateAtlas(&font , desc , &info);
+
+        state->font_info = info;
+    }
 
     // init camera
     {
@@ -276,30 +308,29 @@ void Initialize(GameApp *game_app)
     // create assets
     {
         state->plane_mesh = CreatePlane();
-        state->shader_builder = CreateShaderBuilder();
-        state->texture = CreateColorTexture();
+        state->ui_shader_builder = CreateShaderBuilder();
+        state->ui_texture = CreateColorTexture();
     }
 
     // create instance data
     {
         VulkanContext* ctx = (VulkanContext*) Global::backend_renderer.user_data;
         const size_t size = sizeof(Matrix4x4) * 100;
-        FreeList::AllocBlock(&ctx->descriptors_freelist , size , &state->instances_data);
+        FreeList::AllocBlock(&ctx->descriptors_freelist , size , &state->ui_root.instances_data);
     }
 
     Thread::Create(Test , nullptr , &state->thread_test);
     Thread::Run(&state->thread_test);
 }
 
-
-
 void OnUpdate(GameApp *game_app, float delta_time)
 {
-    CustomGameState *state = (CustomGameState *)game_app->user_data;
+    EntryPoint *state = (EntryPoint *)game_app->user_data;
 
     // ui
     {
         GameUI::Build(state);
+        GameText::Build(state);
     }
 
     // camera
@@ -314,57 +345,18 @@ void OnUpdate(GameApp *game_app, float delta_time)
     }
 }
 
-void GetAllRectRecursive(LayoutNode* root_node , DArray<Matrix4x4>* inout_mats)
-{
-    Rect rect = root_node->resolved_rect;
-
-    Matrix4x4 ui_rect_mat = Matrix4x4(
-        {rect.size.x, 0, 0, rect.pos.x},
-        {0, rect.size.y, 0, rect.pos.y},
-        {0, 0, 1, 0},
-        {0, 0, 0, 1});
-
-    DArray<Matrix4x4>::Add(inout_mats , ui_rect_mat);
-
-    for(size_t i = 0; i < root_node->sub_nodes.size ; ++i)
-    {
-        GetAllRectRecursive(&root_node->sub_nodes.data[i] , inout_mats);
-    }
-}
 
 void OnRender(GameApp *game_app, RendererContext *render_ctx, float delta_time)
 {
-    CustomGameState *game_state = (CustomGameState *)game_app->user_data;
-    VulkanContext* ctx = (VulkanContext*) Global::backend_renderer.user_data;
-
-    Rect rect = game_state->ui_root.resolved_rect;
-
-    DArray<Matrix4x4> rects_to_render = {};
-    DArray<Matrix4x4>::Create(100 , &rects_to_render , Global::alloc_toolbox.frame_allocator);
-
-    GetAllRectRecursive(&game_state->ui_root , &rects_to_render);
-
-    const size_t size_for_rects = sizeof(Matrix4x4) * rects_to_render.size;
-    assert(size_for_rects <= game_state->instances_data.size);
-
-    DrawMesh draw = {};
-    draw.mesh = &game_state->plane_mesh;
-    draw.shader_builder = &game_state->shader_builder;
-    draw.texture = &game_state->texture;
-    draw.instances_count = rects_to_render.size;
-    draw.instances_data = game_state->instances_data;
-
-    VkCommandPool pool = ctx->physical_device_info.command_pools_info.graphicsCommandPool;
-    VkQueue queue = ctx->physical_device_info.queues_info.graphics_queue;
-    Buffer::Load(game_state->instances_data.start, size_for_rects , rects_to_render.data, 0, &ctx->staging_buffer);
-    Buffer::Copy(pool , {} , queue, &ctx->staging_buffer, 0 , &ctx->descriptors_buffer , game_state->instances_data.start, size_for_rects);
-
-    DArray<DrawMesh>::Add(&render_ctx->mesh_draws , draw);
+    EntryPoint* entry = (EntryPoint*)Global::app.game_app.user_data;
+ 
+    DArray<DrawMesh>::Add(&render_ctx->mesh_draws , entry->ui_root.GetDraw());
+    DArray<DrawMesh>::Add(&render_ctx->mesh_draws , entry->text.GetDraw());
 }
 
 void Destroy(GameApp *game_app)
 {
-    CustomGameState *state = (CustomGameState *)game_app->user_data;
+    EntryPoint *state = (EntryPoint *)game_app->user_data;
     
     Thread::Suspend(&state->thread_test);
     Thread::Destroy(&state->thread_test);
@@ -372,9 +364,9 @@ void Destroy(GameApp *game_app)
     Global::backend_renderer.wait_idle(&Global::backend_renderer);
 
     Mesh3D::Destroy(&state->plane_mesh);
-    Texture::Destroy(&state->texture);
-    ShaderBuilder::Destroy(&state->shader_builder);
-    Global::alloc_toolbox.HeapFree((CustomGameState *)game_app->user_data);
+    Texture::Destroy(&state->ui_texture);
+    ShaderBuilder::Destroy(&state->ui_shader_builder);
+    Global::alloc_toolbox.HeapFree((EntryPoint *)game_app->user_data);
 }
 
 extern "C" __declspec(dllexport) GameApp GetGameApp()

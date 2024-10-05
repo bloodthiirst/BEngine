@@ -1,10 +1,10 @@
 #pragma once
-#include "CustomGameState.h"
 #include <Core/UI/UILayout.h>
+#include "EntryPoint.h"
 
 struct GameUI
 {
-    static void Build(CustomGameState* game_state)
+    static void Build(EntryPoint* entry)
     {
         // screen node
         LayoutNode screen_node = {};
@@ -32,12 +32,15 @@ struct GameUI
 
         DArray<LayoutNode>::Add(&root_node.sub_nodes , test_node);
 
-        game_state->ui_root = root_node;
-        
+        entry->ui_root.root = root_node;
+        entry->ui_root.mesh = &entry->plane_mesh;
+        entry->ui_root.texture = &entry->ui_texture;
+        entry->ui_root.shader_builder = &entry->ui_shader_builder;
+
         LayoutState ui_state = {};
         ui_state.screen_node = screen_node;
-        ui_state.root = &game_state->ui_root;
+        ui_state.root = &entry->ui_root.root;
 
-        LayoutBuilder::ComputeLayout(&game_state->ui_root , &ui_state);
+        LayoutBuilder::ComputeLayout(&entry->ui_root.root , &ui_state);
     };
 };

@@ -14,6 +14,7 @@ public:
         out_filesystem->close = Win32Close;
         out_filesystem->read_text = ReadText;
         out_filesystem->write_text = WriteText;
+        out_filesystem->write_bytes = WriteBytes;
         out_filesystem->read_all = ReadAll;
         out_filesystem->get_size = Win32GetSize;
         out_filesystem->get_files = Win32GetFiles;
@@ -182,21 +183,33 @@ private:
         return *outReadBytes == fileSize;
     }
 
-    static bool WriteText(const FileHandle *file_handle, StringView in_string)
+
+    static bool WriteBytes(const FileHandle *file_handle, ArrayView<char> in_bytes)
     {
         if (!file_handle->handle || !file_handle->is_valid)
             return false;
 
         FILE *handle = (FILE *)file_handle->handle;
 
-        // TODO : refactor this to allocate from some global temporary memory instead of the stack since file can be reaaaaaaaaaally big
-        char *temp_str = (char *)alloca((in_string.length + 1) * sizeof(char));
+        size_t result = fwrite(in_bytes.data , sizeof(byte) , in_bytes.size , handle);
 
-        Allocator alloc = EmplaceAllocator::Create(temp_str);
+        fflush(handle);
 
-        StringView::ToCString(in_string, alloc);
+        return result != EOF;
+    }
 
-        int result = fputs(temp_str, handle);
+    static bool WriteText(const FileHandle *file_handle, StringView in_string)
+    {
+        if (!file_handle->handle || !file_handle->is_valid)
+            return false;
+
+        FILE *handle = (FILE *)file_handle->handle;
+        
+        size_t result = fwrite(in_string.buffer , sizeof(char) , in_string.length , handle);
+
+        fseek(handle , in_string.length , SEEK_SET);
+
+        result = fwrite("\0" , sizeof(char) , 1 , handle);
 
         fflush(handle);
 

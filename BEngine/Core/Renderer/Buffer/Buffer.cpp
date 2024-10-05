@@ -73,13 +73,13 @@ bool Buffer::Destroy(Buffer* out_buffer )
     return true;
 }
 
-bool Buffer::Load(uint32_t offset, uint32_t size, void* in_data_ptr, VkMemoryMapFlags flags, Buffer* in_buffer )
+bool Buffer::Load(uint32_t buffer_offset, uint32_t size, void* in_data_ptr, VkMemoryMapFlags flags, Buffer* in_buffer )
 {
     VulkanContext *context = (VulkanContext *)Global::backend_renderer.user_data;
 
     void* mapped_memory_ptr = nullptr;
     
-    Buffer::Lock(offset, size, flags, in_buffer, &mapped_memory_ptr );
+    Buffer::Lock(buffer_offset, size, flags, in_buffer, &mapped_memory_ptr );
 
     Global::platform.memory.mem_copy( in_data_ptr, mapped_memory_ptr, size );
 

@@ -15,7 +15,9 @@ struct ApplicationStartup
 struct Application
 {
 	GameApp game_app;
-	ApplicationState application_state;
+	ApplicationStartup application_startup;
+    ApplicationState application_state;
+
 
 	bool Run ();	
 };

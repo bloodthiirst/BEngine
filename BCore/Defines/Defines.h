@@ -9,8 +9,8 @@
 #ifdef _DEBUG
 
     #define FREE(allocator , ptr)\
-        allocator.free( &allocator, ptr ); \
-        {\
+        if(allocator.free != nullptr) {\
+            allocator.free( &allocator, ptr ); \
             const char filename[] = __FILE__; \
             const int line = __LINE__;\
             AllocationData data = {};\

@@ -12,18 +12,18 @@ struct Win32Platform
     {
         Allocator heap_alloc = HeapAllocator::Create();
 
-        DArray<StringBuffer> args;
-        DArray<StringBuffer>::Create( argc, &args, heap_alloc );
+        DArray<StringView> args = {};
+        DArray<StringView>::Create( argc, &args, heap_alloc );
 
         for (size_t i = 0; i < argc; ++i)
         {
             char* curr_arg = argv[i];
-            StringBuffer arg = StringBuffer::Create( curr_arg, heap_alloc );
+            StringView arg = StringView::Create(curr_arg);
 
-            DArray<StringBuffer>::Add( &args, arg);
+            DArray<StringView>::Add(&args, arg);
         }
 
-        StringView path = args.data[0].view;
+        StringView path = args.data[0];
 
         // find the client dll
         *out_startup = {};

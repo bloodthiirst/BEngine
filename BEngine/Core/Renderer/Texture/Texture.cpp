@@ -9,7 +9,6 @@ inline void CreateView(VulkanContext *context, TextureDescriptor descriptor, Tex
     createViewInfo.format = descriptor.format;
     createViewInfo.image = texture->handle;
     createViewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-
     createViewInfo.subresourceRange.aspectMask = descriptor.view_aspect_flags;
     createViewInfo.subresourceRange.baseArrayLayer = 0;
     createViewInfo.subresourceRange.levelCount = 1;
@@ -57,7 +56,7 @@ void Texture::Create(TextureDescriptor descriptor, Texture *texture)
     createImageInfo.extent.height = descriptor.height;
     createImageInfo.extent.depth = 1;
 
-    createImageInfo.mipLevels = 4;
+    createImageInfo.mipLevels = descriptor.mipmaps_level;
     createImageInfo.arrayLayers = 1;
     createImageInfo.format = descriptor.format;
     createImageInfo.tiling = descriptor.tiling;

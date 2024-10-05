@@ -343,17 +343,19 @@ public:
         _ASSERT( path.buffer != nullptr );
 
         size_t last_anti_slash = -1;
-        size_t total_length = 0;
-        char curr_char;
+        size_t curr_index = path.length - 1;
 
-        while ( (total_length < path.length) && (curr_char = path.buffer[total_length++]) != '\0' )
+        while ( curr_index != ~0 )
         {
-            if ( curr_char == '\\' )
+            if ( path.buffer[curr_index] == '\\' )
             {
-                last_anti_slash = total_length;
+                break;
             }
+
+            curr_index--;
         }
-        return StringBuffer::Create( path.buffer, 0, last_anti_slash, alloc );
+
+        return StringBuffer::Create( path.buffer, 0, curr_index - 1, alloc );
     }
 
 };

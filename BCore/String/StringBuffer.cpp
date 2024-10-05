@@ -15,16 +15,16 @@ StringBuffer StringBuffer::Create( size_t length, Allocator allocator )
     return res;
 }
 
-StringBuffer StringBuffer::Create( const char* str, size_t from, size_t to, Allocator allocator )
+StringBuffer StringBuffer::Create( const char* str, size_t from_index, size_t to_index, Allocator allocator )
 {
     StringBuffer res = {};
 
     res.alloc = allocator;
-    res.length = to - from + 1;
+    res.length = to_index - from_index + 1;
 
     res.buffer = (char*) ALLOC( allocator, res.length * sizeof( char ) );
 
-    CoreContext::mem_copy( (void*) (str + from), res.buffer, res.length );
+    CoreContext::mem_copy( (void*) (str + from_index), res.buffer, res.length );
 
     return res;
 }

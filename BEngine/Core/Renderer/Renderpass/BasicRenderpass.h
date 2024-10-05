@@ -16,33 +16,32 @@ struct BasicRenderpassParams
     float depth;
     uint32_t stencil;
     StringView color_id;
-    StringView depth_id;    
+    StringView depth_id;
 };
-
 
 struct BasicRenderpass
 {
     static inline const char *BASIC_RENDERPASS_ID = "BasicRenderPass - ID";
 
-    static Renderpass Builder(RenderGraphBuilder* builder, RenderpassNode node)
+    static Renderpass Builder(RenderGraphBuilder *builder, RenderGraph *graph, RenderpassNode node)
     {
-        VulkanContext* ctx = (VulkanContext*) Global::backend_renderer.user_data;
-        BasicRenderpassParams* casted = (BasicRenderpassParams* ) node.params;
+        VulkanContext *ctx = (VulkanContext *)Global::backend_renderer.user_data;
+        BasicRenderpassParams *casted = (BasicRenderpassParams *)node.params;
 
         Renderpass result = {};
-        Create(ctx , builder , node , &result);
+        Create(ctx, builder, graph, node, &result);
 
         return result;
     }
 
-    static bool Create(VulkanContext *ctx, RenderGraphBuilder* builder, RenderpassNode node, Renderpass *out_renderpass)
+    static bool Create(VulkanContext *ctx, RenderGraphBuilder *builder, RenderGraph *graph, RenderpassNode node, Renderpass *out_renderpass)
     {
         *out_renderpass = {};
 
         out_renderpass->id = StringView::Create(BASIC_RENDERPASS_ID);
 
-        BasicRenderpassParams* params = (BasicRenderpassParams*) node.params;
-        
+        BasicRenderpassParams *params = (BasicRenderpassParams *)node.params;
+
         // main subpass
         VkSubpassDescription subpassDesc = {};
         subpassDesc.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
@@ -50,18 +49,18 @@ struct BasicRenderpass
         // todo : we could have other attachement (input , resolve , preserve)
 
         VkAttachmentReference colorReference = {};
-        RenderTargetInfo* color_lookup = {};
+        RenderTargetInfo *color_lookup = {};
         {
-            bool found = HMap<StringView,RenderTargetInfo>::TryGet(&node.render_targets , params->color_id , &color_lookup);
+            bool found = HMap<StringView, RenderTargetInfo>::TryGet(&node.render_targets, params->color_id, &color_lookup);
             assert(found);
             colorReference.attachment = color_lookup->index;
             colorReference.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
         }
 
         VkAttachmentReference depthReference = {};
-        RenderTargetInfo* depth_lookup = {};
+        RenderTargetInfo *depth_lookup = {};
         {
-            bool found = HMap<StringView,RenderTargetInfo>::TryGet(&node.render_targets , params->depth_id , &depth_lookup);
+            bool found = HMap<StringView, RenderTargetInfo>::TryGet(&node.render_targets, params->depth_id, &depth_lookup);
             assert(found);
             depthReference.attachment = depth_lookup->index;
             depthReference.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
@@ -91,8 +90,7 @@ struct BasicRenderpass
         const size_t attachement_count = 2;
         VkAttachmentDescription attachements[attachement_count] = {
             color_lookup->description,
-            depth_lookup->description
-        };
+            depth_lookup->description};
 
         // render pass
         VkRenderPassCreateInfo createInfo = {};
@@ -113,7 +111,7 @@ struct BasicRenderpass
         {
             return false;
         }
-        
+
         out_renderpass->internal_data = params;
         out_renderpass->handle = renderpass;
         out_renderpass->begin = Begin;
@@ -123,13 +121,13 @@ struct BasicRenderpass
         out_renderpass->on_destroy = OnDestroy;
 
         Allocator alloc = Global::alloc_toolbox.heap_allocator;
-        
+
         // create darray of subpasses
-        DArray<Subpass>::Create(0 , &out_renderpass->subpasses , alloc );
-        
+        DArray<Subpass>::Create(0, &out_renderpass->subpasses, alloc);
+
         // create darray of render targets
         DArray<RenderTarget>::Create(ctx->swapchain_info.images_count, &out_renderpass->render_targets, alloc);
-        
+
         // we start creating a renderTarget for each swapchain image
         for (size_t i = 0; i < ctx->swapchain_info.images_count; ++i)
         {
@@ -159,7 +157,6 @@ struct BasicRenderpass
 
     static void Draw(Renderpass *in_renderpass, CommandBuffer *cmd, RendererContext *render_ctx)
     {
-        
     }
 
     static void Begin(Renderpass *in_renderpass, CommandBuffer *cmd)
@@ -240,13 +237,13 @@ struct BasicRenderpass
     {
         VulkanContext *ctx = (VulkanContext *)Global::backend_renderer.user_data;
         BasicRenderpassParams *data = (BasicRenderpassParams *)in_renderpass->internal_data;
-        
+
         for (size_t i = 0; i < in_renderpass->render_targets.size; ++i)
         {
             FrameBuffer::Destroy(ctx, &in_renderpass->render_targets.data[i].framebuffer);
         }
 
-        for(size_t i = 0; i < in_renderpass->subpasses.size; ++i)
+        for (size_t i = 0; i < in_renderpass->subpasses.size; ++i)
         {
             Subpass curr = in_renderpass->subpasses.data[i];
             curr.on_destroy(&curr);

@@ -41,6 +41,10 @@ message("-- Headers included")
 cmake_path(GET PROJECT_BINARY_DIR PARENT_PATH parentPath)
 cmake_path(GET parentPath PARENT_PATH parentPath)
 
+# add FreeType headers
+set(freeTypeHeaders "C:/Dev/FreeType/include")
+message("\t-- Adding FreeType headers from ${freeTypeHeaders}")
+
 # add BMath headers
 set(mathHeaders "${parentPath}/BMaths")
 message("\t-- Adding Maths headers from ${mathHeaders}")
@@ -111,6 +115,7 @@ target_include_directories(CustomGameDLL PUBLIC ${engineHeaders})
 target_include_directories(CustomGameDLL PUBLIC ${gameHeaders})
 target_include_directories(CustomGameDLL PUBLIC ${vulkanHeaders})
 target_include_directories(CustomGameDLL PUBLIC ${spirVHeaders})
+target_include_directories(CustomGameDLL PUBLIC ${freeTypeHeaders})
 
 # TODO 9: Use target_include_directories to include ${PROJECT_BINARY_DIR}
 # target_include_directories(ExecutableTarget PUBLIC "${PROJECT_BINARY_DIR}")

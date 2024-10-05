@@ -42,8 +42,6 @@ bool TryGetGameDll( ApplicationStartup startup, GameApp* out_game, HMODULE* out_
 
 int main( int argc, char** argv )
 {
-    ApplicationStartup startup = {};
-
 #ifdef WIN32
 
     // win32 platform specific init
@@ -64,7 +62,7 @@ int main( int argc, char** argv )
         }
 
         // get startup params from args 
-        Win32Platform::GetStartupArgs( argv, argc, &startup );
+        Win32Platform::GetStartupArgs( argv, argc, &Global::app.application_startup);
     }
 #endif
 
@@ -96,7 +94,7 @@ int main( int argc, char** argv )
     // init core global systems, order matters
     {
         Global::event_system.Startup();
-        Global::platform.window.startup_callback( &Global::platform.window, startup );
+        Global::platform.window.startup_callback( &Global::platform.window, Global::app.application_startup );
         Global::asset_manager.Startup();
 
         // mesh asset
@@ -120,62 +118,9 @@ int main( int argc, char** argv )
             DArray<AssetManager>::Add(&Global::asset_manager.asset_managers , manager);
         }
         
-        
-        Global::backend_renderer.startup( &Global::backend_renderer, startup );
+        Global::backend_renderer.startup( &Global::backend_renderer, Global::app.application_startup );
     }
-
-    // json test
-    {
-        StringView json = "{ID:1,Child:{LastName:\"Houssem\"},Name:\"SomeString\",SubIDs:[1,420,69],AnotherID:-3.0,ThirdID:+999}";
-
-        {
-            ArenaCheckpoint check = Global::alloc_toolbox.GetArenaCheckpoint();
-            assert(JSONSerializer::Validate(json , Global::alloc_toolbox.frame_allocator ));
-            Global::alloc_toolbox.ResetArenaOffset(&check);
-        }
-
-        JSONSerializerState state = {};
-        JSONNode result = {};
-        JSONSerializer::Serialize(json , &state , &result, Global::alloc_toolbox.heap_allocator );
-
-        StringBuilder builder = {};
-        StringBuilder::Create(&builder , Global::alloc_toolbox.frame_allocator);
-        JSONSerializer::Print(&result , &builder , 0);
-
-        StringBuffer buff = {};
-
-        StringBuilder::ToString(&builder , &buff , Global::alloc_toolbox.frame_allocator );
-        Global::logger.Log(buff.view);
-
-        assert(result.node_type == JSONNodeType::Object);
-    }
-
-    // xml test
-    {
-        StringView xml = "<div height=\"auto\" width=\"750px\"><p/>\nHello<p>World</p></div>";
-
-        {
-            ArenaCheckpoint check = Global::alloc_toolbox.GetArenaCheckpoint();
-            assert(JSONSerializer::Validate(xml , Global::alloc_toolbox.frame_allocator ));
-            Global::alloc_toolbox.ResetArenaOffset(&check);
-        }
-
-        XMLSerializerState state = {};
-        XMLNode result = {};
-        XMLSerializer::Serialize(xml , &state , &result, Global::alloc_toolbox.heap_allocator );
-
-        StringBuilder builder = {};
-        StringBuilder::Create(&builder , Global::alloc_toolbox.frame_allocator);
-        XMLSerializer::Print(&result , &builder , 0);
-
-        StringBuffer buff = {};
-
-        StringBuilder::ToString(&builder , &buff , Global::alloc_toolbox.frame_allocator );
-        Global::logger.Log(buff.view);
-
-        assert(result.node_type == XMLNodeType::Element);
-    }
-
+    
     // compile shaders
     {
         StringView shader_folder = "C:\\Dev\\BEngine\\BEngine\\Core\\Resources";
@@ -214,7 +159,7 @@ int main( int argc, char** argv )
     
     // render font
     {
-        StringView font_ttf_path = "C:\\Dev\\BEngine\\BEngine\\Core\\Resources\\GORILAZ PERSONAL USE.ttf";
+        StringView font_ttf_path = "C:\\Dev\\BEngine\\BEngine\\Core\\Resources\\monofonto rg.otf";
         FileHandle handle = {};
         uint64_t filesize = {};
         
@@ -232,10 +177,11 @@ int main( int argc, char** argv )
         FontImporter::LoadFont(&importer , fileview , &font);
 
         FontDescriptor desc = {};
-        desc.atlas_size = { 2048 , 128};
-        desc.font_size_px = 64;
+        desc.atlas_size = { 2048 , 2048};
+        desc.font_size_px = 128;
 
-        Font::GenerateAtlas(&font , desc , nullptr);
+        FontInfo info = {};
+        Font::GenerateAtlas(&font , desc , &info);
     }
 
     // rendergraph
@@ -249,7 +195,7 @@ int main( int argc, char** argv )
     GameApp client_game = {};
     HMODULE hmodule = nullptr;
 
-    if ( !TryGetGameDll( startup, &client_game, &hmodule ) )
+    if ( !TryGetGameDll( Global::app.application_startup , &client_game, &hmodule ) )
     {
         Global::logger.Fatal( "Couldn't find Game Dll" );
         goto cleanup;

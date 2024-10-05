@@ -12,12 +12,12 @@
 
 bool Application::Run()
 {
-    application_state.isRunning = true;
+    application_state.is_running = true;
 
     Time* time = &Global::platform.time;
     double last_time = Global::platform.time.get_system_time( time );
 
-    while ( application_state.isRunning = Global::platform.window.handle_messages() )
+    while ( application_state.is_running = Global::platform.window.handle_messages() )
     {
         double curr_time = Global::platform.time.get_system_time( time );
 
