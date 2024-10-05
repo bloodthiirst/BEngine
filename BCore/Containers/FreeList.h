@@ -25,13 +25,19 @@ struct FreeList
     size_t total_mem;
 
     /// <summary>
+    /// Alignement of offset and size
+    /// </summary>
+    size_t alignment;
+
+    /// <summary>
     /// Currently used memory
     /// </summary>
     size_t used_mem;
 
-    static void Create(FreeList *out_freelist, size_t nodes_capacity, size_t total_mem, Allocator alloc)
+    static void Create(FreeList *out_freelist, size_t alignement, size_t nodes_capacity, size_t total_mem, Allocator alloc)
     {
         out_freelist->total_mem = total_mem;
+        out_freelist->alignment = alignement;
         out_freelist->used_mem = 0;
 
         DArray<Node>::Create(nodes_capacity, &out_freelist->used_nodes, alloc);
@@ -46,7 +52,9 @@ struct FreeList
 
     static void FreeBlock(FreeList *in_freelist, Node in_node)
     {
-
+        assert(IsAligned(in_node.size , in_freelist->alignment));
+        assert(IsAligned(in_node.start , in_freelist->alignment));
+        
         // remove used block
         {
             size_t remove_index = {};
@@ -125,8 +133,21 @@ struct FreeList
         in_freelist->free_nodes.data[start_index].size = size;
     }
 
+    static bool IsAligned(size_t size , size_t alignment)
+    {
+        return size % alignment == 0;
+    }
+
+    static size_t GetSizeAligned(size_t size , size_t alignement)
+    {
+        size_t aligned_size = ((size + alignement - 1) / alignement) * alignement;
+        return aligned_size;
+    }
+
     static bool AllocBlock(FreeList *in_freelist, const size_t size, Node *out_node)
     {
+        size_t aligned_size = GetSizeAligned(size , in_freelist->alignment);
+
         if (in_freelist->free_nodes.size == 0)
         {
             return false;
@@ -139,7 +160,7 @@ struct FreeList
         {
             Node *curr = &in_freelist->free_nodes.data[i];
 
-            if (curr->size < size)
+            if (curr->size < aligned_size)
                 continue;
 
             node = curr;
@@ -152,13 +173,13 @@ struct FreeList
             return false;
         }
 
-        in_freelist->used_mem += size;
+        in_freelist->used_mem += aligned_size;
 
         // add use node
         {
             Node use = {};
-            use.size = (uint32_t)size;
             use.start = node->start;
+            use.size = aligned_size;
 
             size_t used_count = in_freelist->used_nodes.size;
 
@@ -178,14 +199,14 @@ struct FreeList
         }
 
         // edit free node
-        if (size == node->size)
+        if (aligned_size == node->size)
         {
             DArray<Node>::RemoveAt(&in_freelist->free_nodes, node_idx);
         }
         else
         {
-            node->start += (uint32_t)size;
-            node->size -= (uint32_t)size;
+            node->start += (uint32_t)aligned_size;
+            node->size -= (uint32_t)aligned_size;
         }
 
         return true;

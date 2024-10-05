@@ -34,8 +34,6 @@ struct TextureDescriptor
     /// </summary>
     VkImageUsageFlags usage;
 
-
-
     VkMemoryPropertyFlags memory_flags;
 
     bool create_view;

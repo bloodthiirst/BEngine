@@ -64,7 +64,7 @@ DrawMesh TextUI::GetDraw()
     VkCommandPool pool = ctx->physical_device_info.command_pools_info.graphicsCommandPool;
     VkQueue queue = ctx->physical_device_info.queues_info.graphics_queue;
     Buffer::Load(0, size_for_text, char_data.data, 0, &ctx->staging_buffer);
-    Buffer::Copy(pool, {}, queue, &ctx->staging_buffer, 0, &ctx->descriptors_buffer, instance_matricies.size, size_for_text);
+    Buffer::Copy(pool, {}, queue, &ctx->staging_buffer, 0, &ctx->descriptors_buffer, instance_matricies.start, size_for_text);
 
     return draw;
 }

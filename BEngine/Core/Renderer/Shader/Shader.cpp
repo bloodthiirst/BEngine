@@ -43,11 +43,6 @@ void Shader::SetBuffer(VulkanContext *context, Shader *in_shader, uint32_t descr
 
     VkDescriptorSet currentDescriptor = in_shader->descriptor_sets[current_image].data[descriptor_set_index];
 
-    if (in_buffer->descriptor.size < 256)
-    {
-        Global::logger.Warning("Global buffer size should not be less than 256");
-    }
-
     VkDescriptorBufferInfo bufferInfo = {};
     bufferInfo.buffer = in_buffer->handle;
     bufferInfo.offset = offset;

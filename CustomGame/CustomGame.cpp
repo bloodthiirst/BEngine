@@ -42,11 +42,13 @@ Texture CreateColorTexture()
     tex_desc.format = VkFormat::VK_FORMAT_R32G32B32A32_SFLOAT;
     tex_desc.height = (uint32_t)height;
     tex_desc.width = (uint32_t)width;
-    tex_desc.mipmaps_level = 4;
+    tex_desc.mipmaps_level = 1;
     tex_desc.view_aspect_flags = VkImageAspectFlagBits::VK_IMAGE_ASPECT_COLOR_BIT;
     tex_desc.image_type = VkImageType::VK_IMAGE_TYPE_2D;
-    tex_desc.tiling = VkImageTiling::VK_IMAGE_TILING_OPTIMAL;
-    tex_desc.usage = (VkImageUsageFlagBits)(VkImageUsageFlagBits::VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VkImageUsageFlagBits::VK_IMAGE_USAGE_TRANSFER_DST_BIT | VkImageUsageFlagBits::VK_IMAGE_USAGE_SAMPLED_BIT);
+    tex_desc.tiling = VkImageTiling::VK_IMAGE_TILING_LINEAR;
+    tex_desc.usage = (VkImageUsageFlagBits)(VkImageUsageFlagBits::VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | 
+                                            VkImageUsageFlagBits::VK_IMAGE_USAGE_TRANSFER_DST_BIT | 
+                                            VkImageUsageFlagBits::VK_IMAGE_USAGE_SAMPLED_BIT);
 
     Texture tex = {};
     Texture::Create(tex_desc, &tex);
@@ -104,7 +106,7 @@ Texture CreateGridTexture()
     tex_desc.format = VkFormat::VK_FORMAT_R32G32B32A32_SFLOAT;
     tex_desc.height = (uint32_t)height;
     tex_desc.width = (uint32_t)width;
-    tex_desc.mipmaps_level = 4;
+    tex_desc.mipmaps_level = 1;
     tex_desc.view_aspect_flags = VkImageAspectFlagBits::VK_IMAGE_ASPECT_COLOR_BIT;
     tex_desc.image_type = VkImageType::VK_IMAGE_TYPE_2D;
     tex_desc.tiling = VkImageTiling::VK_IMAGE_TILING_OPTIMAL;
@@ -156,7 +158,7 @@ Texture CreateGridTexture()
     return tex;
 }
 
-ShaderBuilder CreateShaderBuilder()
+ShaderBuilder CreateUIShaderBuilder()
 {
     Allocator alloc = Global::alloc_toolbox.heap_allocator;
 
@@ -193,6 +195,64 @@ ShaderBuilder CreateShaderBuilder()
 
     ShaderBuilder builder = ShaderBuilder::Create()
                                 .SetName("UI_Textured")
+                                .SetStage(VkShaderStageFlagBits::VK_SHADER_STAGE_VERTEX_BIT, vert_code)
+                                .SetStage(VkShaderStageFlagBits::VK_SHADER_STAGE_FRAGMENT_BIT, frag_code)
+                                .AddVertexAttribute("position", 0, sizeof(Vector3), VkFormat::VK_FORMAT_R32G32B32_SFLOAT)
+                                .AddVertexAttribute("texcoord", 1, sizeof(Vector2), VkFormat::VK_FORMAT_R32G32_SFLOAT)
+                                .AddDescriptor("global_ubo", 0, 0, VkDescriptorType::VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VkShaderStageFlagBits::VK_SHADER_STAGE_VERTEX_BIT)
+                                .AddDescriptor("diffuse_sampler", 1, 0, VkDescriptorType::VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VkShaderStageFlagBits::VK_SHADER_STAGE_FRAGMENT_BIT)
+                                .AddDescriptor("instances_buffer", 2, 0, VkDescriptorType::VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VkShaderStageFlagBits::VK_SHADER_STAGE_VERTEX_BIT);
+
+    if (vert_handle.is_valid)
+    {
+        Global::platform.filesystem.close(&vert_handle);
+    }
+
+    if (frag_handle.is_valid)
+    {
+        Global::platform.filesystem.close(&frag_handle);
+    }
+
+    return builder;
+}
+
+ShaderBuilder CreateFontShaderBuilder()
+{
+    Allocator alloc = Global::alloc_toolbox.heap_allocator;
+
+    StringView vert_path = "C:\\Dev\\BEngine\\BEngine\\Core\\Resources\\FontShader.vert.spv";
+    StringView frag_path = "C:\\Dev\\BEngine\\BEngine\\Core\\Resources\\FontShader.frag.spv";
+
+    FileHandle vert_handle = {};
+    FileHandle frag_handle = {};
+
+    if (!Global::platform.filesystem.open(vert_path, FileModeFlag::Read, true, &vert_handle))
+    {
+        Global::logger.Error("Can't find vertex shader");
+        return {};
+    }
+
+    if (!Global::platform.filesystem.open(frag_path, FileModeFlag::Read, true, &frag_handle))
+    {
+        Global::logger.Error("Can't find frag shader");
+        return {};
+    }
+
+    size_t vert_size = {};
+    size_t frag_size = {};
+
+    Global::platform.filesystem.get_size(&vert_handle, &vert_size);
+    Global::platform.filesystem.get_size(&frag_handle, &frag_size);
+
+    StringBuffer vert_code = StringBuffer::Create(vert_size, alloc);
+    StringBuffer frag_code = StringBuffer::Create(frag_size, alloc);
+
+    size_t bytes_read = {};
+    Global::platform.filesystem.read_all(vert_handle, vert_code.buffer, &bytes_read);
+    Global::platform.filesystem.read_all(frag_handle, frag_code.buffer, &bytes_read);
+
+    ShaderBuilder builder = ShaderBuilder::Create()
+                                .SetName("Font_Textured")
                                 .SetStage(VkShaderStageFlagBits::VK_SHADER_STAGE_VERTEX_BIT, vert_code)
                                 .SetStage(VkShaderStageFlagBits::VK_SHADER_STAGE_FRAGMENT_BIT, frag_code)
                                 .AddVertexAttribute("position", 0, sizeof(Vector3), VkFormat::VK_FORMAT_R32G32B32_SFLOAT)
@@ -308,7 +368,8 @@ void Initialize(GameApp *game_app)
     // create assets
     {
         state->plane_mesh = CreatePlane();
-        state->ui_shader_builder = CreateShaderBuilder();
+        state->ui_shader_builder = CreateUIShaderBuilder();
+        state->text_shader_builder = CreateFontShaderBuilder();
         state->ui_texture = CreateColorTexture();
     }
 
@@ -350,7 +411,7 @@ void OnRender(GameApp *game_app, RendererContext *render_ctx, float delta_time)
 {
     EntryPoint* entry = (EntryPoint*)Global::app.game_app.user_data;
  
-    DArray<DrawMesh>::Add(&render_ctx->mesh_draws , entry->ui_root.GetDraw());
+    //DArray<DrawMesh>::Add(&render_ctx->mesh_draws , entry->ui_root.GetDraw());
     DArray<DrawMesh>::Add(&render_ctx->mesh_draws , entry->text.GetDraw());
 }
 

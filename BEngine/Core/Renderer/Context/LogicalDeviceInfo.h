@@ -3,6 +3,5 @@
 
 struct LogicalDeviceInfo
 {
-public:
     VkDevice handle;
 };

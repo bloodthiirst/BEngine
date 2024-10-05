@@ -107,8 +107,8 @@ struct UISubpass
 
             Renderpass* renderpass = &in_subpass->graph->renderpasses.data[in_subpass->renderpass_index];
 
-            VkDeviceSize pos_offsets[1] = {0};
-            VkDeviceSize tex_offsets[1] = {12};
+            VkDeviceSize pos_offsets[2] = {0 , 0};
+            VkDeviceSize tex_offsets[2] = {12 , 12};
 
             for (size_t i = 0; i < render_ctx->mesh_draws.size; ++i)
             {
@@ -158,9 +158,6 @@ struct UISubpass
 
                 // finally issue the draw command
                 vkCmdDrawIndexed(cmd->handle, curr.mesh->indicies.size, curr.instances_count, 0, 0, 0);
-
-                pos_offsets[i] += sizeof(Vertex3D);
-                tex_offsets[i] += sizeof(Vertex3D);
             }
         }
     }

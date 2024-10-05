@@ -457,7 +457,6 @@ bool CreatePhysicalDevice(Platform *platform, VkInstance vkInstance, VkSurfaceKH
         outDeviceInfo->queues_info.computeQueueFamilyIndex = computeQueueFamilyIndex;
         outDeviceInfo->queues_info.graphicsQueueIndex = graphicsQueueFamilyIndex;
         outDeviceInfo->queues_info.transferQueueIndex = transferQueueFamilyIndex;
-
         Global::alloc_toolbox.ResetArenaOffset(&checkpoint);
         return true;
     }
@@ -749,8 +748,9 @@ bool Startup(BackendRenderer *in_renderer, ApplicationStartup startup)
             return false;
         }
 
+        const size_t alignement = ctx->physical_device_info.physicalDeviceProperties.limits.minUniformBufferOffsetAlignment;
         const uint32_t nodes_capacity = 512;
-        FreeList::Create(&ctx->mesh_freelist, nodes_capacity, mesh_alloc_size, Global::alloc_toolbox.heap_allocator);
+        FreeList::Create(&ctx->mesh_freelist, alignement, nodes_capacity, mesh_alloc_size, Global::alloc_toolbox.heap_allocator);
         Global::logger.Info("Vertex buffer created");
     }
 
@@ -774,8 +774,9 @@ bool Startup(BackendRenderer *in_renderer, ApplicationStartup startup)
             return false;
         }
 
+        const size_t alignement = ctx->physical_device_info.physicalDeviceProperties.limits.minUniformBufferOffsetAlignment;
         const uint32_t nodes_capacity = 512;
-        FreeList::Create(&ctx->descriptors_freelist, nodes_capacity, desc_alloc_size, Global::alloc_toolbox.heap_allocator);
+        FreeList::Create(&ctx->descriptors_freelist, alignement, nodes_capacity, desc_alloc_size, Global::alloc_toolbox.heap_allocator);
         Global::logger.Info("Descriptor buffer created");
     }
 

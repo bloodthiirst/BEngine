@@ -8,7 +8,6 @@
 
 struct PhysicalDeviceInfo
 {
-public:
     QueuesInfo queues_info;
     CommandPoolsInfo command_pools_info;
     SwapchainSupportInfo swapchainSupportInfo;
@@ -18,7 +17,6 @@ public:
     VkPhysicalDeviceMemoryProperties physicalDeviceMemoryProperties;
     VkFormat depthFormat;
 
-public:
     bool FindMemoryIndex (uint32_t typeFilter, uint32_t propertyFlags, uint32_t* outMemeoryIndex );
 
 };

@@ -152,38 +152,16 @@ int main( int argc, char** argv )
                 Command cmd = {};
                 Command::Create( &cmd , complile_cmd.view );
                 Command::Run(cmd , &output , Global::alloc_toolbox.frame_allocator);
+
+                if(output.length != 0)
+                {
+                    Global::logger.Log(output.view);
+                }
             }
         }
         Global::alloc_toolbox.ResetArenaOffset(&check);
     }
     
-    // render font
-    {
-        StringView font_ttf_path = "C:\\Dev\\BEngine\\BEngine\\Core\\Resources\\monofonto rg.otf";
-        FileHandle handle = {};
-        uint64_t filesize = {};
-        
-        Global::platform.filesystem.open(font_ttf_path , FileModeFlag::Read , true , &handle);
-        Global::platform.filesystem.get_size(&handle, &filesize);
-        void* filedata = (void*) ALLOC(Global::alloc_toolbox.frame_allocator , filesize);
-        Global::platform.filesystem.read_all(handle , filedata , &filesize);
-        Global::platform.filesystem.close(&handle);
-
-        ArrayView<char> fileview = { (char*)filedata , (size_t) filesize };
-        FontImporter importer = {};
-        FontImporter::Create(&importer);
-
-        Font font = {}; 
-        FontImporter::LoadFont(&importer , fileview , &font);
-
-        FontDescriptor desc = {};
-        desc.atlas_size = { 2048 , 2048};
-        desc.font_size_px = 128;
-
-        FontInfo info = {};
-        Font::GenerateAtlas(&font , desc , &info);
-    }
-
     // rendergraph
     {
         VulkanContext* ctx = (VulkanContext*) Global::backend_renderer.user_data;

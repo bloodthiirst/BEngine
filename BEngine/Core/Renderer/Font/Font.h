@@ -48,14 +48,18 @@ struct BAPI Font
         /* for simplicity, we assume that `bitmap->pixel_mode' */
         /* is `FT_PIXEL_MODE_GRAY' (i.e., not a bitmap font)   */
 
+        char c = (char) char_index;
         Vector2Int size = desc.atlas_size;
 
         size_t cells_per_row = desc.atlas_size.x / desc.font_size_px;
+        size_t cells_per_col = desc.atlas_size.y / desc.font_size_px;
+        
         size_t y_offset = (char_index / cells_per_row);
         size_t x_offset = char_index - (y_offset * cells_per_row);
+        y_offset = cells_per_col - y_offset;
 
         out_uv_start->x = x_offset * desc.font_size_px;
-        out_uv_start->y = desc.atlas_size.y - ((y_offset + 1) * desc.font_size_px);
+        out_uv_start->y = (y_offset * desc.font_size_px);
 
         uint8_t* texture_start = texture_dst + (y_offset * desc.atlas_size.x * desc.font_size_px) + (x_offset * desc.font_size_px);
 
@@ -72,7 +76,9 @@ struct BAPI Font
 
                 int32_t glyph_idx = (y * bitmap->width) + x;
                 int32_t texture_idx = (y * size.x) + x;
-                texture_start[texture_idx] = bitmap->buffer[glyph_idx];
+
+                uint8_t val = bitmap->buffer[glyph_idx];
+                texture_start[texture_idx] = val;
             }
         }
 
@@ -108,19 +114,22 @@ struct BAPI Font
 
         FT_Error error = {};
 
+        VkFormat fmt = VkFormat::VK_FORMAT_R8_UNORM;
+
         Texture atlas_texture = {};
         TextureDescriptor desc = {};
         desc.create_view = true;
         desc.mipmaps_level = 1;
-        desc.format = VkFormat::VK_FORMAT_R8_UINT;
+        desc.format = fmt;
         desc.image_type = VkImageType::VK_IMAGE_TYPE_2D;
         desc.memory_flags = 0;
         desc.view_aspect_flags = VkImageAspectFlagBits::VK_IMAGE_ASPECT_COLOR_BIT;
         desc.tiling = VkImageTiling::VK_IMAGE_TILING_LINEAR;
-        desc.usage = (VkImageUsageFlagBits)(VkImageUsageFlagBits::VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VkImageUsageFlagBits::VK_IMAGE_USAGE_TRANSFER_DST_BIT | VkImageUsageFlagBits::VK_IMAGE_USAGE_SAMPLED_BIT);
         desc.height = in_desc.atlas_size.x;
         desc.width = in_desc.atlas_size.y;
-
+        desc.usage = (VkImageUsageFlagBits)(VkImageUsageFlagBits::VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | 
+                                            VkImageUsageFlagBits::VK_IMAGE_USAGE_TRANSFER_DST_BIT | 
+                                            VkImageUsageFlagBits::VK_IMAGE_USAGE_SAMPLED_BIT);
         Texture::Create(desc, &atlas_texture);
         
         ArenaCheckpoint check = Global::alloc_toolbox.GetArenaCheckpoint();
@@ -166,7 +175,7 @@ struct BAPI Font
                 tex_rect.size = { (float)in_desc.font_size_px , (float)in_desc.font_size_px};
                 WriteToTexture(&slot->bitmap, texture_buffer, (size_t) c, in_desc , &(&tex_rect)->pos);
 
-                Rect uv_rect = {};
+                Rect uv_rect = tex_rect;
                 uv_rect.width /= in_desc.atlas_size.x;
                 uv_rect.height /= in_desc.atlas_size.y;
                 uv_rect.x /= in_desc.atlas_size.x;
@@ -210,9 +219,9 @@ struct BAPI Font
                 CommandBuffer cmd = {};
                 VkCommandPool pool = ctx->physical_device_info.command_pools_info.graphicsCommandPool;
                 CommandBuffer::SingleUseAllocateBegin(pool, &cmd);
-                Texture::TransitionLayout(&atlas_texture, cmd, VkFormat::VK_FORMAT_R32G32B32A32_SFLOAT, VkImageLayout::VK_IMAGE_LAYOUT_UNDEFINED, VkImageLayout::VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+                Texture::TransitionLayout(&atlas_texture, cmd, fmt, VkImageLayout::VK_IMAGE_LAYOUT_UNDEFINED, VkImageLayout::VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
                 Texture::CopyFromBuffer(ctx->staging_buffer.handle, &atlas_texture, cmd);
-                Texture::TransitionLayout(&atlas_texture, cmd, VkFormat::VK_FORMAT_R32G32B32A32_SFLOAT, VkImageLayout::VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VkImageLayout::VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+                Texture::TransitionLayout(&atlas_texture, cmd, fmt, VkImageLayout::VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VkImageLayout::VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
                 CommandBuffer::SingleUseEndSubmit(pool, &cmd, ctx->physical_device_info.queues_info.graphics_queue);
             }
 
