@@ -12,6 +12,6 @@ struct GameText
             TextUI::Destroy(&inst->text);
         }
 
-        inst->text = TextUI::Create("Hello there");
+        inst->text = TextUI::Create("Hello there, gottem !!!");
     };
 };

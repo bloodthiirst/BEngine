@@ -32,19 +32,30 @@ DrawMesh TextUI::GetDraw()
 
     FontInfo font = entry->font_info;
 
-    Vector2 offset = {};
+    Vector2 offset = { 0, 50};
     for (size_t i = 0; i < text.length; ++i)
     {
         char c = text.buffer[i];
         CharacterInfo char_info = font.char_info_lookup.data[c];
+ 
+        float line_offset = char_info.bearing_y - char_info.character_height;
+        float starting_space = char_info.bearing_x;
+        float ending_space = char_info.advance - starting_space - char_info.character_width;
+
         Matrix4x4 char_mat = Matrix4x4(
-            {(float)char_info.character_width, 0, 0, offset.x},
-            {0, (float)char_info.character_height, 0, offset.y},
+            {char_info.character_width, 0, 0, offset.x + starting_space},
+            {0, char_info.character_height , 0, offset.y + line_offset},
             {0, 0, 1, 0},
             {0, 0, 0, 1});
 
-        offset.x += char_info.character_width;
-
+        if(c == ' ')
+        {
+            offset.x += font.descriptor.font_size_px * 0.5f;
+        }
+        else
+        {
+            offset.x += char_info.character_width + ending_space;
+        }
         TextCharData data = {};
         data.uv = char_info.uv_rect;
         data.mat = char_mat;

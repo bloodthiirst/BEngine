@@ -350,7 +350,7 @@ void Initialize(GameApp *game_app)
 
         FontDescriptor desc = {};
         desc.atlas_size = { 2048 , 2048};
-        desc.font_size_px = 128;
+        desc.font_size_px = 64;
 
         FontInfo info = {};
         Font::GenerateAtlas(&font , desc , &info);

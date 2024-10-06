@@ -52,7 +52,7 @@ bool Pipeline::Create( VulkanContext* context, Renderpass* renderpass, PipelineD
     // blending
     // controls the way colors are blended into the image
     VkPipelineColorBlendAttachmentState colorBlendAttachementInfo = {};
-    colorBlendAttachementInfo.blendEnable = VK_FALSE;
+    colorBlendAttachementInfo.blendEnable = VK_TRUE;
     colorBlendAttachementInfo.colorBlendOp = VK_BLEND_OP_ADD;
     colorBlendAttachementInfo.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
     colorBlendAttachementInfo.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;

@@ -20,12 +20,16 @@ struct BAPI CharacterInfo
     char characeter;
     Rect tex_rect;
     Rect uv_rect;
-    size_t character_width;
-    size_t character_height;
+    float character_width;
+    float character_height;
+    float bearing_y;
+    float bearing_x;
+    float advance;
 };
 
 struct BAPI FontInfo
 {
+    FontDescriptor descriptor;
     Texture font_atlas_texture;
     DArray<CharacterInfo> char_info_lookup;
 };
@@ -56,11 +60,12 @@ struct BAPI Font
         
         size_t y_offset = (char_index / cells_per_row);
         size_t x_offset = char_index - (y_offset * cells_per_row);
-        y_offset = cells_per_col - y_offset;
 
         out_uv_start->x = x_offset * desc.font_size_px;
         out_uv_start->y = (y_offset * desc.font_size_px);
 
+        y_offset = cells_per_col - y_offset;
+        
         uint8_t* texture_start = texture_dst + (y_offset * desc.atlas_size.x * desc.font_size_px) + (x_offset * desc.font_size_px);
 
         for (int32_t y = 0; y < bitmap->rows; y++)
@@ -167,13 +172,16 @@ struct BAPI Font
                                         render_mode);         /* render mode */
 
                 assert(error == FT_Err_Ok);
-
+                
                 // note : here we insturct freeType to draw inside the buffer
                 // pass the top-left point to start drawing from
                 // then returned UV point is bottom-left
+
+                // note : the metrics are expressed in 1/64s of a pixel
+                // so shifting to the right by 6 is equivalent of dividing by 64
                 Rect tex_rect = {};
-                tex_rect.size = { (float)in_desc.font_size_px , (float)in_desc.font_size_px};
-                WriteToTexture(&slot->bitmap, texture_buffer, (size_t) c, in_desc , &(&tex_rect)->pos);
+                tex_rect.size = { (float) (slot->metrics.width >> 6), (float)(slot->metrics.height >> 6) };
+                WriteToTexture(&slot->bitmap, texture_buffer, (size_t) c, in_desc , &tex_rect.pos);
 
                 Rect uv_rect = tex_rect;
                 uv_rect.width /= in_desc.atlas_size.x;
@@ -185,8 +193,11 @@ struct BAPI Font
                 char_info.characeter = (char) c;
                 char_info.tex_rect = tex_rect;
                 char_info.uv_rect = uv_rect;
-                char_info.character_width = slot->bitmap.width;
-                char_info.character_height = slot->bitmap.rows;
+                char_info.character_width = (float) (slot->metrics.width >> 6);
+                char_info.character_height = (float) (slot->metrics.height >> 6);
+                char_info.advance = (float) (slot->metrics.horiAdvance >> 6);
+                char_info.bearing_x = (float) (slot->metrics.horiBearingX >> 6);
+                char_info.bearing_y = (float) (slot->metrics.horiBearingY >> 6);               
 
                 DArray<CharacterInfo>::Add(&out_info->char_info_lookup , char_info);
             }
@@ -225,6 +236,7 @@ struct BAPI Font
                 CommandBuffer::SingleUseEndSubmit(pool, &cmd, ctx->physical_device_info.queues_info.graphics_queue);
             }
 
+            out_info->descriptor = in_desc;
             out_info->font_atlas_texture = atlas_texture;
             FREE(Global::alloc_toolbox.frame_allocator , texture_buffer);
         }
