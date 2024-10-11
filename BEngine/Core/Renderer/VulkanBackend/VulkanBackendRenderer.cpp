@@ -805,6 +805,12 @@ bool StartFrame(BackendRenderer *in_backend, RendererContext *renderer_ctx)
     {
         VkResult result = vkDeviceWaitIdle(device.handle);
 
+        // if window is minimized
+        if(ctx->frame_buffer_size.x == 0 || ctx->frame_buffer_size.y == 0)
+        {
+            return false;
+        }
+
         if (result != VkResult::VK_SUCCESS)
         {
             Global::logger.Error("Couldn't wait device idle");

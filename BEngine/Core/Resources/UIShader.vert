@@ -8,6 +8,7 @@ layout ( location = 0 ) out vec3 out_position;
 layout ( location = 1 ) out struct dto
 {
     vec2 out_texcoord;
+    mat4 rect;
 } out_dto;
 
 layout (set = 0, binding = 0) uniform global_uniform_object {
@@ -23,9 +24,11 @@ layout(set = 2, binding = 0) uniform InstanceBuffer {
 
 void main ()
 {
-    vec4 pos =  vec4(in_position , 1.0) * instances_buffer.rect_mats[gl_InstanceIndex] * global_ubo.view * global_ubo.projection;
+    mat4 mat = instances_buffer.rect_mats[gl_InstanceIndex];
+    vec4 pos =  vec4(in_position , 1.0) * mat* global_ubo.view * global_ubo.projection;
 
     out_position = pos.xyz;
     out_dto.out_texcoord = in_texcoord;
+    out_dto.rect = mat;
     gl_Position = pos;
 }

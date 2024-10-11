@@ -10,6 +10,7 @@ DESCRIPTION "Core library providing Allocators , Containers , custom String ,etc
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED true)
+set(CMAKE_BUILD_PARALLEL_LEVEL 8)
 
 message("-- Path infos")
 message("\t --Project path : ${PROJECT_SOURCE_DIR}")
@@ -22,10 +23,14 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${BUILD_PATH})
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${BUILD_PATH})
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${BUILD_PATH})
 
-SET(BUILD_MODE Debug)
+set(BUILD_MODE Debug)
 add_compile_definitions("_CORE_EXPORT")
 add_compile_definitions("_DEBUG")
 add_compile_options("/Zc:preprocessor")
+add_compile_options("/fsanitize=address")
+add_compile_options("/INFERASANLIBS")
+add_compile_options("/MP")
+
 # enable exporting all symbols , important for exporting dllexport members/classes
 set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 

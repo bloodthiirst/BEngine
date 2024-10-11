@@ -17,19 +17,20 @@ struct GameUI
         
         // root node
         LayoutNode root_node = {};
-        root_node.option.x = { LayoutOrigin::Screen , LayoutSize::Value,LayoutUnit::Pixels, 0 };
-        root_node.option.y = { LayoutOrigin::Screen , LayoutSize::Value,LayoutUnit::Pixels, 0 };
-        root_node.option.width = { LayoutOrigin::Screen , LayoutSize::Value,LayoutUnit::Percentage, 1 };
-        root_node.option.height = { LayoutOrigin::Screen , LayoutSize::Value,LayoutUnit::Pixels, 300 };
+        root_node.option.x = { LayoutOrigin::Screen , LayoutRule::Value,LayoutUnit::Pixels, 0 };
+        root_node.option.y = { LayoutOrigin::Screen , LayoutRule::Value,LayoutUnit::Pixels, 0 };
+        root_node.option.width = { LayoutOrigin::Screen , LayoutRule::Value,LayoutUnit::Percentage, 1 };
+        root_node.option.height = { LayoutOrigin::Absolute , LayoutRule::Value,LayoutUnit::Pixels, 300 };
         DArray<LayoutNode>::Create(1 , &root_node.sub_nodes , Global::alloc_toolbox.frame_allocator);
 
         // test node
         LayoutNode test_node = {};
-        test_node.option.x = { LayoutOrigin::Screen , LayoutSize::Value,LayoutUnit::Percentage, 0.25 };
-        test_node.option.y = { LayoutOrigin::Screen , LayoutSize::Value,LayoutUnit::Pixels, 400 };
-        test_node.option.width = { LayoutOrigin::Screen , LayoutSize::Value,LayoutUnit::Percentage, 0.5};
-        test_node.option.height = { LayoutOrigin::Screen , LayoutSize::Value,LayoutUnit::Pixels, 100 };
+        test_node.option.x = { LayoutOrigin::Parent , LayoutRule::Value, LayoutUnit::Pixels, 32 };
+        test_node.option.y = { LayoutOrigin::Parent , LayoutRule::Value, LayoutUnit::Pixels, 32 };
+        test_node.option.width = { LayoutOrigin::Parent , LayoutRule::Value, LayoutUnit::Pixels, -64};
+        test_node.option.height = { LayoutOrigin::Parent , LayoutRule::Value, LayoutUnit::Pixels, -64 };
 
+        test_node.parent = &entry->ui_root.root;
         DArray<LayoutNode>::Add(&root_node.sub_nodes , test_node);
 
         entry->ui_root.root = root_node;

@@ -10,6 +10,8 @@ DESCRIPTION "Engine layer" )
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED true)
+set(CMAKE_BUILD_PARALLEL_LEVEL 8)
+
 
 message("-- Path infos")
 message("\t --Project path : ${PROJECT_SOURCE_DIR}")
@@ -22,9 +24,13 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${BUILD_PATH})
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${BUILD_PATH})
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${BUILD_PATH})
 
-SET(BUILD_MODE Debug)
+set(BUILD_MODE Debug)
 add_compile_options("/Zc:preprocessor")
+add_compile_options("/fsanitize=address")
+add_compile_options("/INFERASANLIBS")
+add_compile_options("/MP")
 add_compile_definitions("_ENGINE_EXPORT")
+
 # enable exporting all symbols , important for exporting dllexport members/classes
 set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 
@@ -119,6 +125,7 @@ set(All_Headers ${mathHeaders} ${bcoreHeaders} ${gameHeaders} ${vulkanHeaders} $
 target_link_libraries(BEngineCommon ${All_Libs})
 target_link_libraries(BEngineExe ${All_Libs})
 target_link_libraries(BEngineDLL ${All_Libs})
+target_link_options(BEngineCommon PUBLIC -fsanitize=address)
 
 # Make both the .dll and .exe have the same name "BEngine"
 set_property(TARGET BEngineExe PROPERTY OUTPUT_NAME BEngine)

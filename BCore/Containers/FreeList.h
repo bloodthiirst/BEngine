@@ -148,13 +148,15 @@ struct FreeList
     {
         size_t aligned_size = GetSizeAligned(size , in_freelist->alignment);
 
+        // if we don't have any free nodes available , exit
         if (in_freelist->free_nodes.size == 0)
         {
             return false;
         }
 
-        Node *node = nullptr;
-        size_t node_idx = -1;
+        // try finding a node with enough size to hold our allocation
+        Node *free_node = nullptr;
+        size_t free_node_idx = -1;
 
         for (size_t i = 0; i < in_freelist->free_nodes.size; ++i)
         {
@@ -163,27 +165,29 @@ struct FreeList
             if (curr->size < aligned_size)
                 continue;
 
-            node = curr;
-            node_idx = i;
+            free_node = curr;
+            free_node_idx = i;
             break;
         }
 
-        if (node == nullptr)
+        // if no such node is found , exit
+        if (free_node == nullptr)
         {
             return false;
         }
 
+        // a valid node have been found , add to the memory used
         in_freelist->used_mem += aligned_size;
 
         // add use node
         {
             Node use = {};
-            use.start = node->start;
+            use.start = free_node->start;
             use.size = aligned_size;
 
             size_t used_count = in_freelist->used_nodes.size;
 
-            if (in_freelist->used_nodes.data[used_count - 1].start < use.start)
+            if ( used_count == 0 || in_freelist->used_nodes.data[used_count - 1].start < use.start)
             {
                 DArray<Node>::Add(&in_freelist->used_nodes, use);
             }
@@ -192,6 +196,7 @@ struct FreeList
                 size_t insert_index = -1;
                 FindInsertIndex(&in_freelist->used_nodes, use, &insert_index);
 
+                assert(insert_index != -1);
                 DArray<Node>::Insert(&in_freelist->used_nodes, use, insert_index);
             }
 
@@ -199,14 +204,17 @@ struct FreeList
         }
 
         // edit free node
-        if (aligned_size == node->size)
+        // if the allocation takes up all the free space in the node
+        // then we just delete it
+        if (aligned_size == free_node->size)
         {
-            DArray<Node>::RemoveAt(&in_freelist->free_nodes, node_idx);
+            DArray<Node>::RemoveAt(&in_freelist->free_nodes, free_node_idx);
         }
+        // else , remove the used space from the free node
         else
         {
-            node->start += (uint32_t)aligned_size;
-            node->size -= (uint32_t)aligned_size;
+            free_node->start += (uint32_t)aligned_size;
+            free_node->size -= (uint32_t)aligned_size;
         }
 
         return true;

@@ -37,3 +37,4 @@ Core/Renderer/Shader/ShaderBuilder.cpp
 Core/Renderer/Shader/ShaderUtils.cpp
 Core/Renderer/Texture/Texture.cpp
 Core/Utils/stb_image_writer.cpp
+Core/Utils/stb_image.cpp

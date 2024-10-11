@@ -56,30 +56,29 @@ public:
         *in_arr = {};
     }
 
-
-    static void Resize(DArray *in_arr, size_t new_size)
+    static void Resize(DArray *in_arr, size_t new_capacity)
     {
-        if (in_arr->capacity >= new_size)
-            return;
-
-        in_arr->capacity = new_size;
+        assert(new_capacity > in_arr->capacity);
 
         if (in_arr->alloc.realloc)
         {
-            in_arr->data = (T *)in_arr->alloc.realloc(&in_arr->alloc, in_arr->data, new_size * sizeof(T));
-            return;
+            in_arr->data = (T *)in_arr->alloc.realloc(&in_arr->alloc, in_arr->data, new_capacity * sizeof(T));
         }
-
-        T *new_data = (T *)ALLOC(in_arr->alloc, new_size * sizeof(T));
-
-        CoreContext::mem_copy(in_arr->data, new_data, in_arr->size * sizeof(T));
-
-        if (in_arr->alloc.free)
+        else
         {
-            in_arr->alloc.free(&in_arr->alloc, in_arr->data);
+            T* old_data = in_arr->data;
+            T* new_data = (T *)in_arr->alloc.alloc(&in_arr->alloc ,  new_capacity * sizeof(T));
+            CoreContext::mem_copy(old_data, new_data, in_arr->size * sizeof(T));
+
+            if (in_arr->alloc.free)
+            {
+                in_arr->alloc.free(&in_arr->alloc, old_data);
+            }
+
+            in_arr->data = new_data;
         }
 
-        in_arr->data = new_data;
+        in_arr->capacity = new_capacity;
     }
 
     static void Insert(DArray *in_arr, T item, size_t index)

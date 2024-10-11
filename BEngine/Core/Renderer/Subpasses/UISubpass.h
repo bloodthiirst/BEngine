@@ -113,11 +113,12 @@ struct UISubpass
             for (size_t i = 0; i < render_ctx->mesh_draws.size; ++i)
             {
                 DrawMesh curr = render_ctx->mesh_draws.data[i];
-
+                
+                ShaderBuilder builder = *(curr.shader_builder);
                 Shader* shader_ptr = {};
                 Shader shader = {};
                 
-                if(!HMap<ShaderBuilder,Shader>::TryGet(&data->shader_lookup , *curr.shader_builder , &shader_ptr))
+                if(!HMap<ShaderBuilder,Shader>::TryGet(&data->shader_lookup ,  builder , &shader_ptr))
                 {
                     bool build = curr.shader_builder->Build(ctx , renderpass , &shader);
                     assert(build);

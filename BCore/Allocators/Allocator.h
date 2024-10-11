@@ -2,6 +2,7 @@
 #include <malloc.h>
 #include <cstdint>
 #include <crtdbg.h>
+#include <assert.h>
 #include "../Context/CoreContext.h"
 #include "../String/StringView.h"
 struct Allocator;
@@ -114,7 +115,7 @@ private:
     {
         Arena* arena = (Arena*) alloc->user_data;
 
-        _ASSERT( (arena->offset + size) < arena->capacity );
+        assert( (arena->offset + size) < arena->capacity );
 
         void* ptr = (void*) ((char*) arena->data + arena->offset);
 

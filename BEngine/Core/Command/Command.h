@@ -46,7 +46,7 @@ struct Command
         PROCESS_INFORMATION process_info = {0};
 
         bool success = CreateProcess(nullptr, cmd_line, nullptr, nullptr, true, 0, nullptr, nullptr, &start_info, &process_info);
-
+        
         if(!success)
         {
             Global::logger.Error("Command error while running");
@@ -63,6 +63,8 @@ struct Command
             {
                 assert(ReadFile(h_stdout_read , (void*)out_stdout->buffer , stdout_size , nullptr , nullptr ));
             }
+
+            WaitForSingleObject(process_info.hProcess , INFINITE);
 
             CloseHandle(process_info.hThread);
             CloseHandle(process_info.hProcess);

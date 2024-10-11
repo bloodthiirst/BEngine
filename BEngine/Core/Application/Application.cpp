@@ -41,7 +41,6 @@ bool Application::Run()
         {
             if ( !Global::backend_renderer.start_frame( &Global::backend_renderer, &renderer_ctx ) )
             {
-                Global::logger.Error( "Couldn't start frame" );
                 goto post_frame;
             }
 

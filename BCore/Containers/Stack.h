@@ -20,7 +20,7 @@ struct Stack
 
     static bool TryPeek(Stack *in_stack, T *out_item)
     {
-        assert(out_item);
+        assert(out_item != nullptr);
         
         if (in_stack->size == 0)
         {
@@ -31,6 +31,24 @@ struct Stack
         *out_item = in_stack->data[in_stack->size - 1];
 
         return true;
+    }
+
+    static void Peek(Stack* in_stack , T* out_item)
+    {
+        assert(in_stack->size > 0);
+        *out_item = in_stack->data[in_stack->size - 1];
+    }
+
+    static void Pop(Stack* in_stack , T* out_item)
+    {
+        assert(in_stack->size > 0);
+        
+        if (out_item)
+        {
+            *out_item = in_stack->data[in_stack->size - 1];
+        }
+
+        in_stack->size--;
     }
 
     static bool TryPop(Stack *in_stack, T *out_item)
@@ -51,30 +69,37 @@ struct Stack
         return true;
     }
 
+    static void Resize(Stack *inout_stack, size_t new_capacity)
+    {
+        assert(new_capacity > inout_stack->size + 1);
+
+        if (inout_stack->alloc.realloc)
+        {
+            inout_stack->data = (T *)inout_stack->alloc.realloc(&inout_stack->alloc, inout_stack->data, new_capacity);
+        }
+        else
+        {
+            T *old_data = inout_stack->data;
+            T *new_data = (T *)inout_stack->alloc.alloc(&inout_stack->alloc, new_capacity * sizeof(T));
+            CoreContext::mem_copy(old_data, new_data, inout_stack->size * sizeof(T));
+
+            if (inout_stack->alloc.free)
+            {
+                inout_stack->alloc.free( &inout_stack->alloc, old_data);
+            }
+
+            inout_stack->data = new_data;
+        }
+
+        inout_stack->capacity = new_capacity;
+    }
+
     static void Push(Stack *in_stack, T item)
     {
-        const float resize_factor = 2;
-
+        const size_t resize_factor = 2;
         if ((in_stack->size + 1) > in_stack->capacity)
         {
-            const size_t new_size = (size_t)(in_stack->capacity * resize_factor);
-            assert(new_size > in_stack->size + 1);
-
-            if (in_stack->alloc.realloc)
-            {
-                in_stack->data = (T*) in_stack->alloc.realloc(&in_stack->alloc, in_stack->data, new_size);
-            }
-            else
-            {
-                T *old_data = in_stack->data;
-                T *new_data = (T*) in_stack->alloc.alloc(&in_stack->alloc, new_size);
-                if (in_stack->alloc.free)
-                {
-                    in_stack->alloc.free(&in_stack->alloc, old_data);
-                }
-
-                in_stack->data = new_data;
-            }
+            Resize(in_stack , (in_stack->capacity + 1) * resize_factor);
         }
 
         in_stack->data[in_stack->size] = item;

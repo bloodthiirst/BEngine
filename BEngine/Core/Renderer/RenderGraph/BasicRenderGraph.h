@@ -87,7 +87,7 @@ struct BasicRenderGraph
         BasicRenderpassParams* params = Global::alloc_toolbox.HeapAlloc<BasicRenderpassParams>();
         {
             params->sync_window_size = true;
-            params->clearColor = Color{0, 0, 0.25f, 1};
+            params->clearColor = Color{0.2f, 0.2f, 0.2f, 1};
             params->area = Rect{0, 0, (float)screen.x, (float)screen.y};
             params->stencil = 0;
             params->depth = 1;

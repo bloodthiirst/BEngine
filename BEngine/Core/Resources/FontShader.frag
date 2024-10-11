@@ -19,7 +19,9 @@ void main ()
     // which means that U goes to the right and V goes down , so we do a remapping to use the bottom-left as (0,0)
     atlast_uv.y = (1 - in_dto.out_font_uv.y) + ( ( 1 - in_dto.texcoord.y) * in_dto.out_font_uv.w);
     
-    vec4 col = texture(diffuse_sampler , atlast_uv);
-    col.a = col.r;
-    out_color = col;
+    vec4 tex = texture(diffuse_sampler , atlast_uv);
+    float alpha = tex.r;
+    vec3 col = vec3(0,0,0);
+    vec4 result = vec4(col , alpha);
+    out_color = result;
 }

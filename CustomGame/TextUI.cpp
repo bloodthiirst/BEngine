@@ -57,8 +57,8 @@ DrawMesh TextUI::GetDraw()
             offset.x += char_info.character_width + ending_space;
         }
         TextCharData data = {};
-        data.uv = char_info.uv_rect;
-        data.mat = char_mat;
+        data.uv_rect = char_info.uv_rect;
+        data.quad_matrix = char_mat;
 
         DArray<TextCharData>::Add(&char_data, data);
     }

@@ -5,8 +5,8 @@
 
 struct TextCharData
 {
-    Matrix4x4 mat;
-    Rect uv;
+    Matrix4x4 quad_matrix;
+    Rect uv_rect;
 };
 
 struct TextUI

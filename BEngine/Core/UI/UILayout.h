@@ -12,7 +12,7 @@ enum class LayoutDirection
     Vertical
 };
 
-enum class LayoutSize
+enum class LayoutRule
 {
     Parent,
     Content,
@@ -27,6 +27,7 @@ enum class LayoutUnit
 
 enum class LayoutOrigin
 {
+    Absolute,
     Parent,
     Root,
     Screen
@@ -35,7 +36,7 @@ enum class LayoutOrigin
 struct LayoutValue
 {
     LayoutOrigin origin;
-    LayoutSize size;
+    LayoutRule layout_rule;
     LayoutUnit unit;
     float value;
 };
@@ -108,6 +109,8 @@ struct RootLayoutNode
         draw.instances_data = instances_data;
         draw.instances_count = rects_to_render.size;
 
+        assert(draw.instances_count == 2);
+
         VkCommandPool pool = ctx->physical_device_info.command_pools_info.graphicsCommandPool;
         VkQueue queue = ctx->physical_device_info.queues_info.graphics_queue;
         Buffer::Load(instances_data.start, size_for_rects , rects_to_render.data, 0, &ctx->staging_buffer); 
@@ -149,20 +152,30 @@ struct LayoutBuilder
         {          
             // width
             {
-                LayoutNode* origin = GetOriginNode(in_node, in_node->option.width.origin, in_state);
-                
                 float val = {};
 
                 switch(in_node->option.width.unit)
                 {   
                     case LayoutUnit::Percentage: 
                     {
-                        val = (origin->resolved_rect.width * in_node->option.width.value);
+                        switch(in_node->option.width.origin)
+                        {
+                            case LayoutOrigin::Parent : val = (in_node->parent->resolved_rect.width * in_node->option.width.value); break;
+                            case LayoutOrigin::Absolute : val = in_node->option.width.value; break;
+                            case LayoutOrigin::Root : val = (in_state->root->resolved_rect.width * in_node->option.width.value); break;
+                            case LayoutOrigin::Screen : val = (in_state->screen_node.resolved_rect.width * in_node->option.width.value); break;                 
+                        }
                         break;
                     }
                     case LayoutUnit::Pixels: 
                     {
-                        val = in_node->option.width.value;
+                        switch(in_node->option.width.origin)
+                        {
+                            case LayoutOrigin::Parent : val = (in_node->parent->resolved_rect.width + in_node->option.width.value); break;
+                            case LayoutOrigin::Absolute : val = in_node->option.width.value; break;
+                            case LayoutOrigin::Root : val = (in_state->root->resolved_rect.width + in_node->option.width.value); break;
+                            case LayoutOrigin::Screen : val = (in_state->screen_node.resolved_rect.width + in_node->option.width.value); break;                 
+                        }
                         break;
                     }
                 }
@@ -172,20 +185,30 @@ struct LayoutBuilder
 
             // pos x
             {
-                LayoutNode* origin = GetOriginNode(in_node, in_node->option.x.origin, in_state);
-
                 float val = {};
 
                 switch(in_node->option.x.unit)
                 {   
                     case LayoutUnit::Percentage: 
                     {
-                        val = origin->resolved_rect.x + (origin->resolved_rect.width * in_node->option.x.value);
+                        switch(in_node->option.x.origin)
+                        {
+                            case LayoutOrigin::Parent : val = (in_node->parent->resolved_rect.width * in_node->option.x.value); break;
+                            case LayoutOrigin::Absolute : val = in_node->option.x.value; break;
+                            case LayoutOrigin::Root : val = (in_state->root->resolved_rect.width * in_node->option.x.value); break;
+                            case LayoutOrigin::Screen : val = (in_state->screen_node.resolved_rect.width * in_node->option.x.value); break;                 
+                        }
                         break;
                     }
                     case LayoutUnit::Pixels: 
                     {
-                        val = origin->resolved_rect.x + in_node->option.x.value;
+                        switch(in_node->option.x.origin)
+                        {
+                            case LayoutOrigin::Parent : val = (in_node->parent->resolved_rect.x + in_node->option.x.value); break;
+                            case LayoutOrigin::Absolute : val = in_node->option.x.value; break;
+                            case LayoutOrigin::Root : val = (in_state->root->resolved_rect.x + in_node->option.x.value); break;
+                            case LayoutOrigin::Screen : val = (in_state->screen_node.resolved_rect.x + in_node->option.x.value); break;                 
+                        }
                         break;
                     }
                 }
@@ -197,22 +220,32 @@ struct LayoutBuilder
         // if height isn't computed yet
         if (!in_node->is_h_resolved)
         {          
-            // width
+            // height
             {
-                LayoutNode* origin = GetOriginNode(in_node, in_node->option.height.origin, in_state);
-                
                 float val = {};
 
                 switch(in_node->option.height.unit)
                 {   
                     case LayoutUnit::Percentage: 
                     {
-                        val = (origin->resolved_rect.height * in_node->option.height.value);
+                        switch(in_node->option.height.origin)
+                        {
+                            case LayoutOrigin::Parent : val = (in_node->parent->resolved_rect.height * in_node->option.height.value); break;
+                            case LayoutOrigin::Absolute : val = in_node->option.height.value; break;
+                            case LayoutOrigin::Root : val = (in_state->root->resolved_rect.height * in_node->option.height.value); break;
+                            case LayoutOrigin::Screen : val = (in_state->screen_node.resolved_rect.height * in_node->option.height.value); break;                 
+                        }
                         break;
                     }
                     case LayoutUnit::Pixels: 
                     {
-                        val = in_node->option.height.value;
+                        switch(in_node->option.height.origin)
+                        {
+                            case LayoutOrigin::Parent : val = (in_node->parent->resolved_rect.height + in_node->option.height.value); break;
+                            case LayoutOrigin::Absolute : val = in_node->option.height.value; break;
+                            case LayoutOrigin::Root : val = (in_state->root->resolved_rect.height + in_node->option.height.value); break;
+                            case LayoutOrigin::Screen : val = (in_state->screen_node.resolved_rect.height + in_node->option.height.value); break;                 
+                        }
                         break;
                     }
                 }
@@ -222,20 +255,30 @@ struct LayoutBuilder
 
             // pos y
             {
-                LayoutNode* origin = GetOriginNode(in_node, in_node->option.y.origin, in_state);
-
                 float val = {};
 
                 switch(in_node->option.y.unit)
                 {   
                     case LayoutUnit::Percentage: 
                     {
-                        val = origin->resolved_rect.y + (origin->resolved_rect.height * in_node->option.y.value);
+                        switch(in_node->option.y.origin)
+                        {
+                            case LayoutOrigin::Parent : val = (in_node->parent->resolved_rect.height * in_node->option.y.value); break;
+                            case LayoutOrigin::Absolute : val = in_node->option.y.value; break;
+                            case LayoutOrigin::Root : val = (in_state->root->resolved_rect.height * in_node->option.y.value); break;
+                            case LayoutOrigin::Screen : val = (in_state->screen_node.resolved_rect.height * in_node->option.y.value); break;                 
+                        }
                         break;
                     }
                     case LayoutUnit::Pixels: 
                     {
-                        val = origin->resolved_rect.y + in_node->option.y.value;
+                        switch(in_node->option.y.origin)
+                        {
+                            case LayoutOrigin::Parent : val = (in_node->parent->resolved_rect.y + in_node->option.y.value); break;
+                            case LayoutOrigin::Absolute : val = in_node->option.y.value; break;
+                            case LayoutOrigin::Root : val = (in_state->root->resolved_rect.y + in_node->option.y.value); break;
+                            case LayoutOrigin::Screen : val = (in_state->screen_node.resolved_rect.y + in_node->option.y.value); break;                 
+                        }
                         break;
                     }
                 }
