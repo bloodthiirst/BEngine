@@ -1,14 +1,11 @@
-#include "pch.h"
-#include "CppUnitTest.h"
+#pragma once
+
+#include "BTest.h"
 #include <Containers/DArray.h>
 #include <Containers/HMap.h>
 #include <Allocators/Allocator.h>
-#include <iostream>
 
-using namespace Microsoft::VisualStudio::CppUnitTestFramework;
-
-
-namespace BEngineMathsUnitTests
+namespace Tests
 {
     size_t IntHasher( int val )
     {
@@ -20,13 +17,11 @@ namespace BEngineMathsUnitTests
         return a == b;
     }
 
-
-    TEST_CLASS( HMapTests )
+    struct HMapTests
     {
-    public:
-
-        TEST_METHOD( Create )
-        {
+        TEST_DECLARATION(Create)
+        TEST_BODY
+        ({
             CoreContext::DefaultContext();
 
             size_t capacity = 10;
@@ -50,20 +45,15 @@ namespace BEngineMathsUnitTests
 
             HMap<int, float>::GetAll( &map, &result );
 
-            for ( size_t i = 0; i < result.size; ++i )
-            {
-                Pair<int, float> p = result.data[i];
-                std::cout << p.key << "," << p.value << '\n';
-            }
+            EVALUATE( map.capacity == capacity );
+            EVALUATE( map.count == size );
+            EVALUATE( map.all_keys.size == size );
+            EVALUATE( map.all_values.size == size );
+        })
 
-            Assert::IsTrue( map.capacity == capacity );
-            Assert::IsTrue( map.count == size );
-            Assert::IsTrue( map.all_keys.size == size );
-            Assert::IsTrue( map.all_values.size == size );
-        }
-
-        TEST_METHOD( TryGet )
-        {
+        TEST_DECLARATION(TryGet)
+        TEST_BODY
+        ({
             CoreContext::DefaultContext();
 
             size_t capacity = 10;
@@ -88,16 +78,19 @@ namespace BEngineMathsUnitTests
             float* six_value = {};
             bool has_six_key = HMap<int, float>::TryGet( &map, 6, &six_value );
 
-            Assert::IsTrue( has_zero_key );
-            Assert::IsFalse( has_six_key );
+            EVALUATE( has_zero_key );
+            EVALUATE( !has_six_key );
 
-            Assert::IsTrue( zero_value != 0 );
-            Assert::IsTrue( six_value == 0 );
+            EVALUATE( zero_value != 0 );
+            EVALUATE( six_value == 0 );
 
-            Assert::IsTrue( *zero_value == 420 );
-        }
-        TEST_METHOD( TryAdd )
-        {
+            EVALUATE( *zero_value == 420 );
+        })
+
+
+        TEST_DECLARATION(TryAdd)
+        TEST_BODY
+        ({
             CoreContext::DefaultContext();
 
             size_t capacity = 10;
@@ -121,20 +114,15 @@ namespace BEngineMathsUnitTests
 
             HMap<int, float>::GetAll( &map, &result );
 
-            for ( size_t i = 0; i < result.size; ++i )
-            {
-                Pair<int, float> p = result.data[i];
-                std::cout << p.key << "," << p.value << '\n';
-            }
+            EVALUATE( map.capacity == capacity );
+            EVALUATE( map.count == 1 );
+            EVALUATE( map.all_keys.size == 1 );
+            EVALUATE( map.all_values.size == 1 );
+        })
 
-            Assert::IsTrue( map.capacity == capacity );
-            Assert::IsTrue( map.count == 1 );
-            Assert::IsTrue( map.all_keys.size == 1 );
-            Assert::IsTrue( map.all_values.size == 1 );
-        }
-
-        TEST_METHOD( TryRemove )
-        {
+        TEST_DECLARATION(TryRemove)
+        TEST_BODY
+        ({
             CoreContext::DefaultContext();
 
             size_t capacity = 10;
@@ -162,16 +150,24 @@ namespace BEngineMathsUnitTests
 
             HMap<int, float>::GetAll( &map, &result );
 
-            for ( size_t i = 0; i < result.size; ++i )
-            {
-                Pair<int, float> p = result.data[i];
-                std::cout << p.key << "," << p.value << '\n';
-            }
+            EVALUATE( map.capacity == capacity );
+            EVALUATE( map.count == 4 );
+            EVALUATE( map.all_keys.size == 4 );
+            EVALUATE( map.all_values.size == 4 );
+        })
 
-            Assert::IsTrue( map.capacity == capacity );
-            Assert::IsTrue( map.count == 4 );
-            Assert::IsTrue( map.all_keys.size == 4 );
-            Assert::IsTrue( map.all_values.size == 4 );
-        }
+        static inline DArray<TestCallback> GetAll() 
+        {
+            Allocator alloc = HeapAllocator::Create();
+            DArray<TestCallback> arr = {};
+            DArray<TestCallback>::Create(4 , &arr , alloc);
+
+            DArray<TestCallback>::Add(&arr , HMapTests::Create);
+            DArray<TestCallback>::Add(&arr , HMapTests::TryGet);
+            DArray<TestCallback>::Add(&arr , HMapTests::TryAdd);
+            DArray<TestCallback>::Add(&arr , HMapTests::TryRemove);
+
+            return arr;
+        };
     };
 }

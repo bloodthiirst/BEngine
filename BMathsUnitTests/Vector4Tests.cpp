@@ -5,7 +5,7 @@
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
 
-namespace BEngineMathsUnitTests
+namespace Tests
 {
 	TEST_CLASS(Vector4Tests)
 	{

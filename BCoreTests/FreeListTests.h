@@ -1,19 +1,16 @@
-#include "pch.h"
-#include "CppUnitTest.h"
+#pragma once
+
+#include "BTest.h"
 #include <Containers/FreeList.h>
 #include <Allocators/Allocator.h>
 
-using namespace Microsoft::VisualStudio::CppUnitTestFramework;
-
-
-namespace BEngineMathsUnitTests
+namespace Tests
 {
-    TEST_CLASS( FreeListTests )
+    struct FreeListTests
     {
-    public:
-
-        TEST_METHOD( Create )
-        {
+        TEST_DECLARATION(Create)
+        TEST_BODY
+        ({
             CoreContext::DefaultContext();
 
             size_t node_cap = 5;
@@ -21,16 +18,17 @@ namespace BEngineMathsUnitTests
             FreeList flist;
 
             Allocator allocator = HeapAllocator::Create();
-            FreeList::Create( &flist, node_cap, mem, allocator );
+            FreeList::Create( &flist, 1 , node_cap, mem, allocator );
 
-            Assert::IsTrue( flist.total_mem == mem );
-            Assert::IsTrue( flist.used_mem == 0 );
+            EVALUATE( flist.total_mem == mem );
+            EVALUATE( flist.used_mem == 0 );
 
             FreeList::Destroy( &flist );
-        }
+        })
 
-        TEST_METHOD( AllocBlock )
-        {
+        TEST_DECLARATION(AllocBlock)
+        TEST_BODY
+        ({
             CoreContext::DefaultContext();
 
             size_t node_cap = 5;
@@ -38,25 +36,26 @@ namespace BEngineMathsUnitTests
             FreeList flist;
 
             Allocator allocator = HeapAllocator::Create();
-            FreeList::Create( &flist, node_cap, total_mem, allocator );
+            FreeList::Create( &flist, 1 , node_cap, total_mem, allocator );
 
             size_t claim_size = 32;
             FreeList::Node node = {};
             FreeList::AllocBlock( &flist, claim_size, &node );
 
-            Assert::IsTrue( node.size == claim_size );
-            Assert::IsTrue( node.start == 0 );
+            EVALUATE( node.size == claim_size );
+            EVALUATE( node.start == 0 );
 
-            Assert::IsTrue( flist.total_mem == total_mem );
-            Assert::IsTrue( flist.used_mem == claim_size );
-            Assert::IsTrue( flist.used_nodes.size == 1 );
-            Assert::IsTrue( flist.free_nodes.size == 1 );
+            EVALUATE( flist.total_mem == total_mem );
+            EVALUATE( flist.used_mem == claim_size );
+            EVALUATE( flist.used_nodes.size == 1 );
+            EVALUATE( flist.free_nodes.size == 1 );
 
             FreeList::Destroy( &flist );
-        }
+        })
 
-        TEST_METHOD( MultipleAllocBlock )
-        {
+        TEST_DECLARATION(MultipleAllocBlock)
+        TEST_BODY
+        ({
             CoreContext::DefaultContext();
 
             size_t node_cap = 5;
@@ -64,7 +63,7 @@ namespace BEngineMathsUnitTests
             FreeList flist;
 
             Allocator allocator = HeapAllocator::Create();
-            FreeList::Create( &flist, node_cap, total_mem, allocator );
+            FreeList::Create( &flist, 1, node_cap, total_mem, allocator );
 
 
             const size_t claim_size = 32;
@@ -76,16 +75,17 @@ namespace BEngineMathsUnitTests
                 FreeList::AllocBlock( &flist, claim_size, &node[i] );
             }
 
-            Assert::IsTrue( flist.total_mem == total_mem );
-            Assert::IsTrue( flist.used_mem == claim_size * alloc_count );
-            Assert::IsTrue( flist.used_nodes.size == alloc_count );
-            Assert::IsTrue( flist.free_nodes.size == 0 );
+            EVALUATE( flist.total_mem == total_mem );
+            EVALUATE( flist.used_mem == claim_size * alloc_count );
+            EVALUATE( flist.used_nodes.size == alloc_count );
+            EVALUATE( flist.free_nodes.size == 0 );
 
             FreeList::Destroy( &flist );
-        }
+        })
 
-        TEST_METHOD( MultipleAllocBlockAndAFree )
-        {
+        TEST_DECLARATION(MultipleAllocBlockAndAFree)
+        TEST_BODY
+        ({
             CoreContext::DefaultContext();
 
             size_t node_cap = 5;
@@ -93,7 +93,7 @@ namespace BEngineMathsUnitTests
             FreeList flist;
 
             Allocator allocator = HeapAllocator::Create();
-            FreeList::Create( &flist, node_cap, total_mem, allocator );
+            FreeList::Create( &flist, 1 , node_cap, total_mem, allocator );
 
             const size_t claim_size = 32;
             const size_t alloc_count = 16;
@@ -107,16 +107,17 @@ namespace BEngineMathsUnitTests
             FreeList::FreeBlock( &flist, FreeList::Node{ 32 ,32 } );
             FreeList::FreeBlock( &flist, FreeList::Node{ 0 , 32 } );
 
-            Assert::IsTrue( flist.total_mem == total_mem );
-            Assert::IsTrue( flist.used_mem == claim_size * (alloc_count - 2) );
-            Assert::IsTrue( flist.used_nodes.size == (alloc_count - 2) );
-            Assert::IsTrue( flist.free_nodes.size == 1 );
+            EVALUATE( flist.total_mem == total_mem );
+            EVALUATE( flist.used_mem == claim_size * (alloc_count - 2) );
+            EVALUATE( flist.used_nodes.size == (alloc_count - 2) );
+            EVALUATE( flist.free_nodes.size == 1 );
 
             FreeList::Destroy( &flist );
-        }
+        })
 
-        TEST_METHOD( MultipleAllocBlockAndAFreeOrdered )
-        {
+        TEST_DECLARATION(MultipleAllocBlockAndAFreeOrdered)
+        TEST_BODY
+        ({
             CoreContext::DefaultContext();
 
             size_t node_cap = 5;
@@ -124,7 +125,7 @@ namespace BEngineMathsUnitTests
             FreeList flist;
 
             Allocator allocator = HeapAllocator::Create();
-            FreeList::Create( &flist, node_cap, total_mem, allocator );
+            FreeList::Create( &flist, 1 , node_cap, total_mem, allocator );
 
             const size_t claim_size = 32;
             const size_t alloc_count = 16;
@@ -138,16 +139,17 @@ namespace BEngineMathsUnitTests
             FreeList::FreeBlock( &flist, FreeList::Node{ 32 ,32 } );
             FreeList::FreeBlock( &flist, FreeList::Node{ 64 ,32 } );
 
-            Assert::IsTrue( flist.total_mem == total_mem );
-            Assert::IsTrue( flist.used_mem == claim_size * (alloc_count - 2) );
-            Assert::IsTrue( flist.used_nodes.size == (alloc_count - 2) );
-            Assert::IsTrue( flist.free_nodes.size == 1 );
+            EVALUATE( flist.total_mem == total_mem );
+            EVALUATE( flist.used_mem == claim_size * (alloc_count - 2) );
+            EVALUATE( flist.used_nodes.size == (alloc_count - 2) );
+            EVALUATE( flist.free_nodes.size == 1 );
 
             FreeList::Destroy( &flist );
-        }
+        })
 
-        TEST_METHOD( FreeBlockThatNeedMerging )
-        {
+        TEST_DECLARATION(FreeBlockThatNeedMerging)
+        TEST_BODY
+        ({
             CoreContext::DefaultContext();
 
             size_t node_cap = 5;
@@ -155,7 +157,7 @@ namespace BEngineMathsUnitTests
             FreeList flist;
 
             Allocator allocator = HeapAllocator::Create();
-            FreeList::Create( &flist, node_cap, total_mem, allocator );
+            FreeList::Create( &flist, 1 ,  node_cap, total_mem, allocator );
 
             const size_t claim_size = 32;
             const size_t alloc_count = 16;
@@ -170,17 +172,17 @@ namespace BEngineMathsUnitTests
             FreeList::FreeBlock( &flist, FreeList::Node{ 128 ,32 } );
             FreeList::FreeBlock( &flist, FreeList::Node{ 64 ,32 } );
 
-            Assert::IsTrue( flist.total_mem == total_mem );
-            Assert::IsTrue( flist.used_mem == claim_size * (alloc_count - 3) );
-            Assert::IsTrue( flist.used_nodes.size == (alloc_count - 3) );
-            Assert::IsTrue( flist.free_nodes.size == 2 );
+            EVALUATE( flist.total_mem == total_mem );
+            EVALUATE( flist.used_mem == claim_size * (alloc_count - 3) );
+            EVALUATE( flist.used_nodes.size == (alloc_count - 3) );
+            EVALUATE( flist.free_nodes.size == 2 );
 
             FreeList::Destroy( &flist );
-        }
+        })
 
-
-        TEST_METHOD( FreeBlockThatDoesntNeedMerging )
-        {
+        TEST_DECLARATION(FreeBlockThatDoesntNeedMerging)
+        TEST_BODY
+        ({
             CoreContext::DefaultContext();
 
             size_t node_cap = 5;
@@ -188,7 +190,7 @@ namespace BEngineMathsUnitTests
             FreeList flist;
 
             Allocator allocator = HeapAllocator::Create();
-            FreeList::Create( &flist, node_cap, total_mem, allocator );
+            FreeList::Create( &flist, 1 , node_cap, total_mem, allocator );
 
             const size_t claim_size = 32;
             const size_t alloc_count = 16;
@@ -202,16 +204,17 @@ namespace BEngineMathsUnitTests
             FreeList::FreeBlock( &flist, FreeList::Node{ 64 ,32 } );
             FreeList::FreeBlock( &flist, FreeList::Node{ 128 ,32 } );
 
-            Assert::IsTrue( flist.total_mem == total_mem );
-            Assert::IsTrue( flist.used_mem == claim_size * (alloc_count - 2) );
-            Assert::IsTrue( flist.used_nodes.size == (alloc_count - 2) );
-            Assert::IsTrue( flist.free_nodes.size == 2 );
+            EVALUATE( flist.total_mem == total_mem );
+            EVALUATE( flist.used_mem == claim_size * (alloc_count - 2) );
+            EVALUATE( flist.used_nodes.size == (alloc_count - 2) );
+            EVALUATE( flist.free_nodes.size == 2 );
 
             FreeList::Destroy( &flist );
-        }
+        })
 
-        TEST_METHOD( MultipleAllocBlockAndAFreeReverseOrder )
-        {
+        TEST_DECLARATION(MultipleAllocBlockAndAFreeReverseOrder)
+        TEST_BODY
+        ({
             CoreContext::DefaultContext();
 
             size_t node_cap = 5;
@@ -219,7 +222,7 @@ namespace BEngineMathsUnitTests
             FreeList flist;
 
             Allocator allocator = HeapAllocator::Create();
-            FreeList::Create( &flist, node_cap, total_mem, allocator );
+            FreeList::Create( &flist, 1 , node_cap, total_mem, allocator );
 
             const size_t claim_size = 32;
             const size_t alloc_count = 16;
@@ -233,16 +236,18 @@ namespace BEngineMathsUnitTests
             FreeList::FreeBlock( &flist, FreeList::Node{ 64 ,32 } );
             FreeList::FreeBlock( &flist, FreeList::Node{ 32 ,32 } );
 
-            Assert::IsTrue( flist.total_mem == total_mem );
-            Assert::IsTrue( flist.used_mem == claim_size * (alloc_count - 2) );
-            Assert::IsTrue( flist.used_nodes.size == (alloc_count - 2) );
-            Assert::IsTrue( flist.free_nodes.size == 1 );
+            EVALUATE( flist.total_mem == total_mem );
+            EVALUATE( flist.used_mem == claim_size * (alloc_count - 2) );
+            EVALUATE( flist.used_nodes.size == (alloc_count - 2) );
+            EVALUATE( flist.free_nodes.size == 1 );
 
             FreeList::Destroy( &flist );
-        }
+        })
 
-        TEST_METHOD( MultipleAllocAllThenFreeAllInReverse )
-        {
+
+        TEST_DECLARATION(MultipleAllocAllThenFreeAllInReverse)
+        TEST_BODY
+        ({
             CoreContext::DefaultContext();
 
             size_t node_cap = 5;
@@ -250,7 +255,7 @@ namespace BEngineMathsUnitTests
             FreeList flist;
 
             Allocator allocator = HeapAllocator::Create();
-            FreeList::Create( &flist, node_cap, total_mem, allocator );
+            FreeList::Create( &flist, 1 , node_cap, total_mem, allocator );
 
             const size_t claim_size = 32;
             const size_t alloc_count = 16;
@@ -266,16 +271,18 @@ namespace BEngineMathsUnitTests
                 FreeList::FreeBlock( &flist, node[alloc_count - i - 1] );
             }
 
-            Assert::IsTrue( flist.total_mem == total_mem );
-            Assert::IsTrue( flist.used_mem == 0 );
-            Assert::IsTrue( flist.used_nodes.size == 0 );
-            Assert::IsTrue( flist.free_nodes.size == 1 );
+            EVALUATE( flist.total_mem == total_mem );
+            EVALUATE( flist.used_mem == 0 );
+            EVALUATE( flist.used_nodes.size == 0 );
+            EVALUATE( flist.free_nodes.size == 1 );
 
             FreeList::Destroy( &flist );
 
-        }
-        TEST_METHOD( MultipleAllocAllThenFreeAll )
-        {
+        })
+
+        TEST_DECLARATION(MultipleAllocAllThenFreeAll)
+        TEST_BODY
+        ({
             CoreContext::DefaultContext();
 
             size_t node_cap = 5;
@@ -283,7 +290,7 @@ namespace BEngineMathsUnitTests
             FreeList flist;
 
             Allocator allocator = HeapAllocator::Create();
-            FreeList::Create( &flist, node_cap, total_mem, allocator );
+            FreeList::Create( &flist, 1 , node_cap, total_mem, allocator );
 
             const size_t claim_size = 32;
             const size_t alloc_count = 16;
@@ -299,12 +306,32 @@ namespace BEngineMathsUnitTests
                 FreeList::FreeBlock( &flist, node[i] );
             }
 
-            Assert::IsTrue( flist.total_mem == total_mem );
-            Assert::IsTrue( flist.used_mem == 0 );
-            Assert::IsTrue( flist.used_nodes.size == 0 );
-            Assert::IsTrue( flist.free_nodes.size == 1 );
+            EVALUATE( flist.total_mem == total_mem );
+            EVALUATE( flist.used_mem == 0 );
+            EVALUATE( flist.used_nodes.size == 0 );
+            EVALUATE( flist.free_nodes.size == 1 );
 
             FreeList::Destroy( &flist );
-        }
+        })
+
+        static inline DArray<TestCallback> GetAll() 
+        {
+            Allocator alloc = HeapAllocator::Create();
+            DArray<TestCallback> arr = {};
+            DArray<TestCallback>::Create(10 , &arr , alloc);
+
+            DArray<TestCallback>::Add(&arr , FreeListTests::Create);
+            DArray<TestCallback>::Add(&arr , FreeListTests::AllocBlock);
+            DArray<TestCallback>::Add(&arr , FreeListTests::FreeBlockThatDoesntNeedMerging);
+            DArray<TestCallback>::Add(&arr , FreeListTests::FreeBlockThatNeedMerging);
+            DArray<TestCallback>::Add(&arr , FreeListTests::MultipleAllocAllThenFreeAll);
+            DArray<TestCallback>::Add(&arr , FreeListTests::MultipleAllocAllThenFreeAllInReverse);
+            DArray<TestCallback>::Add(&arr , FreeListTests::MultipleAllocBlock);
+            DArray<TestCallback>::Add(&arr , FreeListTests::MultipleAllocBlockAndAFree);
+            DArray<TestCallback>::Add(&arr , FreeListTests::MultipleAllocBlockAndAFreeOrdered);
+            DArray<TestCallback>::Add(&arr , FreeListTests::MultipleAllocBlockAndAFreeReverseOrder);
+
+            return arr;
+        }; 
     };
 }

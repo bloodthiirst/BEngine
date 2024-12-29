@@ -1,19 +1,16 @@
-#include "pch.h"
-#include "CppUnitTest.h"
+#pragma once
+
+#include "BTest.h"
 #include <Containers/DArray.h>
 #include <Allocators/Allocator.h>
 
-using namespace Microsoft::VisualStudio::CppUnitTestFramework;
-
-
-namespace BEngineMathsUnitTests
+namespace Tests
 {
-    TEST_CLASS(DArrayTests)
+    struct DArrayTests
     {
-    public:
-
-        TEST_METHOD(Create)
-        {
+        TEST_DECLARATION(Create)
+        TEST_BODY
+        ({
             CoreContext::DefaultContext();
 
             size_t size = 5;
@@ -30,16 +27,17 @@ namespace BEngineMathsUnitTests
 
             for (size_t i = 0; i < size; ++i)
             {
-                Assert::IsTrue(arr.data[i] == i);
+                EVALUATE(arr.data[i] == i);
             }
 
-            Assert::IsTrue(arr.capacity == size);
-            Assert::IsTrue(arr.size == size);
-            Assert::IsTrue(arr.data != nullptr);
-        }
+            EVALUATE(arr.capacity == size);
+            EVALUATE(arr.size == size);
+            EVALUATE(arr.data != nullptr);
+        })
 
-        TEST_METHOD(Add)
-        {
+        TEST_DECLARATION(Add)
+        TEST_BODY
+        ({
             CoreContext::DefaultContext();
 
             DArray<int> arr;
@@ -48,33 +46,32 @@ namespace BEngineMathsUnitTests
             DArray<int>::Create(0, &arr, allocator);
 
 
-            Assert::IsTrue(arr.size == 0);
-            Assert::IsTrue(arr.capacity == 0);
+            EVALUATE(arr.size == 0);
+            EVALUATE(arr.capacity == 0);
 
             DArray<int>::Add(&arr, 6);
 
-            Assert::IsTrue(arr.size == 1);
-            Assert::IsTrue(arr.capacity == 1);
+            EVALUATE(arr.size == 1);
+            EVALUATE(arr.capacity == 1);
 
             DArray<int>::Add(&arr, 9);
 
-            Assert::IsTrue(arr.size == 2);
-            Assert::IsTrue(arr.capacity == 3);
+            EVALUATE(arr.size == 2);
+            EVALUATE(arr.capacity == 3);
             
             DArray<int>::Add(&arr, 4);
 
-            Assert::IsTrue(arr.size == 3);
-            Assert::IsTrue(arr.capacity == 3);
+            EVALUATE(arr.size == 3);
+            EVALUATE(arr.capacity == 3);
 
+            EVALUATE(arr.data[0] == 6);
+            EVALUATE(arr.data[1] == 9);
+            EVALUATE(arr.data[2] == 4);
+        })
 
-            Assert::IsTrue(arr.data[0] == 6);
-            Assert::IsTrue(arr.data[1] == 9);
-            Assert::IsTrue(arr.data[2] == 4);
-        }
-
-        TEST_METHOD(RemoveAll)
-        {
-
+        TEST_DECLARATION(RemoveAll)
+        TEST_BODY
+        ({
             CoreContext::DefaultContext();
 
             DArray<int> arr;
@@ -90,15 +87,16 @@ namespace BEngineMathsUnitTests
 
             size_t remove_count = DArray<int>::RemoveAll(&arr, 4);
 
-            Assert::IsTrue(arr.data[0] == 0);
-            Assert::IsTrue(arr.data[1] == 0);
-            Assert::IsTrue(arr.data[2] == 0);
-            Assert::IsTrue(arr.size == 3);
-            Assert::IsTrue(remove_count == 2);
-        }
+            EVALUATE(arr.data[0] == 0);
+            EVALUATE(arr.data[1] == 0);
+            EVALUATE(arr.data[2] == 0);
+            EVALUATE(arr.size == 3);
+            EVALUATE(remove_count == 2);
+        })
 
-        TEST_METHOD(TryIndexOf)
-        {
+        TEST_DECLARATION(TryIndexOf)
+        TEST_BODY
+        ({
             CoreContext::DefaultContext();
 
             DArray<int> arr;
@@ -115,8 +113,22 @@ namespace BEngineMathsUnitTests
             size_t index = 0;
             bool has_found = DArray<int>::TryIndexOf(&arr, 0 , arr.size - 1 , 4 , &index);
 
-            Assert::IsTrue(has_found);
-            Assert::IsTrue(index == 2);
-        }
+            EVALUATE(has_found);
+            EVALUATE(index == 2);
+        })
+
+        static inline DArray<TestCallback> GetAll() 
+        {
+            Allocator alloc = HeapAllocator::Create();
+            DArray<TestCallback> arr = {};
+            DArray<TestCallback>::Create(4 , &arr , alloc);
+
+            DArray<TestCallback>::Add(&arr , DArrayTests::Create);
+            DArray<TestCallback>::Add(&arr , DArrayTests::Add);
+            DArray<TestCallback>::Add(&arr , DArrayTests::RemoveAll);
+            DArray<TestCallback>::Add(&arr , DArrayTests::TryIndexOf);
+
+            return arr;
+        }; 
     };
 }

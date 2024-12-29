@@ -1,21 +1,18 @@
-#include "pch.h"
-#include "CppUnitTest.h"
+#pragma once
+
+#include "BTest.h"
 #include <String/StringBuffer.h>
 #include <String/StringView.h>
 #include <String/StringUtils.h>
 #include <Allocators/Allocator.h>
 
-using namespace Microsoft::VisualStudio::CppUnitTestFramework;
-
-
-namespace BEngineMathsUnitTests
+namespace Tests
 {
-    TEST_CLASS( StringTests )
+    struct StringTests
     {
-    public:
-
-        TEST_METHOD( TestGetLength )
-        {
+        TEST_DECLARATION(TestGetLength)
+        TEST_BODY
+        ({
             CoreContext::DefaultContext();
 
             StringView str1 = "One";
@@ -24,11 +21,13 @@ namespace BEngineMathsUnitTests
 
             size_t length = StringUtils::GetLength( str1, str2, str3 );
 
-            Assert::IsTrue( length == 3 + 3 + 5 );
-        }
+            EVALUATE( length == 3 + 3 + 5 );
+        })
 
-        TEST_METHOD( TestConcat )
-        {
+
+        TEST_DECLARATION(TestConcat)
+        TEST_BODY
+        ({
             CoreContext::DefaultContext();
 
             size_t total_length = StringUtils::GetLength( "One", "Two", "Three" );
@@ -38,11 +37,12 @@ namespace BEngineMathsUnitTests
             Allocator cStrPtr = STACK_ALLOC( total_length + 1 );
             const char* cStr = StringView::ToCString( result.view, cStrPtr );
 
-            Assert::IsTrue( result.length == 3 + 3 + 5 );
-        }
+            EVALUATE( result.length == 3 + 3 + 5 );
+        })
 
-        TEST_METHOD( TestFormat )
-        {
+        TEST_DECLARATION(TestFormat)
+        TEST_BODY
+        ({
             CoreContext::DefaultContext();
 
             Allocator alloc = ArenaAllocator::Create( &CoreContext::core_arena );
@@ -50,7 +50,20 @@ namespace BEngineMathsUnitTests
             StringBuffer result = StringUtils::Format( alloc, "Hey {} World {} The rest", "Hello", "!!!!" );
 
             char* cStr = StringView::ToCString( result.view, alloc );
-            Assert::IsTrue( strcmp( cStr, "Hey Hello World !!!! The rest" ) == 0 );
-        }
+            EVALUATE( strcmp( cStr, "Hey Hello World !!!! The rest" ) == 0 );
+        })
+        
+        static inline DArray<TestCallback> GetAll() 
+        {
+            Allocator alloc = HeapAllocator::Create();
+            DArray<TestCallback> arr = {};
+            DArray<TestCallback>::Create(3 , &arr , alloc);
+
+            DArray<TestCallback>::Add(&arr , StringTests::TestGetLength);
+            DArray<TestCallback>::Add(&arr , StringTests::TestConcat);
+            DArray<TestCallback>::Add(&arr , StringTests::TestFormat);
+
+            return arr;
+        };
     };
 }

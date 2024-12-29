@@ -51,9 +51,9 @@
             }\
         }\
 
-    #define GET_MACRO(_1,_2,_3,NAME,...) NAME
+    #define GET_ALLOC_MACRO(_1,_2,_3,NAME,...) NAME
 
-    #define ALLOC(...) GET_MACRO(__VA_ARGS__,ALLOC_WITH_INFO, ALLOC_NO_INFO , )(__VA_ARGS__)
+    #define ALLOC(...) GET_ALLOC_MACRO(__VA_ARGS__,ALLOC_WITH_INFO, ALLOC_NO_INFO , )(__VA_ARGS__)
 
 #else
 

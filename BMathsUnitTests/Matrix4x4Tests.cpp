@@ -6,7 +6,7 @@
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
 
-namespace BEngineMathsUnitTests
+namespace Tests
 {
     TEST_CLASS ( Matrix4x4Tests )
     {
