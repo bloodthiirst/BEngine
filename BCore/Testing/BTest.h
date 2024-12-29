@@ -1,7 +1,7 @@
 #pragma once
 
-#include <Typedefs/Typedefs.h>
-#include <Containers/DArray.h>
+#include "../Typedefs/Typedefs.h"
+#include "../Containers/DArray.h"
 
 struct TestResult
 {
@@ -103,12 +103,17 @@ struct BTest
             printf(" => ");
             printf("Name : %s", result.function);
 
-            if (!result.success && result.message != nullptr)
+            if (!result.success)
             {
-                printf(",");
-                printf("Line : %i , ", result.line);
+                printf(" , ");
                 printf("File : %s , ", result.file);
-                printf("Message : %s", result.message);
+                printf("Line : %zu", result.line);
+
+                if(result.message != nullptr)
+                {
+                    printf(" , ");
+                    printf("Message : %s", result.message);
+                }
             }
 
             printf("\n");

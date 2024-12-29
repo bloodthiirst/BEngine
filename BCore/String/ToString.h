@@ -108,7 +108,7 @@ static StringBuffer ToString( size_t value, Allocator alloc )
 {
     size_t length = 0;
 
-    uint32_t val = value;
+    uint32_t val = (uint32_t) value;
 
     int32_t remainder = val;
 

@@ -183,7 +183,7 @@ struct FreeList
         {
             Node use = {};
             use.start = free_node->start;
-            use.size = aligned_size;
+            use.size = (uint32_t) aligned_size;
 
             size_t used_count = in_freelist->used_nodes.size;
 

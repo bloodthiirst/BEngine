@@ -1,4 +1,0 @@
-namespace Assert
-{
-    bool IsTrue()
-}
