@@ -69,33 +69,20 @@ struct Queue
         assert(inout_queue->size != 0);
 
         *out_item = inout_queue->data[inout_queue->dequeque_index];
-        inout_queue->dequeque_index++;
+        inout_queue->dequeque_index = (inout_queue->dequeque_index + 1) % inout_queue->capacity;
         inout_queue->size--;
     }
 
     static void Enqueue(Queue *inout_queue, T item)
     {
-        // if we don't have enough place to enqueue past the enqueue index
-        // BUT we still have place empty space before the dequeue index
-        // THEN we shift the whole queue to the left
-        if(inout_queue->enqueue_index == (inout_queue->capacity - 1) && inout_queue->dequeque_index > 0)
-        {
-            T* from = inout_queue->data;
-            T* to = inout_queue->data - inout_queue->enqueue_index;
-            size_t mem_size = sizeof(T) * inout_queue->size;
-            CoreContext::mem_copy(from , to , mem_size );
-            inout_queue->enqueue_index -= inout_queue->dequeque_index;
-            inout_queue->dequeque_index = 0;
-        }
-
-        if ((inout_queue->size + 1) < inout_queue->capacity)
+        if ((inout_queue->size + 1) > inout_queue->capacity)
         {
             size_t new_capacity = (inout_queue->capacity + 1) * 2;
             Resize(inout_queue, new_capacity);
         }
 
         inout_queue->data[inout_queue->enqueue_index] = item;
-        inout_queue->enqueue_index++;
+        inout_queue->enqueue_index = (inout_queue->enqueue_index + 1) % inout_queue->capacity;;
         inout_queue->size++;
     }
 };
