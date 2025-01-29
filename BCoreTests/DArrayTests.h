@@ -9,8 +9,7 @@ namespace Tests
     struct DArrayTests
     {
         TEST_DECLARATION(Create)
-        TEST_BODY
-        ({
+        {
             CoreContext::DefaultContext();
 
             size_t size = 5;
@@ -33,11 +32,12 @@ namespace Tests
             EVALUATE(arr.capacity == size);
             EVALUATE(arr.size == size);
             EVALUATE(arr.data != nullptr);
-        })
+            
+            TEST_END()
+        }
 
         TEST_DECLARATION(Add)
-        TEST_BODY
-        ({
+        {
             CoreContext::DefaultContext();
 
             DArray<int> arr;
@@ -67,11 +67,12 @@ namespace Tests
             EVALUATE(arr.data[0] == 6);
             EVALUATE(arr.data[1] == 9);
             EVALUATE(arr.data[2] == 4);
-        })
+
+            TEST_END()
+        }
 
         TEST_DECLARATION(RemoveAll)
-        TEST_BODY
-        ({
+        {
             CoreContext::DefaultContext();
 
             DArray<int> arr;
@@ -92,11 +93,12 @@ namespace Tests
             EVALUATE(arr.data[2] == 0);
             EVALUATE(arr.size == 3);
             EVALUATE(remove_count == 2);
-        })
+
+            TEST_END()
+        }
 
         TEST_DECLARATION(TryIndexOf)
-        TEST_BODY
-        ({
+        {
             CoreContext::DefaultContext();
 
             DArray<int> arr;
@@ -115,7 +117,9 @@ namespace Tests
 
             EVALUATE(has_found);
             EVALUATE(index == 2);
-        })
+
+            TEST_END()
+        }
 
         static inline DArray<TestCallback> GetAll() 
         {

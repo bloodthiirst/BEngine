@@ -49,7 +49,7 @@ struct CORE_API CoreContext
     /// <para>NOTE : Use in case of overlap between the src and dst memory</para>
     /// </summary>
     static ActionParams<void*, void*, size_t> mem_move;
-
+    
     static Arena core_arena;
 
     static void DefaultContext();

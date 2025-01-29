@@ -20,8 +20,7 @@ namespace Tests
     struct HMapTests
     {
         TEST_DECLARATION(Create)
-        TEST_BODY
-        ({
+        {
             CoreContext::DefaultContext();
 
             size_t capacity = 10;
@@ -30,8 +29,7 @@ namespace Tests
             HMap<int, float> map = {};
 
             Allocator allocator = HeapAllocator::Create();
-            HMap<int, float>::Create( &map, allocator, capacity, 5, IntHasher, IntComparer );
-
+            HMap<int, float>::Create( &map, allocator, capacity, IntHasher, IntComparer );
 
             for ( size_t i = 0; i < size; ++i )
             {
@@ -49,11 +47,12 @@ namespace Tests
             EVALUATE( map.count == size );
             EVALUATE( map.all_keys.size == size );
             EVALUATE( map.all_values.size == size );
-        })
+        
+            TEST_END()
+        }
 
         TEST_DECLARATION(TryGet)
-        TEST_BODY
-        ({
+        {
             CoreContext::DefaultContext();
 
             size_t capacity = 10;
@@ -62,7 +61,7 @@ namespace Tests
             HMap<int, float> map = {};
 
             Allocator allocator = HeapAllocator::Create();
-            HMap<int, float>::Create( &map, allocator, capacity, 5, IntHasher, IntComparer );
+            HMap<int, float>::Create( &map, allocator, capacity, IntHasher, IntComparer );
 
 
             for ( size_t i = 0; i < size; ++i )
@@ -85,12 +84,13 @@ namespace Tests
             EVALUATE( six_value == 0 );
 
             EVALUATE( *zero_value == 420 );
-        })
+
+            TEST_END()
+        }
 
 
         TEST_DECLARATION(TryAdd)
-        TEST_BODY
-        ({
+        {
             CoreContext::DefaultContext();
 
             size_t capacity = 10;
@@ -99,7 +99,7 @@ namespace Tests
             HMap<int, float> map = {};
 
             Allocator allocator = HeapAllocator::Create();
-            HMap<int, float>::Create( &map, allocator, capacity, 5, IntHasher, IntComparer );
+            HMap<int, float>::Create( &map, allocator, capacity, IntHasher, IntComparer );
 
 
             for ( size_t i = 0; i < size; ++i )
@@ -118,20 +118,21 @@ namespace Tests
             EVALUATE( map.count == 1 );
             EVALUATE( map.all_keys.size == 1 );
             EVALUATE( map.all_values.size == 1 );
-        })
+
+            TEST_END()
+        }
 
         TEST_DECLARATION(TryRemove)
-        TEST_BODY
-        ({
+        {
             CoreContext::DefaultContext();
 
-            size_t capacity = 10;
-            size_t size = 5;
+            const size_t capacity = 10;
+            const size_t size = 5;
 
             HMap<int, float> map = {};
 
             Allocator allocator = HeapAllocator::Create();
-            HMap<int, float>::Create( &map, allocator, capacity, 5, IntHasher, IntComparer );
+            HMap<int, float>::Create( &map, allocator, capacity, IntHasher, IntComparer );
 
 
             for ( int i = 0; i < size; ++i )
@@ -142,19 +143,21 @@ namespace Tests
 
             float fifty_removed = {};
             float three_removed = {};
-            HMap<int, float>::TryRemove( &map, 50, &fifty_removed );
-            HMap<int, float>::TryRemove( &map, 3, &three_removed );
+            bool success_50 = HMap<int, float>::TryRemove( &map, 50, &fifty_removed );
+            bool success_3 = HMap<int, float>::TryRemove( &map, 3, &three_removed );
 
             DArray<Pair<int, float>> result = {};
             DArray<Pair<int, float>>::Create( map.count, &result, allocator );
 
-            HMap<int, float>::GetAll( &map, &result );
+            HMap<int, float>::GetAll( &map, &result );    
 
             EVALUATE( map.capacity == capacity );
             EVALUATE( map.count == 4 );
             EVALUATE( map.all_keys.size == 4 );
             EVALUATE( map.all_values.size == 4 );
-        })
+
+            TEST_END()
+        }
 
         static inline DArray<TestCallback> GetAll() 
         {

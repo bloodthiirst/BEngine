@@ -5,7 +5,7 @@
 void DescriptorManager::Create( VulkanContext* context, DescriptorManager* out_manager )
 {
     *out_manager = {};
-    HMap<DescriptorLayoutInfo, DescriptorPoolInfo>::Create( &out_manager->pools_map, Global::alloc_toolbox.heap_allocator, 5, 10, ShaderUtils::DescriptorLayoutHash, ShaderUtils::DescriptorLayoutComparer );
+    HMap<DescriptorLayoutInfo, DescriptorPoolInfo>::Create( &out_manager->pools_map, Global::alloc_toolbox.heap_allocator, 10, ShaderUtils::DescriptorLayoutHash, ShaderUtils::DescriptorLayoutComparer );
 }
 
 void DescriptorManager::Destroy( DescriptorManager* in_manager )

@@ -14,7 +14,7 @@ size_t Hasher( size_t a )
 
 void Logger::Initialize()
 {
-    HMap<size_t, ILogger>::Create( &loggers, Global::alloc_toolbox.heap_allocator, 0, 10, Hasher, Comparer );
+    HMap<size_t, ILogger>::Create( &loggers, Global::alloc_toolbox.heap_allocator, 10, Hasher, Comparer );
 };
 
 void Logger::Destroy()

@@ -45,13 +45,15 @@ private:
 
 public:
 
-    static MinHeap Create(Allocator alloc , size_t capacity, Func<size_t , T> priorityFnPtr )
+    static void Create(Allocator alloc , MinHeap* out_heap, size_t capacity, Func<size_t , T> priorityFnPtr )
     {
         assert(priorityFnPtr != nullptr);
 
         MinHeap heap = {};
         heap.priorityFnPtr = priorityFnPtr;
         DArray<T>::Create(capacity , &heap.data , alloc);
+
+        *out_heap = heap;
     }
 
     static void Destroy(MinHeap* heap)
@@ -103,6 +105,12 @@ public:
         return min_val;
     }
 
+    T Peek()
+    {
+        assert(data.size != 0);
+        return data.data[0];
+    }
+
     void Add(T item)
     {
         size_t idx = data.size;
@@ -112,8 +120,8 @@ public:
         {
             size_t parent_idx = GetParentIndex(idx);
 
-            T curr_val = priorityFnPtr(data.data[idx]);
-            T parent_val = priorityFnPtr(data.data[parent_idx]);
+            size_t curr_val = priorityFnPtr(data.data[idx]);
+            size_t parent_val = priorityFnPtr(data.data[parent_idx]);
 
             if (curr_val < parent_val)
             {

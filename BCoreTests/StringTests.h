@@ -11,8 +11,7 @@ namespace Tests
     struct StringTests
     {
         TEST_DECLARATION(TestGetLength)
-        TEST_BODY
-        ({
+        {
             CoreContext::DefaultContext();
 
             StringView str1 = "One";
@@ -22,12 +21,13 @@ namespace Tests
             size_t length = StringUtils::GetLength( str1, str2, str3 );
 
             EVALUATE( length == 3 + 3 + 5 );
-        })
+
+            TEST_END()
+        }
 
 
         TEST_DECLARATION(TestConcat)
-        TEST_BODY
-        ({
+        {
             CoreContext::DefaultContext();
 
             size_t total_length = StringUtils::GetLength( "One", "Two", "Three" );
@@ -38,11 +38,12 @@ namespace Tests
             const char* cStr = StringView::ToCString( result.view, cStrPtr );
 
             EVALUATE( result.length == 3 + 3 + 5 );
-        })
+        
+            TEST_END()
+        }
 
         TEST_DECLARATION(TestFormat)
-        TEST_BODY
-        ({
+        {
             CoreContext::DefaultContext();
 
             Allocator alloc = ArenaAllocator::Create( &CoreContext::core_arena );
@@ -51,7 +52,9 @@ namespace Tests
 
             char* cStr = StringView::ToCString( result.view, alloc );
             EVALUATE( strcmp( cStr, "Hey Hello World !!!! The rest" ) == 0 );
-        })
+
+            TEST_END()
+        }
         
         static inline DArray<TestCallback> GetAll() 
         {

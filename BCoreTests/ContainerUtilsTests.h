@@ -14,8 +14,7 @@ namespace Tests
         }
 
         TEST_DECLARATION(SortTest)
-        TEST_BODY
-        ({
+        {
             size_t size = 5;
 
             Allocator allocator = HeapAllocator::Create();
@@ -32,7 +31,9 @@ namespace Tests
             {
                 EVALUATE(nums[i] == (size - 1 - i));
             }
-        })
+
+            TEST_END()
+        }
 
         static inline DArray<TestCallback> GetAll() 
         {

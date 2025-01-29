@@ -70,7 +70,7 @@ struct Queue
 
         *out_item = inout_queue->data[inout_queue->dequeque_index];
         inout_queue->dequeque_index++;
-        size--;
+        inout_queue->size--;
     }
 
     static void Enqueue(Queue *inout_queue, T item)
@@ -81,14 +81,14 @@ struct Queue
         if(inout_queue->enqueue_index == (inout_queue->capacity - 1) && inout_queue->dequeque_index > 0)
         {
             T* from = inout_queue->data;
-            T* to = inout_queue->data - enqueue_index;
+            T* to = inout_queue->data - inout_queue->enqueue_index;
             size_t mem_size = sizeof(T) * inout_queue->size;
             CoreContext::mem_copy(from , to , mem_size );
             inout_queue->enqueue_index -= inout_queue->dequeque_index;
             inout_queue->dequeque_index = 0;
         }
 
-        if ((size + 1) < inout_queue->capacity)
+        if ((inout_queue->size + 1) < inout_queue->capacity)
         {
             size_t new_capacity = (inout_queue->capacity + 1) * 2;
             Resize(inout_queue, new_capacity);

@@ -18,7 +18,7 @@ RenderpassNode* RenderGraphBuilder::AddRenderpass(StringView id , void* params, 
     renderpass_node.parent = this;
 
     DArray<SubpassNode>::Create(10, &renderpass_node.subpasses, alloc);
-    HMap<StringView,RenderTargetInfo>::Create(&renderpass_node.render_targets, alloc , 10 , 10, StringUtils::Hash , StringUtils::Compare);
+    HMap<StringView,RenderTargetInfo>::Create(&renderpass_node.render_targets, alloc , 10, StringUtils::Hash , StringUtils::Compare);
 
     size_t index = renderpasses.size;
     DArray<RenderpassNode>::Add(&renderpasses, renderpass_node);
@@ -31,7 +31,7 @@ void RenderGraphBuilder::Build(RenderGraph* out_graph)
 {
     *out_graph = {};
     DArray<Renderpass>::Create(10 , &out_graph->renderpasses , Global::alloc_toolbox.heap_allocator); 
-    HMap<StringView, Texture>::Create(&out_graph->all_textures, alloc, 10, 10, StringUtils::Hash, StringUtils::Compare);
+    HMap<StringView, Texture>::Create(&out_graph->all_textures, alloc, 10, StringUtils::Hash, StringUtils::Compare);
 
     for (size_t renderpass_idx = 0; renderpass_idx < renderpasses.size; ++renderpass_idx)
     {

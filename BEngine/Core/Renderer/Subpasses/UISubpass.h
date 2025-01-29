@@ -25,7 +25,7 @@ struct UISubpass
 
         UISubpassParams *data = Global::alloc_toolbox.HeapAlloc<UISubpassParams>();
 
-        HMap<ShaderBuilder,Shader>::Create(&data->shader_lookup , Global::alloc_toolbox.heap_allocator , 10 , 10 , ShaderUtils::ShaderBuilderHash , ShaderUtils::ShaderBuilderCmp );
+        HMap<ShaderBuilder,Shader>::Create(&data->shader_lookup , Global::alloc_toolbox.heap_allocator , 10 , ShaderUtils::ShaderBuilderHash , ShaderUtils::ShaderBuilderCmp );
 
         // camera buffer
         {

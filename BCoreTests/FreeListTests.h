@@ -9,8 +9,7 @@ namespace Tests
     struct FreeListTests
     {
         TEST_DECLARATION(Create)
-        TEST_BODY
-        ({
+        {
             CoreContext::DefaultContext();
 
             size_t node_cap = 5;
@@ -24,11 +23,12 @@ namespace Tests
             EVALUATE( flist.used_mem == 0 );
 
             FreeList::Destroy( &flist );
-        })
+
+            TEST_END()
+        }
 
         TEST_DECLARATION(AllocBlock)
-        TEST_BODY
-        ({
+        {
             CoreContext::DefaultContext();
 
             size_t node_cap = 5;
@@ -51,11 +51,12 @@ namespace Tests
             EVALUATE( flist.free_nodes.size == 1 );
 
             FreeList::Destroy( &flist );
-        })
+
+            TEST_END()
+        }
 
         TEST_DECLARATION(MultipleAllocBlock)
-        TEST_BODY
-        ({
+        {
             CoreContext::DefaultContext();
 
             size_t node_cap = 5;
@@ -81,11 +82,12 @@ namespace Tests
             EVALUATE( flist.free_nodes.size == 0 );
 
             FreeList::Destroy( &flist );
-        })
+            
+            TEST_END()
+        }
 
         TEST_DECLARATION(MultipleAllocBlockAndAFree)
-        TEST_BODY
-        ({
+        {
             CoreContext::DefaultContext();
 
             size_t node_cap = 5;
@@ -113,11 +115,12 @@ namespace Tests
             EVALUATE( flist.free_nodes.size == 1 );
 
             FreeList::Destroy( &flist );
-        })
+            
+            TEST_END()
+        }
 
         TEST_DECLARATION(MultipleAllocBlockAndAFreeOrdered)
-        TEST_BODY
-        ({
+        {
             CoreContext::DefaultContext();
 
             size_t node_cap = 5;
@@ -145,11 +148,12 @@ namespace Tests
             EVALUATE( flist.free_nodes.size == 1 );
 
             FreeList::Destroy( &flist );
-        })
+            
+            TEST_END()
+        }
 
         TEST_DECLARATION(FreeBlockThatNeedMerging)
-        TEST_BODY
-        ({
+        {
             CoreContext::DefaultContext();
 
             size_t node_cap = 5;
@@ -178,11 +182,12 @@ namespace Tests
             EVALUATE( flist.free_nodes.size == 2 );
 
             FreeList::Destroy( &flist );
-        })
+        
+            TEST_END()
+        }
 
         TEST_DECLARATION(FreeBlockThatDoesntNeedMerging)
-        TEST_BODY
-        ({
+        {
             CoreContext::DefaultContext();
 
             size_t node_cap = 5;
@@ -210,11 +215,12 @@ namespace Tests
             EVALUATE( flist.free_nodes.size == 2 );
 
             FreeList::Destroy( &flist );
-        })
+        
+            TEST_END()
+        }
 
         TEST_DECLARATION(MultipleAllocBlockAndAFreeReverseOrder)
-        TEST_BODY
-        ({
+        {
             CoreContext::DefaultContext();
 
             size_t node_cap = 5;
@@ -242,12 +248,13 @@ namespace Tests
             EVALUATE( flist.free_nodes.size == 1 );
 
             FreeList::Destroy( &flist );
-        })
+
+            TEST_END()
+        }
 
 
         TEST_DECLARATION(MultipleAllocAllThenFreeAllInReverse)
-        TEST_BODY
-        ({
+        {
             CoreContext::DefaultContext();
 
             size_t node_cap = 5;
@@ -278,11 +285,11 @@ namespace Tests
 
             FreeList::Destroy( &flist );
 
-        })
+            TEST_END()
+        }
 
         TEST_DECLARATION(MultipleAllocAllThenFreeAll)
-        TEST_BODY
-        ({
+        {
             CoreContext::DefaultContext();
 
             size_t node_cap = 5;
@@ -312,7 +319,9 @@ namespace Tests
             EVALUATE( flist.free_nodes.size == 1 );
 
             FreeList::Destroy( &flist );
-        })
+        
+            TEST_END()
+        }
 
         static inline DArray<TestCallback> GetAll() 
         {
