@@ -51,6 +51,39 @@ namespace Tests
             TEST_END()
         }
 
+        TEST_DECLARATION(CreateWithResize)
+        {
+            CoreContext::DefaultContext();
+
+            size_t start_capacity = 3;
+            size_t size = 5;
+
+            HMap<int, float> map = {};
+
+            Allocator allocator = HeapAllocator::Create();
+            HMap<int, float>::Create( &map, allocator, start_capacity, IntHasher, IntComparer );
+
+            for ( size_t i = 0; i < size; ++i )
+            {
+                int as_int = (int) i;
+                size_t out_idx = {};
+                HMap<int, float>::TryAdd( &map, as_int, 420.0f + i, &out_idx );
+            }
+
+            DArray<Pair<int, float>> result = {};
+            DArray<Pair<int, float>>::Create( map.count, &result, allocator );
+
+            HMap<int, float>::GetAll( &map, &result );
+
+            EVALUATE( map.capacity > start_capacity );
+            EVALUATE( map.count == size );
+            EVALUATE( map.all_keys.size == size );
+            EVALUATE( map.all_values.size == size );
+        
+            TEST_END()
+        }
+
+
         TEST_DECLARATION(TryGet)
         {
             CoreContext::DefaultContext();
@@ -166,6 +199,7 @@ namespace Tests
             DArray<TestCallback>::Create(4 , &arr , alloc);
 
             DArray<TestCallback>::Add(&arr , HMapTests::Create);
+            DArray<TestCallback>::Add(&arr , HMapTests::CreateWithResize);
             DArray<TestCallback>::Add(&arr , HMapTests::TryGet);
             DArray<TestCallback>::Add(&arr , HMapTests::TryAdd);
             DArray<TestCallback>::Add(&arr , HMapTests::TryRemove);

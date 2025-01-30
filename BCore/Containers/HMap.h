@@ -5,8 +5,7 @@
 
 struct BucketLimits
 {
-    size_t keys_index;
-    size_t values_index;
+    size_t index;
     BucketLimits* next_ptr;
 };
 
@@ -28,6 +27,7 @@ public:
 
     Allocator allocator;
 
+    Arena internal_arena;
     DArray<BucketLimits> bucket_per_hash;
 
     DArray<TKey> all_keys;
@@ -40,14 +40,13 @@ private:
 
     static bool BucketComparer( BucketLimits a, BucketLimits b )
     {
-        return (a.keys_index == b.keys_index) && (a.values_index == b.values_index);
+        return a.index == b.index;
     }
 
     static BucketLimits EmptyBucket()
     {
         BucketLimits empty = {};
-        empty.keys_index = -1;
-        empty.values_index = -1;
+        empty.index = -1;
         empty.next_ptr = nullptr;
 
         return empty;
@@ -67,9 +66,17 @@ public:
         out_map->comparer = comparer;
         out_map->count = 0;
 
-        DArray<BucketLimits>::Create( capacity, &out_map->bucket_per_hash, alloc );
-        DArray<TKey>::Create( capacity, &out_map->all_keys, alloc );
-        DArray<TValue>::Create( capacity, &out_map->all_values, alloc );
+        // NOTE : the idea here is allocate all the space needed for the HMap in once contigious mem block
+        // since it will always be allocated together
+        const size_t total_size = ((sizeof(TKey) + sizeof(TValue) + sizeof(BucketLimits)) * capacity) + sizeof(HMap);
+        out_map->internal_arena.data = ALLOC(out_map->allocator ,total_size );
+        out_map->internal_arena.capacity = total_size;
+        out_map->internal_arena.offset = 0;
+
+        Allocator internal_alloc = ArenaAllocator::Create(&out_map->internal_arena);
+        DArray<BucketLimits>::Create( capacity, &out_map->bucket_per_hash, internal_alloc );
+        DArray<TKey>::Create( capacity, &out_map->all_keys, internal_alloc );
+        DArray<TValue>::Create( capacity, &out_map->all_values, internal_alloc );
 
         // init all to empty buckets
         for(size_t i = 0; i < capacity; ++i)
@@ -84,9 +91,7 @@ public:
 
     static bool Destroy( HMap* in_map )
     {
-        DArray<BucketLimits>::Destroy( &in_map->bucket_per_hash );
-        DArray<TKey>::Destroy( &in_map->all_keys );
-        DArray<TValue>::Destroy( &in_map->all_values );
+        FREE(in_map->allocator , in_map->internal_arena.data);
 
         *in_map = {};
 
@@ -107,21 +112,18 @@ public:
         BucketLimits* root_bucket = &in_map->bucket_per_hash.data[index];
         BucketLimits* parent_bucket = nullptr;
 
-        size_t key_idx = {};
+        size_t idx = {};
 
         // if it's first time filling bucket , then just add and skip
-        if(root_bucket->keys_index == -1 && root_bucket->values_index == -1)
+        if(root_bucket->index == -1)
         {
             // add pair
-            key_idx = in_map->all_keys.size;
+            idx = in_map->count;
             DArray<TKey>::Add( &in_map->all_keys, key );
-
-            size_t value_idx = in_map->all_values.size;
             DArray<TValue>::Add( &in_map->all_values, value );
 
             BucketLimits new_bucket = {};
-            new_bucket.keys_index = key_idx;
-            new_bucket.values_index = value_idx;
+            new_bucket.index = idx;
             new_bucket.next_ptr = nullptr;
 
             *root_bucket = new_bucket;
@@ -134,7 +136,7 @@ public:
         // AND to find the place for the next bucket
         while(root_bucket != nullptr)
         {
-            TKey curr_key = in_map->all_keys.data[root_bucket->keys_index];
+            TKey curr_key = in_map->all_keys.data[root_bucket->index];
             bool found = in_map->comparer( curr_key, key );
             
             if ( found )
@@ -149,15 +151,12 @@ public:
         
         // add pair
         {
-            key_idx = in_map->all_keys.size;
+            idx = in_map->count;
             DArray<TKey>::Add( &in_map->all_keys, key );
-
-            size_t value_idx = in_map->all_values.size;
             DArray<TValue>::Add( &in_map->all_values, value );
 
             BucketLimits new_bucket = {};
-            new_bucket.keys_index = key_idx;
-            new_bucket.values_index = value_idx;
+            new_bucket.index = idx;
             new_bucket.next_ptr = nullptr;
 
             size_t new_bucket_idx = in_map->bucket_per_hash.size;
@@ -170,7 +169,7 @@ end:
         
         if(out_idx != nullptr)
         {
-            *out_idx = key_idx;
+            *out_idx = idx;
         }
         
         return true;
@@ -184,7 +183,7 @@ end:
         // get the bucket using the mod'ed hash
         BucketLimits* bucket = &in_map->bucket_per_hash.data[index];
 
-        if(bucket->keys_index == -1 && bucket->values_index == -1)
+        if(bucket->index == -1)
         {
             goto end;
         }
@@ -192,7 +191,7 @@ end:
         // check if the key already exists
         do
         {
-            TKey curr_key = in_map->all_keys.data[bucket->keys_index];
+            TKey curr_key = in_map->all_keys.data[bucket->index];
 
             if ( !in_map->comparer( curr_key, key ) )
             {
@@ -200,7 +199,7 @@ end:
                 continue;
             }
 
-            TValue* value_ptr = &in_map->all_values.data[bucket->values_index];
+            TValue* value_ptr = &in_map->all_values.data[bucket->index];
             *out_val = value_ptr;
             return true;
         }
@@ -227,11 +226,11 @@ end:
         {
             BucketLimits curr_bucket = in_map->bucket_per_hash.data[idx];
 
-            if(curr_bucket.keys_index != -1 && curr_bucket.values_index != -1)
+            if(curr_bucket.index != -1)
             {
                 Pair<TKey, TValue> pair = {};
-                pair.key = in_map->all_keys.data[curr_bucket.keys_index];
-                pair.value = in_map->all_values.data[curr_bucket.values_index];
+                pair.key = in_map->all_keys.data[curr_bucket.index];
+                pair.value = in_map->all_values.data[curr_bucket.index];
 
                 DArray<Pair<TKey, TValue>>::Add( in_result, pair );
             }
@@ -252,7 +251,7 @@ end:
         bool found = false;
 
         // if the root is already empty , early exit
-        if(bucket_to_remove->keys_index == -1 && bucket_to_remove->values_index == -1)
+        if(bucket_to_remove->index == -1)
         {
             *out_removed = {};
             return false;
@@ -261,7 +260,7 @@ end:
         // check if the key already exists
         while(bucket_to_remove != nullptr)
         {
-            TKey curr_key = in_map->all_keys.data[bucket_to_remove->keys_index];
+            TKey curr_key = in_map->all_keys.data[bucket_to_remove->index];
             found = in_map->comparer( curr_key, key );
             
             if ( found )
@@ -278,7 +277,7 @@ end:
             return false;
         }
     
-        *out_removed = in_map->all_values.data[bucket_to_remove_val.values_index];
+        *out_removed = in_map->all_values.data[bucket_to_remove_val.index];
 
         if(bucket_to_remove->next_ptr == nullptr)
         {
@@ -289,25 +288,20 @@ end:
             *bucket_to_remove = *bucket_to_remove->next_ptr;
         }
 
-        DArray<TKey>::RemoveAt(&in_map->all_keys , bucket_to_remove_val.keys_index );
-        DArray<TValue>::RemoveAt(&in_map->all_values , bucket_to_remove_val.values_index );
+        DArray<TKey>::RemoveAt(&in_map->all_keys , bucket_to_remove_val.index );
+        DArray<TValue>::RemoveAt(&in_map->all_values , bucket_to_remove_val.index );
 
         for(size_t i = 0; i < in_map->count; ++i)
         {
             BucketLimits* curr = &in_map->bucket_per_hash.data[i];
 
-            if(curr->keys_index == -1 && curr->values_index == -1)
+            if(curr->index == -1)
             {
                 continue;
             }
-            if(curr->keys_index > bucket_to_remove_val.keys_index)
+            if(curr->index > bucket_to_remove_val.index)
             {
-                curr->keys_index--;
-            }
-            
-            if(curr->values_index > bucket_to_remove_val.values_index)
-            {
-                curr->values_index--;
+                curr->index--;
             }
         }
         
@@ -332,18 +326,23 @@ end:
             // save the old values
             HMap<TKey, TValue>::GetAll( in_map, &pairs );
 
-            in_map->count = pairs.size;
             in_map->capacity = new_capacity;
+            in_map->count = 0;
 
             // TODO : find a way to resize without "keeping the data" since it will be reinserted anyways
             {
-                DArray<BucketLimits>::Resize( &in_map->bucket_per_hash , new_capacity );
-                DArray<TKey>::Resize( &in_map->all_keys , new_capacity );
-                DArray<TValue>::Resize( &in_map->all_values , new_capacity );
+                // NOTE : the idea here is allocate all the space needed for the HMap in once contigious mem block
+                // since it will always be allocated together
+                const size_t total_size = ((sizeof(TKey) + sizeof(TValue) + sizeof(BucketLimits)) * new_capacity) + sizeof(HMap);
+                FREE(in_map->allocator, in_map->internal_arena.data);
+                in_map->internal_arena.data = ALLOC(in_map->allocator ,total_size );
+                in_map->internal_arena.capacity = total_size;
+                in_map->internal_arena.offset = 0;
 
-                DArray<TKey>::Clear( &in_map->all_keys );
-                DArray<TValue>::Clear( &in_map->all_values );
-                DArray<BucketLimits>::Clear( &in_map->bucket_per_hash );
+                Allocator internal_alloc = ArenaAllocator::Create(&in_map->internal_arena);
+                DArray<BucketLimits>::Create( new_capacity, &in_map->bucket_per_hash, internal_alloc );
+                DArray<TKey>::Create( new_capacity, &in_map->all_keys, internal_alloc );
+                DArray<TValue>::Create( new_capacity, &in_map->all_values, internal_alloc );
 
                 // init all to empty buckets
                 for(size_t i = 0; i < new_capacity; ++i)

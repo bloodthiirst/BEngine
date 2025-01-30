@@ -24,11 +24,11 @@ int main(int argc , char** argv)
 {
     BTest::Init();
     
+    BTest::AppendAll(Tests::HMapTests::GetAll());
     BTest::AppendAll(Tests::ContainerUtilsTests::GetAll());   
     BTest::AppendAll(Tests::DArrayTests::GetAll());
     BTest::AppendAll(Tests::QueueTests::GetAll());
     BTest::AppendAll(Tests::FreeListTests::GetAll());
-    BTest::AppendAll(Tests::HMapTests::GetAll());
     BTest::AppendAll(Tests::StringTests::GetAll());
     BTest::AppendAll(Tests::MinHeapTests::GetAll());
     BTest::AppendAll(Tests::DeferTests::GetAll());
