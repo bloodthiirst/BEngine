@@ -25,7 +25,6 @@ public:
     Vector3 () = default;
     Vector3 (const float x, const float y,const  float z )
     {
-        memset(this, 0, sizeof(Vector3));
         this->x = x;
         this->y = y;
         this->z = z;

@@ -9,7 +9,7 @@ TextUI TextUI::Create(StringView text)
 
     TextUI txt = {};
     txt.text = text;
-    FreeList::AllocBlock(&ctx->mesh_freelist, size_for_text, &txt.instance_matricies);
+    FreeList::AllocBlock(&ctx->descriptors_freelist, size_for_text, &txt.instance_matricies);
 
     return txt;
 }
@@ -17,7 +17,7 @@ TextUI TextUI::Create(StringView text)
 void TextUI::Destroy(TextUI *txt)
 {
     VulkanContext *ctx = (VulkanContext *)Global::backend_renderer.user_data;
-    FreeList::FreeBlock(&ctx->mesh_freelist, txt->instance_matricies);
+    FreeList::FreeBlock(&ctx->descriptors_freelist, txt->instance_matricies);
 
     *txt = {};
 }

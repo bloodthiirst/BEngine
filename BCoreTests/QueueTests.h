@@ -41,7 +41,7 @@ namespace Tests
 
             for (size_t i = 0; i < size; ++i)
             {
-                int val = 69 + i;
+                int val = 69 + (int)i;
                 Queue<int>::Enqueue(&queue , val);
                 
                 EVALUATE(queue.size == (i + 1));

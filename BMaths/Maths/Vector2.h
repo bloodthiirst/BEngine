@@ -23,7 +23,6 @@ public:
     Vector2() = default;
     Vector2( const float x, const float y)
     {
-        memset( this, 0, sizeof( Vector2 ) );
         this->x = x;
         this->y = y;
     }

@@ -475,7 +475,8 @@ void OnUpdate(GameApp *game_app, float delta_time)
 void OnRender(GameApp *game_app, RendererContext *render_ctx, float delta_time)
 {
     EntryPoint* entry = (EntryPoint*)Global::app.game_app.user_data;
- 
+    
+    // investigate
     DArray<DrawMesh>::Add(&render_ctx->mesh_draws , entry->ui_root.GetDraw());
     DArray<DrawMesh>::Add(&render_ctx->mesh_draws , entry->text.GetDraw());
 }

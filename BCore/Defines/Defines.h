@@ -8,6 +8,20 @@
 
 #ifdef _DEBUG
 
+    #define REALLOC(allocator , ptr , size)\
+        allocator.realloc( &allocator, ptr , size ); \
+        if(allocator.realloc != nullptr) {\
+            const char filename[] = __FILE__; \
+            const int line = __LINE__;\
+            AllocationData data = {};\
+            data.line_number = line;\
+            data.filepath = filename;\
+            data.user_data = nullptr;\
+            if(allocator.callbacks.realloc_callback){\
+                allocator.callbacks.realloc_callback(&allocator , ptr, size , data);\
+            }\
+        }\
+
     #define FREE(allocator , ptr)\
         if(allocator.free != nullptr) {\
             allocator.free( &allocator, ptr ); \

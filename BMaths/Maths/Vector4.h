@@ -27,7 +27,6 @@ public:
 
     Vector4 ( float x, float y, float z, float w )
     {
-        memset(this, 0, sizeof(Vector4));
         this->x = x;
         this->y = y;
         this->z = z;

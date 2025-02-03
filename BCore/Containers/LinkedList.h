@@ -40,8 +40,6 @@ struct LinkedList
         *out_list = {};
     }
 
-
-
     static void RemoveAt(LinkedList* in_list , size_t index)
     {
         assert( index < in_list->size && index > -1);

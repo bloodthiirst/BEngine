@@ -33,17 +33,17 @@ struct Queue
 
         if (inout_queue->alloc.realloc)
         {
-            inout_queue->data = (T *)inout_queue->alloc.realloc(&inout_queue->alloc, inout_queue->data, new_capacity);
+            inout_queue->data = (T *) REALLOC(inout_queue->alloc, inout_queue->data, new_capacity);
         }
         else
         {
             T* old_data = inout_queue->data;
-            T* new_data = (T *)inout_queue->alloc.alloc(&inout_queue->alloc ,  new_capacity * sizeof(T));
+            T* new_data = (T *)ALLOC(inout_queue->alloc ,  new_capacity * sizeof(T));
             CoreContext::mem_copy(old_data, new_data, inout_queue->size * sizeof(T));
 
             if (inout_queue->alloc.free)
             {
-                inout_queue->alloc.free(&inout_queue->alloc, old_data);
+                FREE(inout_queue->alloc , old_data);
             }
 
             inout_queue->data = new_data;

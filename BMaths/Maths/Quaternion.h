@@ -47,7 +47,6 @@ public:
 
     Quaternion ( float x, float y, float z, float w )
     {
-        memset(this, 0, sizeof(Quaternion));
         this->w = x;
         this->x = y;
         this->y = z;

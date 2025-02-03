@@ -82,7 +82,8 @@ struct BasicRenderGraph
         screen.y = Global::platform.window.height;
 
         Subpass ui_pass = {};
-        assert(UISubpass::Create(ctx, &ui_pass));
+        bool created_pass = UISubpass::Create(ctx, &ui_pass);
+        assert(created_pass);
 
         BasicRenderpassParams* params = Global::alloc_toolbox.HeapAlloc<BasicRenderpassParams>();
         {

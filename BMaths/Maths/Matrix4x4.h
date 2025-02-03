@@ -66,7 +66,6 @@ public:
 
     Matrix4x4( const Vector4 r1, const Vector4 r2, const Vector4 r3, const Vector4 r4 )
     {
-        memset( this, 0, sizeof( Matrix4x4 ) );
         rows[0] = r1;
         rows[1] = r2;
         rows[2] = r3;
