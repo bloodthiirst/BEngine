@@ -88,7 +88,6 @@ struct BAPI Font
         }
 
     }
-    
 
     struct CustomSTBIContext
     {

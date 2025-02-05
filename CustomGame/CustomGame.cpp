@@ -36,20 +36,20 @@ Texture CreateUITexture()
     VulkanContext *ctx = (VulkanContext *)Global::backend_renderer.user_data;
 
     StringView path = "C:\\Dev\\BEngine\\BEngine\\Core\\Resources\\9_Slice_Stylized.png";
-    
+
     FileHandle file_h = {};
     size_t file_size = {};
     bool success = {};
-    success = Global::platform.filesystem.open(path , FileModeFlag::Read , true , &file_h);
-    success = Global::platform.filesystem.get_size(&file_h , &file_size );
+    success = Global::platform.filesystem.open(path, FileModeFlag::Read, true, &file_h);
+    success = Global::platform.filesystem.get_size(&file_h, &file_size);
 
-    uint8_t* file_mem = (uint8_t*) ALLOC(Global::alloc_toolbox.frame_allocator , file_size);
+    uint8_t *file_mem = (uint8_t *)ALLOC(Global::alloc_toolbox.frame_allocator, file_size);
     size_t bytes_read = {};
-    success = Global::platform.filesystem.read_all(file_h ,file_mem , &bytes_read);
+    success = Global::platform.filesystem.read_all(file_h, file_mem, &bytes_read);
     assert(bytes_read == file_size);
 
-    int32_t width , height , channels;
-    uint8_t* color_mem = stbi_load_from_memory(file_mem , file_size , &width , &height , &channels , 4);
+    int32_t width, height, channels;
+    uint8_t *color_mem = stbi_load_from_memory(file_mem, file_size, &width, &height, &channels, 4);
 
     TextureDescriptor tex_desc = {};
     tex_desc.create_view = true;
@@ -60,13 +60,13 @@ Texture CreateUITexture()
     tex_desc.view_aspect_flags = VkImageAspectFlagBits::VK_IMAGE_ASPECT_COLOR_BIT;
     tex_desc.image_type = VkImageType::VK_IMAGE_TYPE_2D;
     tex_desc.tiling = VkImageTiling::VK_IMAGE_TILING_LINEAR;
-    tex_desc.usage = (VkImageUsageFlagBits)(VkImageUsageFlagBits::VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | 
-                                            VkImageUsageFlagBits::VK_IMAGE_USAGE_TRANSFER_DST_BIT | 
+    tex_desc.usage = (VkImageUsageFlagBits)(VkImageUsageFlagBits::VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT |
+                                            VkImageUsageFlagBits::VK_IMAGE_USAGE_TRANSFER_DST_BIT |
                                             VkImageUsageFlagBits::VK_IMAGE_USAGE_SAMPLED_BIT);
 
     Texture tex = {};
     Texture::Create(tex_desc, &tex);
-    
+
     BufferDescriptor desc = {};
     desc.size = (uint32_t)(width * height * channels * sizeof(uint8_t));
     desc.memoryPropertyFlags = (VkMemoryPropertyFlagBits)(VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
@@ -108,8 +108,8 @@ Texture CreateColorTexture()
     tex_desc.view_aspect_flags = VkImageAspectFlagBits::VK_IMAGE_ASPECT_COLOR_BIT;
     tex_desc.image_type = VkImageType::VK_IMAGE_TYPE_2D;
     tex_desc.tiling = VkImageTiling::VK_IMAGE_TILING_LINEAR;
-    tex_desc.usage = (VkImageUsageFlagBits)(VkImageUsageFlagBits::VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | 
-                                            VkImageUsageFlagBits::VK_IMAGE_USAGE_TRANSFER_DST_BIT | 
+    tex_desc.usage = (VkImageUsageFlagBits)(VkImageUsageFlagBits::VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT |
+                                            VkImageUsageFlagBits::VK_IMAGE_USAGE_TRANSFER_DST_BIT |
                                             VkImageUsageFlagBits::VK_IMAGE_USAGE_SAMPLED_BIT);
 
     Texture tex = {};
@@ -346,7 +346,7 @@ Mesh3D CreatePlane()
             {Vector2(1.0f, 1.0f), Vector2(1.0f, 1.0f)}, // TOP RIGHT
             {Vector2(0.0f, 1.0f), Vector2(0.0f, 1.0f)}, // TOP LEFT
             {Vector2(1.0f, 0.0f), Vector2(1.0f, 0.0f)}, // BOT RIGHT
-            { Vector2(0.0f, 0.0f), Vector2(0.0f, 0.0f)}  // BOT LEFT
+            {Vector2(0.0f, 0.0f), Vector2(0.0f, 0.0f)}  // BOT LEFT
         };
 
     uint32_t vertIndicies[6] = {
@@ -402,12 +402,12 @@ FontInfo CreateFont()
     return info;
 }
 
-DWORD Test(void* param)
-{   
-    //const static char* log_test = "Hi from test";
-    while(true)
+DWORD Test(void *param)
+{
+    // const static char* log_test = "Hi from test";
+    while (true)
     {
-        //Global::logger.Log(log_test);
+        // Global::logger.Log(log_test);
         Global::platform.sleep(500);
     }
     return -1;
@@ -433,19 +433,18 @@ void Initialize(GameApp *game_app)
         state->plane_mesh = CreatePlane();
         state->ui_shader_builder = CreateUIShaderBuilder();
         state->text_shader_builder = CreateFontShaderBuilder();
-        //state->ui_texture = CreateColorTexture();
         state->ui_texture = CreateUITexture();
         state->font_info = CreateFont();
     }
 
     // create instance data
     {
-        VulkanContext* ctx = (VulkanContext*) Global::backend_renderer.user_data;
+        VulkanContext *ctx = (VulkanContext *)Global::backend_renderer.user_data;
         const size_t size = sizeof(Matrix4x4) * 100;
-        FreeList::AllocBlock(&ctx->descriptors_freelist , size , &state->ui_root.instances_data);
+        FreeList::AllocBlock(&ctx->descriptors_freelist, size, &state->ui_root.instances_data);
     }
 
-    Thread::Create(Test , nullptr , &state->thread_test);
+    Thread::Create(Test, nullptr, &state->thread_test);
     Thread::Run(&state->thread_test);
 }
 
@@ -471,20 +470,19 @@ void OnUpdate(GameApp *game_app, float delta_time)
     }
 }
 
-
 void OnRender(GameApp *game_app, RendererContext *render_ctx, float delta_time)
 {
-    EntryPoint* entry = (EntryPoint*)Global::app.game_app.user_data;
-    
+    EntryPoint *entry = (EntryPoint *)Global::app.game_app.user_data;
+
     // investigate
-    DArray<DrawMesh>::Add(&render_ctx->mesh_draws , entry->ui_root.GetDraw());
-    DArray<DrawMesh>::Add(&render_ctx->mesh_draws , entry->text.GetDraw());
+    DArray<DrawMesh>::Add(&render_ctx->mesh_draws, entry->ui_root.GetDraw());
+    DArray<DrawMesh>::Add(&render_ctx->mesh_draws, entry->text.GetDraw());
 }
 
 void Destroy(GameApp *game_app)
 {
     EntryPoint *state = (EntryPoint *)game_app->user_data;
-    
+
     Thread::Suspend(&state->thread_test);
     Thread::Destroy(&state->thread_test);
 
@@ -492,7 +490,8 @@ void Destroy(GameApp *game_app)
 
     Mesh3D::Destroy(&state->plane_mesh);
     Texture::Destroy(&state->ui_texture);
-    ShaderBuilder::Destroy(&state->ui_shader_builder);   
+    Texture::Destroy(&state->font_info.font_atlas_texture);
+    ShaderBuilder::Destroy(&state->ui_shader_builder);
     ShaderBuilder::Destroy(&state->text_shader_builder);
     Global::alloc_toolbox.HeapFree((EntryPoint *)game_app->user_data);
 }
