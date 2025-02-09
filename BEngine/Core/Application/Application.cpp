@@ -9,6 +9,7 @@
 #include "../Platform/Base/Platform.h"
 #include "../Renderer/Backend/BackendRenderer.h"
 #include "../Renderer/VulkanBackend/VulkanBackendRenderer.h"
+#include "../AtomicLock/AtomicLock.h"
 
 bool Application::Run()
 {
@@ -18,7 +19,23 @@ bool Application::Run()
     double last_time = Global::platform.time.get_system_time( time );
 
     while ( application_state.is_running = Global::platform.window.handle_messages() )
-    {
+    {   
+        // check file change
+        Global::filewatch_ctx.queue_access_lock.Lock();
+        {
+            Queue<FileWatcher::ChangeInfo>* queue = &Global::filewatch_ctx.file_watcher.changes_queue;
+            FileWatcher::ChangeInfo info = {};
+            while(Queue<FileWatcher::ChangeInfo>::TryDequeue(queue , &info))
+            {
+                if(info.change_type == FileWatcher::ChangeFlags::FileLastWriteChanged)
+                {
+                    printf("File changed detected : %s \n" , info.info.file_modified);
+                }
+            }
+            
+        }
+        Global::filewatch_ctx.queue_access_lock.Unlock();
+
         double curr_time = Global::platform.time.get_system_time( time );
 
         float delta = (float) (curr_time - last_time);

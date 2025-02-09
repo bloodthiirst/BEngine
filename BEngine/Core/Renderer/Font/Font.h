@@ -200,8 +200,17 @@ struct BAPI Font
 
                 DArray<CharacterInfo>::Add(&out_info->char_info_lookup , char_info);
             }
+            
+            char buffer[1024] = {0};
+    
+            Arena arena = {};
+            arena.data = &buffer;
+            arena.capacity = 1024;
+            arena.offset = 0;
+        
+            Allocator alloc = ArenaAllocator::Create(&arena);
 
-            StringView atlas_path = StringUtils::Format( Global::alloc_toolbox.frame_allocator, "{}\\{}.png",Global::app.application_startup.executable_folder , in_font->face->family_name).view;
+            StringView atlas_path = StringUtils::Format( Global::alloc_toolbox.frame_allocator, alloc ,"{}\\{}.png",Global::app.application_startup.executable_folder , in_font->face->family_name).view;
 
             // NOTE : this memory will point to the frame_arena , so no need to free it manually
             uint8_t* png_mem = {};

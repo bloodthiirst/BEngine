@@ -33,7 +33,8 @@ struct Queue
 
         if (inout_queue->alloc.realloc)
         {
-            inout_queue->data = (T *) REALLOC(inout_queue->alloc, inout_queue->data, new_capacity);
+            T* new_data = (T *) REALLOC(inout_queue->alloc, inout_queue->data, new_capacity * sizeof(T));
+            inout_queue->data = new_data;
         }
         else
         {
@@ -56,7 +57,7 @@ struct Queue
     {
         if(inout_queue->size == 0)
         {
-            *out_item = nullptr;
+            *out_item = T{};
             return false;
         }
 
@@ -82,7 +83,7 @@ struct Queue
         }
 
         inout_queue->data[inout_queue->enqueue_index] = item;
-        inout_queue->enqueue_index = (inout_queue->enqueue_index + 1) % inout_queue->capacity;;
+        inout_queue->enqueue_index = (inout_queue->enqueue_index + 1) % inout_queue->capacity;
         inout_queue->size++;
     }
 };

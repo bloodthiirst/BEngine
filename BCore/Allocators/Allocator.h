@@ -77,6 +77,12 @@ struct Arena
     }
 };
 
+struct ArenaCheckpoint
+{
+    Arena *arena;
+    size_t start_offset;
+};
+
 struct ArenaAllocator
 {
 public:

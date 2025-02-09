@@ -115,8 +115,6 @@ struct RootLayoutNode
         draw.instances_data = instances_data;
         draw.instances_count = rects_to_render.size;
 
-        //assert(draw.instances_count == 3);
-
         VkCommandPool pool = ctx->physical_device_info.command_pools_info.graphicsCommandPool;
         VkQueue queue = ctx->physical_device_info.queues_info.graphics_queue;
         Buffer::Load(instances_data.start, size_for_rects , rects_to_render.data, 0, &ctx->staging_buffer); 
@@ -130,22 +128,4 @@ struct LayoutState
     LayoutNode *root;
     LayoutNode screen_node;
     Allocator node_allocator;
-};
-
-struct LayoutBuilder
-{
-    static LayoutNode* GetOriginNode(LayoutNode *in_node, PointOrigin origin, LayoutState *in_state)
-    {
-        switch (origin)
-        {
-        case PointOrigin::Layout: return in_node->parent;
-        case PointOrigin::Root: return in_state->root;
-        case PointOrigin::Screen: return &in_state->screen_node;
-        }
-
-        assert(false);
-
-        return nullptr;
-    }
-
 };

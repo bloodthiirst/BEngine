@@ -24,38 +24,54 @@ public:
 private:
     static void Win32GetDirectories(StringView path, DArray<StringBuffer> *inout_sub_files, Allocator alloc)
     {
+        char temp_buffer[1024] = {0};
+
+        Arena temp_arena = {};
+        temp_arena.data = &temp_buffer;
+        temp_arena.capacity = 1024;
+        temp_arena.offset = 0;
+
+        Allocator temp_alloc = ArenaAllocator::Create(&temp_arena);
+
+        StringBuffer fmt = StringUtils::Format(Global::alloc_toolbox.frame_allocator, temp_alloc , "{}\\*", path);
+        char *str = StringView::ToCString(fmt.view, Global::alloc_toolbox.frame_allocator);
+
+        WIN32_FIND_DATA find_data;
+        HANDLE file_h = FindFirstFile(str, &find_data); // FILES
+
+        while (FindNextFile(file_h, &find_data) != 0)
         {
-            StringBuffer fmt = StringUtils::Format(Global::alloc_toolbox.frame_allocator, "{}\\*", path);
-            char *str = StringView::ToCString(fmt.view, Global::alloc_toolbox.frame_allocator);
-
-            WIN32_FIND_DATA find_data;
-            HANDLE file_h = FindFirstFile(str, &find_data); // FILES
-
-            while (FindNextFile(file_h, &find_data) != 0)
+            // if is not directory , skip
+            if ((find_data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) != FILE_ATTRIBUTE_DIRECTORY)
             {
-                // if is not directory , skip
-                if ((find_data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) != FILE_ATTRIBUTE_DIRECTORY)
-                {
-                    continue;
-                }
-
-                // if directory is referencing itself "..", skip
-                if (find_data.cFileName[0] == '.' && find_data.cFileName[1] == '.')
-                {
-                    continue;
-                }
-
-                StringBuffer file_name = StringBuffer::Create(find_data.cFileName, alloc);
-                DArray<StringBuffer>::Add(inout_sub_files, file_name);
+                continue;
             }
 
-            FindClose(file_h);
+            // if directory is referencing itself "..", skip
+            if (find_data.cFileName[0] == '.' && find_data.cFileName[1] == '.')
+            {
+                continue;
+            }
+
+            StringBuffer file_name = StringBuffer::Create(find_data.cFileName, alloc);
+            DArray<StringBuffer>::Add(inout_sub_files, file_name);
         }
+
+        FindClose(file_h);
     }
 
     static void Win32GetFiles(StringView path, DArray<StringBuffer> *inout_sub_files, Allocator alloc)
     {
-        StringBuffer fmt = StringUtils::Format(Global::alloc_toolbox.frame_allocator, "{}\\*", path);
+        char temp_buffer[1024] = {0};
+    
+        Arena arena = {};
+        arena.data = &temp_buffer;
+        arena.capacity = 1024;
+        arena.offset = 0;
+    
+        Allocator temp_alloc = ArenaAllocator::Create(&arena);
+
+        StringBuffer fmt = StringUtils::Format(Global::alloc_toolbox.frame_allocator, temp_alloc, "{}\\*", path);
         char *str = StringView::ToCString(fmt.view, Global::alloc_toolbox.frame_allocator);
 
         WIN32_FIND_DATA find_data;
@@ -183,7 +199,6 @@ private:
         return *outReadBytes == fileSize;
     }
 
-
     static bool WriteBytes(const FileHandle *file_handle, ArrayView<char> in_bytes)
     {
         if (!file_handle->handle || !file_handle->is_valid)
@@ -191,7 +206,7 @@ private:
 
         FILE *handle = (FILE *)file_handle->handle;
 
-        size_t result = fwrite(in_bytes.data , sizeof(byte) , in_bytes.size , handle);
+        size_t result = fwrite(in_bytes.data, sizeof(byte), in_bytes.size, handle);
 
         fflush(handle);
 
@@ -204,12 +219,12 @@ private:
             return false;
 
         FILE *handle = (FILE *)file_handle->handle;
-        
-        size_t result = fwrite(in_string.buffer , sizeof(char) , in_string.length , handle);
 
-        fseek(handle , in_string.length , SEEK_SET);
+        size_t result = fwrite(in_string.buffer, sizeof(char), in_string.length, handle);
 
-        result = fwrite("\0" , sizeof(char) , 1 , handle);
+        fseek(handle, in_string.length, SEEK_SET);
+
+        result = fwrite("\0", sizeof(char), 1, handle);
 
         fflush(handle);
 

@@ -123,6 +123,15 @@ struct XMLSerializer
             StringBuilder::Append(in_builder, "\t");
         }
 
+        char temp_buffer[1024] = {0};
+
+        Arena temp_arena = {};
+        temp_arena.data = &temp_buffer;
+        temp_arena.capacity = 1024;
+        temp_arena.offset = 0;
+
+        Allocator temp_alloc = ArenaAllocator::Create(&temp_arena);
+
         // Log element
         if (in_node->node_type == XMLNodeType::Element)
         {
@@ -132,7 +141,7 @@ struct XMLSerializer
             {
                 AttributeValuePair attrVal = in_node->attributes.data[i];
 
-                StringBuffer atr = StringUtils::Format(in_builder->alloc, "\t[Attribute : {} , Value : {}]", attrVal.name, attrVal.value);
+                StringBuffer atr = StringUtils::Format(in_builder->alloc, temp_alloc, "\t[Attribute : {} , Value : {}]", attrVal.name, attrVal.value);
                 StringBuilder::Append(in_builder, atr.view);
             }
             StringBuilder::Append(in_builder, ">");
@@ -141,7 +150,7 @@ struct XMLSerializer
         // Log text
         if (in_node->node_type == XMLNodeType::Text)
         {
-            StringBuffer msg = StringUtils::Format(in_builder->alloc, "<Text : {}>", in_node->value);
+            StringBuffer msg = StringUtils::Format(in_builder->alloc,temp_alloc, "<Text : {}>", in_node->value);
             StringBuilder::Append(in_builder, msg.view);
         }
 
@@ -162,7 +171,7 @@ struct XMLSerializer
                 StringBuilder::Append(in_builder, "\t");
             }
 
-            StringBuffer name = StringUtils::Format(in_builder->alloc, "</Element : {}>", in_node->name);
+            StringBuffer name = StringUtils::Format(in_builder->alloc, temp_alloc,"</Element : {}>", in_node->name);
             StringBuilder::Append(in_builder, name.view);
         }
     }

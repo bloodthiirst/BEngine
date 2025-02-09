@@ -12,9 +12,9 @@ struct BitArray
         size_t mem_size = (size / 8) + 1;
         
         *out_arr = {};
-        out_arr->data = alloc.alloc(&alloc , mem_size );
-        out_arr = size;
         out_arr->alloc = alloc;
+        out_arr->data = (char*) ALLOC(out_arr->alloc, mem_size);
+        out_arr->size = size;
 
         CoreContext::mem_init(out_arr->data , mem_size);
     }
@@ -22,7 +22,7 @@ struct BitArray
     static void Destroy(BitArray* out_arr)
     {
         size_t mem_size = (out_arr->size / 8) + 1;
-        out_arr->data = alloc.free(&alloc , mem_size );
+        FREE(out_arr->alloc , out_arr->data);
         *out_arr = {};
     }
 

@@ -10,7 +10,7 @@ struct Command
 {
     StringView cmd_line;
 
-    static void Create(Command* out_cmd , StringView cmd_line  )
+    static void Create(Command* out_cmd , StringView cmd_line)
     {
         *out_cmd = {};
         out_cmd->cmd_line = cmd_line;

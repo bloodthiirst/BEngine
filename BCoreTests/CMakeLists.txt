@@ -25,6 +25,7 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${BUILD_PATH})
 set(BUILD_MODE Debug)
 add_compile_options("/Zc:preprocessor")
 add_compile_options("/fsanitize=address")
+add_compile_options("/fsanitize=thread")
 add_compile_options("/INFERASANLIBS")
 add_compile_options("/MP")
 
@@ -71,7 +72,7 @@ add_custom_command(TARGET BCoreTest POST_BUILD
     COMMAND_EXPAND_LISTS
 )
 
-target_link_libraries(BCoreTest PUBLIC ${All_Libs})
+target_link_libraries(BCoreTest PUBLIC ${All_Libs} PUBLIC -fsanitize=address PUBLIC -fsanitize=thread)
 
 target_include_directories(BCoreTest PUBLIC ${All_Headers})
 

@@ -90,11 +90,8 @@ public:
     }
 
     template<typename ...Args>
-    static StringBuffer Format( Allocator alloc, StringView str, Args... args )
+    static StringBuffer Format( Allocator string_alloc, Allocator temp_alloc, StringView str, Args... args )
     {
-        size_t arena_offset = CoreContext::core_arena.offset;
-        Allocator temp_alloc = ArenaAllocator::Create( &CoreContext::core_arena );
-
         size_t max_slots = sizeof( size_t ) * (str.length / 2);
         size_t* formatSlots = (size_t*) ALLOC( temp_alloc, max_slots );
         size_t formatSlotCount = 0;
@@ -127,7 +124,7 @@ public:
             size += params.data[i].length;
         }
 
-        StringBuffer res = StringBuffer::Create( size, alloc );
+        StringBuffer res = StringBuffer::Create( size, string_alloc );
 
         // copy to the final string
         {
@@ -157,8 +154,6 @@ public:
                 CoreContext::mem_copy( (void*) (str.buffer + remaining_temp), (void*) (res.buffer + prev_res_i), str.length - remaining_temp );
             }
         }
-
-        CoreContext::core_arena.offset = arena_offset;
 
         return res;
     }

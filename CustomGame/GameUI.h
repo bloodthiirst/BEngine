@@ -45,6 +45,20 @@ struct GameUI
             }
         }
 
+        // auto width node
+        {
+            LayoutNode test_node = {};
+            {
+                test_node.option.x = { PointOrigin::Layout, ValueUnit::Pixels, 32 };
+                test_node.option.y = { PointOrigin::Layout, ValueUnit::Pixels, 32 };
+                test_node.option.width = { SizeRule::Layout, ValueUnit::Pixels, 0};
+                test_node.option.height = { SizeRule::Value, ValueUnit::Pixels, 64 };
+
+                test_node.parent = &entry->ui_root.root;
+                DArray<LayoutNode>::Add(&root_node.sub_nodes , test_node);
+            }
+        }
+
         entry->ui_root.root = root_node;
         entry->ui_root.mesh = &entry->plane_mesh;
         entry->ui_root.texture = &entry->ui_texture;

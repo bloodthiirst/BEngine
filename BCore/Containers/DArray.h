@@ -62,17 +62,17 @@ public:
 
         if (in_arr->alloc.realloc)
         {
-            in_arr->data = (T *)in_arr->alloc.realloc(&in_arr->alloc, in_arr->data, new_capacity * sizeof(T));
+            in_arr->data = (T *)REALLOC(in_arr->alloc, in_arr->data, new_capacity * sizeof(T));
         }
         else
         {
             T* old_data = in_arr->data;
-            T* new_data = (T *)in_arr->alloc.alloc(&in_arr->alloc ,  new_capacity * sizeof(T));
+            T* new_data = (T *)ALLOC(in_arr->alloc , new_capacity * sizeof(T));
             CoreContext::mem_copy(old_data, new_data, in_arr->size * sizeof(T));
 
             if (in_arr->alloc.free)
             {
-                in_arr->alloc.free(&in_arr->alloc, old_data);
+                FREE(in_arr->alloc, old_data);
             }
 
             in_arr->data = new_data;

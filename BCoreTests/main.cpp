@@ -6,6 +6,7 @@
 #include "HMapTests.h"
 #include "StringTests.h"
 #include "MinHeapTests.h"
+#include "SlotArrayTests.h"
 #include "DeferTests.h"
 
 TEST_DECLARATION(Wrong)
@@ -32,6 +33,7 @@ int main(int argc , char** argv)
     BTest::AppendAll(Tests::StringTests::GetAll());
     BTest::AppendAll(Tests::MinHeapTests::GetAll());
     BTest::AppendAll(Tests::DeferTests::GetAll());
+    BTest::AppendAll(Tests::SlotArrayTests::GetAll());
 
     BTest::RunAll();
 }

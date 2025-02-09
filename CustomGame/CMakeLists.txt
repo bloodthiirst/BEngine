@@ -27,6 +27,7 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${BUILD_PATH})
 set(BUILD_MODE Debug)
 add_compile_options("/Zc:preprocessor")
 add_compile_options("/fsanitize=address")
+add_compile_options("/fsanitize=thread")
 add_compile_options("/INFERASANLIBS")
 add_compile_options("/MP")
 

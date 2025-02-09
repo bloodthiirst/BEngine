@@ -27,6 +27,7 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${BUILD_PATH})
 set(BUILD_MODE Debug)
 add_compile_options("/Zc:preprocessor")
 add_compile_options("/fsanitize=address")
+add_compile_options("/fsanitize=thread")
 add_compile_options("/INFERASANLIBS")
 add_compile_options("/MP")
 add_compile_definitions("_ENGINE_EXPORT")
@@ -125,7 +126,7 @@ set(All_Headers ${mathHeaders} ${bcoreHeaders} ${gameHeaders} ${vulkanHeaders} $
 target_link_libraries(BEngineCommon ${All_Libs})
 target_link_libraries(BEngineExe ${All_Libs})
 target_link_libraries(BEngineDLL ${All_Libs})
-target_link_options(BEngineCommon PUBLIC -fsanitize=address)
+target_link_options(BEngineCommon PUBLIC -fsanitize=address PUBLIC -fsanitize=thread)
 
 # Make both the .dll and .exe have the same name "BEngine"
 set_property(TARGET BEngineExe PROPERTY OUTPUT_NAME BEngine)

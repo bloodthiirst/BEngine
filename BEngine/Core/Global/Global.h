@@ -1,14 +1,26 @@
 #pragma once
+#include <Allocators/Allocator.h>
 #include "../Defines/Defines.h"
 #include "../Platform/Base/Platform.h"
 #include "../EventSystem/GameEventSystem.h"
 #include "../Application/Application.h"
 #include "../Renderer/Backend/BackendRenderer.h"
 #include "../AssetManager/GlobalAssetManager.h"
+#include "../FileWatcher/FileWatcher.h"
+#include "../Thread/Thread.h"
+#include "../AtomicLock/AtomicLock.h"
+#include "../JobSystem/JobSystem.h"
 
 struct BAPI GlobalAssetManager;
 struct BAPI AllocationToolbox;
 struct BAPI Logger;
+
+struct FileWatchingContext
+{
+    FileWatcher file_watcher;
+    Thread watcher_thread;
+    AtomicLock queue_access_lock;
+};
 
 struct BAPI Global
 {
@@ -25,20 +37,10 @@ struct BAPI Global
     static AllocationToolbox alloc_toolbox;
 
     static GlobalAssetManager asset_manager;
-};
 
-#define VK_CHECK(X, RESULT)                     \
-    VkResult RESULT = X;                        \
-    if (RESULT != VK_SUCCESS)                   \
-    {                                           \
-        Global::logger.Error("Vulkan Error !"); \
-        Global::logger.Error(#X);               \
-    }                                           \
+    static FileWatchingContext filewatch_ctx;
 
-struct BAPI ArenaCheckpoint
-{
-    Arena *arena;
-    size_t start_offset;
+    static JobSystem job_system;
 };
 
 struct BAPI AllocationToolbox

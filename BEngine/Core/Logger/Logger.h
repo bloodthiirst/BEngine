@@ -48,10 +48,17 @@ public:
 
     void NewLine( size_t repeat = 1 );
 
-#define LOG(callback)\
-{\
+#define LOG(callback)             \
+{                                 \
+    char temp_buffer[1024] = {0}; \
+    Arena arena = {};             \
+    arena.data = &temp_buffer;    \
+    arena.capacity = 1024;        \
+    arena.offset = 0;             \
+    Allocator temp_alloc = ArenaAllocator::Create(&arena);\
+    \
     Allocator alloc = ArenaAllocator::Create( &CoreContext::core_arena );\
-    StringBuffer str = StringUtils::Format( alloc, message, args... );\
+    StringBuffer str = StringUtils::Format( alloc, temp_alloc, message, args... );\
     ArenaCheckpoint c = Global::alloc_toolbox.GetArenaCheckpoint();\
     {\
         DArray<Pair<size_t, ILogger>> tmp;\

@@ -85,12 +85,12 @@ struct BTest
 
     static void RunAll()
     {
+        LARGE_INTEGER freq = {};
+        QueryPerformanceFrequency(&freq);
+
         for (size_t i = 0; i < all_tests.size; ++i)
         {
             TestCallback fncPtr = all_tests.data[i];
-
-            LARGE_INTEGER freq = {};
-            QueryPerformanceFrequency(&freq);
 
             LARGE_INTEGER before = {}; 
             QueryPerformanceCounter(&before);

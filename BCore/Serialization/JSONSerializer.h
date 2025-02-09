@@ -157,18 +157,27 @@ struct JSONSerializer
         }
 
         StringBuilder::Append(in_builder, "\t");
+        
+        char temp_buffer[1024] = {0};
 
+        Arena temp_arena = {};
+        temp_arena.data = &temp_buffer;
+        temp_arena.capacity = 1024;
+        temp_arena.offset = 0;
+
+        Allocator temp_alloc = ArenaAllocator::Create(&temp_arena);
+        
         // Log name
         if (in_node->name.buffer != nullptr)
         {
-            StringBuffer msg = StringUtils::Format(in_builder->alloc, "<Name : {}>\t", in_node->name);
+            StringBuffer msg = StringUtils::Format(in_builder->alloc, temp_alloc, "<Name : {}>\t", in_node->name);
             StringBuilder::Append(in_builder, msg.view);
         }
 
         // Log value
         if (in_node->node_type != JSONNodeType::Object && in_node->node_type != JSONNodeType::Array)
         {
-            StringBuffer msg = StringUtils::Format(in_builder->alloc, "<Value : {}>\t", in_node->value);
+            StringBuffer msg = StringUtils::Format(in_builder->alloc, temp_alloc, "<Value : {}>\t", in_node->value);
             StringBuilder::Append(in_builder, msg.view);
         }
 

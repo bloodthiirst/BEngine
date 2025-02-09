@@ -30,7 +30,13 @@ Core/Renderer/RenderGraph/RenderGraphBuilder.cpp
 # Asset EntityManager
 Core/AssetManager/GlobalAssetManager.cpp
 
-#Asset
+# FileWatcher
+Core/FileWatcher/FileWatcher.cpp
+
+# JobSystem
+Core/JobSystem/JobSystem.cpp
+
+# Asset
 Core/Renderer/Mesh/Mesh3D.cpp
 Core/Renderer/Shader/Shader.cpp
 Core/Renderer/Shader/ShaderBuilder.cpp

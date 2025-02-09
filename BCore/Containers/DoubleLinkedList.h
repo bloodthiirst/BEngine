@@ -2,10 +2,11 @@
 #include "../Allocators/Allocator.h"
 
 template<typename T>
-struct LinkedList
+struct DoubleLinkedList
 {
     struct Node
     {
+        Node* prev;
         Node* next;
         T data;
     };
@@ -15,13 +16,13 @@ struct LinkedList
     Node* last;
     Allocator alloc;
 
-    static void Create(LinkedList* out_list, Allocator alloc)
+    static void Create(DoubleLinkedList* out_list, Allocator alloc)
     {
         *out_list = {};
         out_list->alloc = alloc;
     }
 
-    static void Destroy(LinkedList* out_list)
+    static void Destroy(DoubleLinkedList* out_list)
     {
         Node* n = out_list->first;
 
@@ -35,7 +36,7 @@ struct LinkedList
         *out_list = {};
     }
 
-    static void RemoveAt(LinkedList* in_list , size_t index)
+    static void RemoveAt(DoubleLinkedList* in_list , size_t index)
     {
         assert( index < in_list->size && index > -1);
 
@@ -46,14 +47,17 @@ struct LinkedList
             n = n->next;
         }
 
+        Node* prev = n->prev;
         Node* next = n->next;
         prev->next = next;
-        FREE(in_list->alloc , n);
+        next->prev = prev;
+
+        in_list->alloc.free(&in_list->alloc , n);
 
         in_list->size--;
     }
 
-    static void Append(LinkedList* in_list , T value)
+    static void Append(DoubleLinkedList* in_list , T value)
     {  
         Node* new_node = (Node*) ALLOC(in_list->alloc ,sizeof(Node));
         *new_node = {};
